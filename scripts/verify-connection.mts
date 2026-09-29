@@ -23,7 +23,6 @@ console.log(`secret col   ${c.secretKeyEnc?.slice(0, 24)}…  <- ciphertext at r
 
 const secret = decryptSecret(c.secretKeyEnc!, aadFor(c.id, "secretKey"), c.keyVersion);
 console.log(`decrypted    ${secret.slice(0, 11)}… (${secret.length} chars)`);
-console.log(`matches env  ${secret === process.env.SUPABASE_SECRET_KEY}`);
 
 try {
   decryptSecret(c.secretKeyEnc!, aadFor(c.id, "accessToken"), c.keyVersion);

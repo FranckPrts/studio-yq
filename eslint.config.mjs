@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     // p5 scenes pasted into YouQuantified, not app code: they define
     // setup/draw/windowResized for p5 to call, which reads as "unused" here.
     "scenes/**",
+    // Personal notes and scratch copies, not part of the app.
+    ".private-notes/**",
   ]),
 ]);
 

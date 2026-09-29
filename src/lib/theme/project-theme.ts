@@ -9,6 +9,9 @@
  *
  * The shape lives here rather than in the database because it is read whole and
  * never queried by field. `Project.theme` is a json column holding exactly this.
+ *
+ * What each colour is for, and what stays out of the tenant's hands:
+ * `docs/participant-styling.md`.
  */
 
 export type ProjectTheme = {

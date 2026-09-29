@@ -18,7 +18,6 @@
  */
 
 import "dotenv/config";
-import dotenv from "dotenv";
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -64,19 +63,9 @@ async function main() {
     process.exit(1);
   }
 
-  // Also read .env.local, so the existing single-tenant CCN credentials can be
-  // lifted into a project without being retyped. This is exactly the migration
-  // those build-time env vars are supposed to make unnecessary.
-  dotenv.config({ path: ".env.local", override: false, quiet: true });
-
-  const supabaseUrl =
-    arg("supabase-url") ??
-    process.env.SUPABASE_URL ??
-    process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseUrl = arg("supabase-url") ?? process.env.SUPABASE_URL;
   const publishableKey =
-    arg("publishable-key") ??
-    process.env.SUPABASE_PUBLISHABLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    arg("publishable-key") ?? process.env.SUPABASE_PUBLISHABLE_KEY;
   const secretKey = arg("secret-key") ?? process.env.SUPABASE_SECRET_KEY;
   const scriptDir = arg("script");
 
