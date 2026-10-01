@@ -3,17 +3,17 @@
 import { useState } from "react";
 import type { ProjectLexicon, ProjectTheme } from "@/lib/theme/project-theme";
 import type { ProjectCopy } from "@/lib/theme/project-copy";
-import AppearanceForm from "./form";
-import CopyForm from "./copy-form";
-import PreviewPane from "./preview-pane";
+import TypeForm from "../type-form";
+import CopyForm from "../copy-form";
+import PreviewPane from "../preview-pane";
 
 /**
- * The two forms and the live preview, sharing one set of drafts: whatever is
- * typed shows in the preview before it is saved.
+ * The typeface, the noun and every sentence, with one preview fed by both
+ * forms' drafts — so a renamed noun shows inside the wording around it.
  */
-export default function ParticipantFrontendEditor({
+export default function TextEditor({
   slug,
-  theme: savedTheme,
+  theme,
   lexicon: savedLexicon,
   copy: savedCopy,
   canEdit,
@@ -24,7 +24,7 @@ export default function ParticipantFrontendEditor({
   copy: ProjectCopy;
   canEdit: boolean;
 }) {
-  const [theme, setTheme] = useState(savedTheme);
+  const [font, setFont] = useState(theme.font);
   const [lexicon, setLexicon] = useState(savedLexicon);
   const [copy, setCopy] = useState(savedCopy);
 
@@ -33,12 +33,12 @@ export default function ParticipantFrontendEditor({
       <div className="flex flex-col gap-8">
         {canEdit ? (
           <>
-            <AppearanceForm
+            <TypeForm
               slug={slug}
-              theme={savedTheme}
+              font={theme.font}
               lexicon={savedLexicon}
-              onDraft={(t, l) => {
-                setTheme(t);
+              onDraft={(f, l) => {
+                setFont(f);
                 setLexicon(l);
               }}
             />
@@ -55,7 +55,12 @@ export default function ParticipantFrontendEditor({
       </div>
 
       <div className="lg:sticky lg:top-8">
-        <PreviewPane slug={slug} theme={theme} lexicon={lexicon} copy={copy} />
+        <PreviewPane
+          slug={slug}
+          theme={{ ...theme, font }}
+          lexicon={lexicon}
+          copy={copy}
+        />
       </div>
     </div>
   );

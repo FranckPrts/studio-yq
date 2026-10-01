@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceLexicon } from "@/lib/theme/project-theme";
 import type { Parameter } from "@/lib/params/types";
-import ProjectNav from "../nav";
 import OpsConsole from "./console";
 
 export const dynamic = "force-dynamic";
@@ -48,16 +47,24 @@ export default async function ConsolePage({
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 bg-void p-8 text-paper">
-      <ProjectNav
-        slug={slug}
-        projectName={project.name}
-        here="console"
-        subtitle={
-          project.openForParticipation
-            ? "Open to participants."
-            : "Closed — nothing new will arrive until it is opened."
-        }
-      />
+      {/* Opened in its own tab from the overview, so no project menu — just
+          the way back to it. */}
+      <header className="flex items-baseline justify-between gap-4 border-b border-paper/10 pb-3">
+        <div className="min-w-0">
+          <h1 className="text-sm">{project.name} · live console</h1>
+          <p className="text-xs text-dim">
+            {project.openForParticipation
+              ? "Open to participants."
+              : "Closed — nothing new will arrive until it is opened."}
+          </p>
+        </div>
+        <Link
+          href={`/projects/${slug}`}
+          className="shrink-0 text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+        >
+          ‹ project
+        </Link>
+      </header>
 
       {ready ? (
         <OpsConsole

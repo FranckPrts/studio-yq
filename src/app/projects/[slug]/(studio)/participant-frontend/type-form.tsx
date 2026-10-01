@@ -4,89 +4,77 @@ import { useActionState, useState } from "react";
 import { saveAppearance, type AppearanceState } from "./actions";
 import {
   FONTS,
+  type FontKey,
   type ProjectLexicon,
-  type ProjectTheme,
 } from "@/lib/theme/project-theme";
+import { useUnsavedChanges } from "../use-unsaved-changes";
 
-export default function AppearanceForm({
+/**
+ * The typeface and the word for what participants make. Posts only these, and
+ * `saveAppearance` keeps whatever it was not sent, so the palette saved on the
+ * colours page is left alone.
+ */
+export default function TypeForm({
   slug,
-  theme,
+  font,
   lexicon,
   onDraft,
 }: {
   slug: string;
-  theme: ProjectTheme;
+  font: FontKey;
   lexicon: ProjectLexicon;
   /** Every unsaved change, for the live preview next to the form. */
-  onDraft?: (theme: ProjectTheme, lexicon: ProjectLexicon) => void;
+  onDraft?: (font: FontKey, lexicon: ProjectLexicon) => void;
 }) {
+  const [saved, setSaved] = useState({ font, ...lexicon });
   const [state, action, pending] = useActionState<AppearanceState, FormData>(
-    saveAppearance,
+    async (prev, formData) => {
+      const result = await saveAppearance(prev, formData);
+      if (result.saved) {
+        setSaved({
+          font: String(formData.get("font")) as FontKey,
+          noun: String(formData.get("noun")),
+          nounPlural: String(formData.get("nounPlural")),
+        });
+      }
+      return result;
+    },
     {},
   );
-  const [draft, setDraftState] = useState(theme);
+  const [draftFont, setDraftFont] = useState(font);
   const [words, setWordsState] = useState(lexicon);
 
-  function setDraft(update: (p: ProjectTheme) => ProjectTheme) {
-    const next = update(draft);
-    setDraftState(next);
+  const dirty =
+    draftFont !== saved.font ||
+    words.noun !== saved.noun ||
+    words.nounPlural !== saved.nounPlural;
+  useUnsavedChanges(dirty);
+
+  function setFont(next: FontKey) {
+    setDraftFont(next);
     onDraft?.(next, words);
   }
   function setWords(update: Partial<ProjectLexicon>) {
     const next = { ...words, ...update };
     setWordsState(next);
-    onDraft?.(draft, next);
+    onDraft?.(draftFont, next);
   }
-
-  const swatch = (key: "void" | "paper" | "dim", label: string, hint: string) => (
-    <label className="flex flex-col gap-1">
-      <span className="text-xs text-dim">
-        {label} <span className="text-paper/25">· {hint}</span>
-      </span>
-      <div className="flex items-center gap-2">
-        <input
-          type="color"
-          name={key}
-          value={draft[key]}
-          onChange={(e) =>
-            setDraft((p) => ({ ...p, [key]: e.target.value.toLowerCase() }))
-          }
-          className="h-7 w-10 cursor-pointer border border-paper/20 bg-transparent"
-        />
-        <code className="text-[11px] text-dim">{draft[key]}</code>
-      </div>
-    </label>
-  );
 
   return (
     <form action={action} className="flex flex-col gap-8">
       <input type="hidden" name="slug" value={slug} />
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-xs text-dim">palette</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {swatch("void", "background", "the void behind everything")}
-          {swatch("paper", "text", "names, values, prompts")}
-          {swatch("dim", "secondary", "labels and help")}
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-4">
         <h2 className="text-xs text-dim">typeface</h2>
         <select
           name="font"
-          value={draft.font}
-          onChange={(e) =>
-            setDraft((p) => ({
-              ...p,
-              font: e.target.value as ProjectTheme["font"],
-            }))
-          }
+          value={draftFont}
+          onChange={(e) => setFont(e.target.value as FontKey)}
           className="term-input max-w-xs border-b border-paper/20 bg-void"
         >
-          {Object.entries(FONTS).map(([key, font]) => (
+          {Object.entries(FONTS).map(([key, f]) => (
             <option key={key} value={key}>
-              {font.label}
+              {f.label}
             </option>
           ))}
         </select>
@@ -128,15 +116,17 @@ export default function AppearanceForm({
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          disabled={pending}
-          className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+          disabled={pending || !dirty}
+          className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
         >
-          {pending ? "saving…" : "save"}
+          {pending ? "saving…" : "save typeface & language"}
         </button>
         {state.error ? (
           <p role="alert" className="text-xs text-red-400">
             {state.error}
           </p>
+        ) : dirty ? (
+          <p className="text-xs text-amber-400/80">unsaved changes</p>
         ) : (
           state.saved && <p className="text-xs text-dim">saved</p>
         )}

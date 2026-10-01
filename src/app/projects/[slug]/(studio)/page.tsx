@@ -3,10 +3,11 @@ import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceLexicon, coerceTheme, FONTS } from "@/lib/theme/project-theme";
 import { RenameForm } from "./settings-form";
-import ProjectNav from "./nav";
+import PageHeader from "./page-header";
 import ParticipationToggle from "./participation-toggle";
 import { projectReadiness } from "@/lib/projects/readiness";
 import { pendingInvitations } from "@/lib/auth/invitations";
+import { buttonClass } from "@/design";
 import MembersSection from "./members-section";
 
 export const dynamic = "force-dynamic";
@@ -84,11 +85,9 @@ export default async function ProjectOverviewPage({
         : `${connection.projectRef} · not provisioned`;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 bg-void p-8 text-paper">
-      <ProjectNav
-        slug={slug}
-        projectName={project.name}
-        here="overview"
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
+      <PageHeader
+        title="overview"
         subtitle={`${project.slug} · you are ${access.role.toLowerCase()}${
           access.viaPlatformAdmin ? " (as administrator)" : ""
         }`}
@@ -106,9 +105,35 @@ export default async function ProjectOverviewPage({
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2 className="text-xs text-dim">run</h2>
+        {/* Each opens in its own tab — the console on a second screen, the
+            board on a projector — so neither carries the project menu. */}
+        <div className="flex flex-wrap gap-x-8 gap-y-2">
+          <Link
+            href={`/projects/${slug}/console`}
+            target="_blank"
+            className={buttonClass("action")}
+          >
+            open live console ↗
+          </Link>
+          <Link
+            href={`/projects/${slug}/board`}
+            target="_blank"
+            className={buttonClass("action")}
+          >
+            open leaderboard ↗
+          </Link>
+        </div>
+        <p className="text-[11px] leading-relaxed text-dim">
+          The console is for whoever is running the session; the leaderboard is
+          what the room sees. Both open in a new tab.
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-3">
         <h2 className="text-xs text-dim">the three parts</h2>
         <Bucket
-          href={`/projects/${slug}/participant-frontend`}
+          href={`/projects/${slug}/participant-frontend/colours`}
           title="style &amp; language"
           state={`${lexicon.noun} · ${FONTS[theme.font].label.toLowerCase()}`}
           ready

@@ -6,7 +6,7 @@ import {
   SCOPE_PURPOSE,
   SupabaseApiError,
 } from "@/lib/supabase/management";
-import ProjectNav from "../nav";
+import PageHeader from "../page-header";
 import ConnectionSection, { type ConnectionView } from "./section";
 import ProvisionSection from "./provision-section";
 import DangerSection, { type LiveState } from "./danger-section";
@@ -177,8 +177,8 @@ export default async function DatabasePage({
   });
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 bg-void p-8 text-paper">
-      <ProjectNav slug={slug} projectName={project.name} here="database" />
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
+      <PageHeader title="database" />
 
       <p className="max-w-prose text-[11px] leading-relaxed text-dim">
         Participants and their avatars live in your own Supabase project, never

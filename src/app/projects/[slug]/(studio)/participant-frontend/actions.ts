@@ -14,6 +14,11 @@ export type AppearanceState = { saved?: boolean; error?: string };
  * A collaborator may change all of it. This is content — what stays with the
  * owner is the project's name in a URL and whether participants can reach it
  * at all, both of which live on the project page.
+ *
+ * Partial on purpose. The palette and the typeface-and-noun are edited on
+ * separate pages, each posting only its own fields, so a field the form did not
+ * send keeps its stored value. Coercing the absent ones instead would quietly
+ * reset the typeface to the default every time someone saved a colour.
  */
 export async function saveAppearance(
   _prev: AppearanceState,
@@ -22,16 +27,24 @@ export async function saveAppearance(
   const slug = String(formData.get("slug") ?? "");
   const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
 
+  const stored = await db.project.findUniqueOrThrow({
+    where: { id: projectId },
+    select: { theme: true, lexicon: true },
+  });
+  const current = { ...coerceTheme(stored.theme), ...coerceLexicon(stored.lexicon) };
+  const field = (key: keyof typeof current) =>
+    formData.has(key) ? formData.get(key) : current[key];
+
   const theme = coerceTheme({
-    void: formData.get("void"),
-    paper: formData.get("paper"),
-    dim: formData.get("dim"),
-    font: formData.get("font"),
+    void: field("void"),
+    paper: field("paper"),
+    dim: field("dim"),
+    font: field("font"),
   });
 
   const lexicon = coerceLexicon({
-    noun: formData.get("noun"),
-    nounPlural: formData.get("nounPlural"),
+    noun: field("noun"),
+    nounPlural: field("nounPlural"),
   });
 
   if (!(theme.font in FONTS)) return { error: "Unknown typeface." };
@@ -42,7 +55,7 @@ export async function saveAppearance(
   });
 
   revalidatePath(`/projects/${slug}`);
-  revalidatePath(`/projects/${slug}/participant-frontend`);
+  revalidatePath(`/projects/${slug}/participant-frontend`, "layout");
   return { saved: true };
 }
 
@@ -67,7 +80,7 @@ export async function saveCopy(
     data: { copy: coerceCopy(raw) },
   });
 
-  revalidatePath(`/projects/${slug}/participant-frontend`);
+  revalidatePath(`/projects/${slug}/participant-frontend`, "layout");
   revalidatePath(`/e/${slug}`);
   return { saved: true };
 }

@@ -79,6 +79,6 @@ export async function saveParameters(
   });
 
   revalidatePath(`/projects/${slug}`);
-  revalidatePath(`/projects/${slug}/parameters`);
+  revalidatePath(`/projects/${slug}/visual`);
   return { saved: { version }, warnings: warnings.length ? warnings : undefined };
 }

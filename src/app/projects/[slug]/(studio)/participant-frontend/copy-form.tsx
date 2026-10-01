@@ -7,10 +7,20 @@ import {
   type CopyKey,
   type ProjectCopy,
 } from "@/lib/theme/project-copy";
+import { useUnsavedChanges } from "../use-unsaved-changes";
 
 const GROUPS = Array.from(
   new Set(Object.values(COPY_FIELDS).map((f) => f.group)),
 );
+
+/** What a save sent, as the form holds it — the baseline unsaved edits are measured from. */
+function submitted(formData: FormData): ProjectCopy {
+  const copy = { introEnabled: formData.get("introEnabled") === "on" } as ProjectCopy;
+  for (const key of Object.keys(COPY_FIELDS) as CopyKey[]) {
+    copy[key] = String(formData.get(key) ?? "");
+  }
+  return copy;
+}
 
 /**
  * Every sentence a participant reads, as plain text. The live preview beside
@@ -27,11 +37,21 @@ export default function CopyForm({
   /** Every unsaved change, for the live preview next to the form. */
   onDraft?: (copy: ProjectCopy) => void;
 }) {
+  const [saved, setSaved] = useState<ProjectCopy>(copy);
+  const [draft, setDraftState] = useState<ProjectCopy>(copy);
   const [state, action, pending] = useActionState<AppearanceState, FormData>(
-    saveCopy,
+    async (prev, formData) => {
+      const result = await saveCopy(prev, formData);
+      if (result.saved) setSaved(submitted(formData));
+      return result;
+    },
     {},
   );
-  const [draft, setDraftState] = useState<ProjectCopy>(copy);
+
+  const dirty = (Object.keys(draft) as (keyof ProjectCopy)[]).some(
+    (key) => draft[key] !== saved[key],
+  );
+  useUnsavedChanges(dirty);
   function setDraft(update: (d: ProjectCopy) => ProjectCopy) {
     const next = update(draft);
     setDraftState(next);
@@ -114,16 +134,19 @@ export default function CopyForm({
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          disabled={pending}
-          className="text-sm text-paper underline underline-offset-4 disabled:text-dim"
+          disabled={pending || !dirty}
+          className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
         >
           {pending ? "saving…" : "save wording"}
         </button>
-        {state.saved && <p className="text-xs text-dim">saved</p>}
-        {state.error && (
+        {state.error ? (
           <p role="alert" className="text-xs text-red-400">
             {state.error}
           </p>
+        ) : dirty ? (
+          <p className="text-xs text-amber-400/80">unsaved changes</p>
+        ) : (
+          state.saved && <p className="text-xs text-dim">saved</p>
         )}
       </div>
     </form>
