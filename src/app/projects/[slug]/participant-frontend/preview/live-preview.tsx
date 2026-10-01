@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import ParticipantExperience, { type Step } from "@/app/e/[slug]/experience";
 import Shut from "@/app/e/[slug]/shut";
+import BoardView from "@/app/projects/[slug]/board/board-view";
+import type { BoardRow } from "@/lib/board";
 import type { Parameter } from "@/lib/params/types";
 import {
   coerceLexicon,
@@ -18,6 +20,19 @@ const EXPERIENCE_STEPS: readonly PreviewScreen[] = [
   "questions",
   "tune",
   "done",
+];
+
+/**
+ * Made-up runs, so the board can be judged before any real ones exist. Names
+ * are deliberately unlike any noun a tenant would pick, and one row carries a
+ * strategy note so that line's styling is visible too.
+ */
+const today = new Date().toISOString().slice(0, 10);
+const SAMPLE_ROWS: BoardRow[] = [
+  { id: "s1", rank: 1, score: 92.4, recordedAt: `${today}T14:52:00`, strategy: "we matched breathing first and let the movement follow", names: ["Tide Chorus", "Low Ember"] },
+  { id: "s2", rank: 2, score: 87.1, recordedAt: `${today}T14:31:00`, strategy: null, names: ["Night Ferry", "Paper Moon"] },
+  { id: "s3", rank: 3, score: 74.6, recordedAt: `${today}T14:10:00`, strategy: null, names: ["Quiet Static", "Salt Garden"] },
+  { id: "s4", rank: 4, score: 61.0, recordedAt: `${today}T13:48:00`, strategy: null, names: ["Glass Orchard", ""] },
 ];
 
 function toParent(message: FromPreview) {
@@ -85,8 +100,11 @@ export default function LivePreview({
     project: projectName,
   };
 
+  const board = shown === "board" || shown === "boardEmpty";
   const overlay =
-    shown === "closed"
+    board
+      ? null
+      : shown === "closed"
       ? fillCopy(copy.closedMessage, vars)
       : shown === "notReady"
         ? fillCopy(copy.notReadyMessage, vars)
@@ -123,6 +141,17 @@ export default function LivePreview({
       {overlay !== null && (
         <div className="fixed inset-0 z-10 overflow-auto">
           <Shut theme={theme} title={projectName} message={overlay} />
+        </div>
+      )}
+      {board && (
+        <div className="fixed inset-0 z-10 overflow-auto">
+          <BoardView
+            projectName={projectName}
+            theme={theme}
+            lexicon={lexicon}
+            copy={copy}
+            rows={shown === "board" ? SAMPLE_ROWS : []}
+          />
         </div>
       )}
     </>

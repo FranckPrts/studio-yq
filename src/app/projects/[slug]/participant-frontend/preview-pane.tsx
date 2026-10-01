@@ -28,6 +28,8 @@ const SCREENS: { key: PreviewScreen; label: string }[] = [
   { key: "done", label: "saved" },
   { key: "closed", label: "closed" },
   { key: "notReady", label: "not ready" },
+  { key: "board", label: "leaderboard" },
+  { key: "boardEmpty", label: "leaderboard, empty" },
 ];
 
 export default function PreviewPane({
@@ -185,7 +187,9 @@ export default function PreviewPane({
       <p className="text-[11px] leading-relaxed text-dim">
         The participant page itself, with your unsaved changes and the latest
         script. Nothing here signs anyone in or saves an avatar. The background
-        behind the avatar is drawn by the script, not by the palette.
+        behind the avatar is drawn by the script, not by the palette. The
+        leaderboard shows made-up runs; the real one is under leaderboard in
+        the project menu.
       </p>
     </section>
   );

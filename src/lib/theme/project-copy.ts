@@ -84,6 +84,24 @@ export const COPY_FIELDS = {
     default: "keep tuning",
     multiline: false,
   },
+  boardTitle: {
+    group: "leaderboard",
+    label: "heading",
+    default: "scoreboard",
+    multiline: false,
+  },
+  boardSubtitle: {
+    group: "leaderboard",
+    label: "text",
+    default: "the best run of every {noun}, across the whole experience",
+    multiline: true,
+  },
+  boardEmpty: {
+    group: "leaderboard",
+    label: "before the first score",
+    default: "no runs recorded yet — the board fills in as pairs sync up",
+    multiline: true,
+  },
   closedMessage: {
     group: "when it isn't open",
     label: "closed",

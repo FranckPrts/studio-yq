@@ -30,6 +30,11 @@ export const SECTIONS = [
     label: "live console",
     href: (slug: string) => `/projects/${slug}/console`,
   },
+  {
+    key: "board",
+    label: "leaderboard",
+    href: (slug: string) => `/projects/${slug}/board`,
+  },
 ] as const;
 
 export type SectionKey = (typeof SECTIONS)[number]["key"] | "overview";

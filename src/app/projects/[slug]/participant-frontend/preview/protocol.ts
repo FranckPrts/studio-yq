@@ -9,7 +9,9 @@ export type PreviewScreen =
   | "tune"
   | "done"
   | "closed"
-  | "notReady";
+  | "notReady"
+  | "board"
+  | "boardEmpty";
 
 /** Editor → preview. Drafts are unsaved and unvalidated; the preview coerces. */
 export type ToPreview =
