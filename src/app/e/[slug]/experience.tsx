@@ -11,7 +11,12 @@ import {
   ensureParticipant,
   spokeClient,
 } from "@/lib/spoke/browser-client";
-import { myAvatar, saveAvatar, splitValues } from "@/lib/spoke/avatars";
+import {
+  avatarName,
+  myAvatar,
+  saveAvatar,
+  splitValues,
+} from "@/lib/spoke/avatars";
 import {
   FONTS,
   themeCssVars,
@@ -83,6 +88,9 @@ export default function ParticipantExperience({
     onStepChange?.(next);
   }
   const [avatarId, setAvatarId] = useState<string | null>(null);
+  // The name as stored, so a blank answer can keep an anonymous name it was
+  // already given rather than drawing a new one on every save.
+  const [storedName, setStoredName] = useState<string | null>(null);
   const [status, setStatus] = useState<"starting" | "ready" | "error">(
     preview ? "ready" : "starting",
   );
@@ -113,6 +121,7 @@ export default function ParticipantExperience({
         if (cancelled) return;
         if (mine) {
           setAvatarId(mine.id);
+          setStoredName(mine.name);
           setValues(
             coerceAll(parameters, { ...mine.params, ...mine.answers }),
           );
@@ -155,9 +164,11 @@ export default function ParticipantExperience({
     setError(null);
     try {
       const { answers, params } = splitValues(parameters, values);
-      const name = questions[0]
-        ? String(values[questions[0].name] ?? "")
-        : projectName;
+      const name = avatarName(
+        questions[0] ? String(values[questions[0].name] ?? "") : "",
+        storedName,
+        lexicon.noun,
+      );
       const saved = await saveAvatar(
         client,
         avatarId,
@@ -165,6 +176,7 @@ export default function ParticipantExperience({
         parameters,
       );
       setAvatarId(saved.id);
+      setStoredName(saved.name);
       setStep("done");
     } catch (e) {
       setError(

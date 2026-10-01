@@ -79,7 +79,7 @@ export default function ProjectNav({
         </div>
         <div className="flex shrink-0 gap-4 text-xs">
           <Link
-            href={`/dev/sketch?project=${slug}`}
+            href={`/projects/${slug}/participant-frontend`}
             className="text-dim underline-offset-4 hover:text-paper hover:underline"
           >
             preview

@@ -66,7 +66,7 @@ export default async function ProjectsPage() {
                   settings
                 </Link>
                 <Link
-                  href={`/dev/sketch?project=${project.slug}`}
+                  href={`/projects/${project.slug}/participant-frontend`}
                   className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
                 >
                   preview

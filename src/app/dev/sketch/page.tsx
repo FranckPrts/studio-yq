@@ -1,4 +1,5 @@
 import SketchHarness from "./harness";
+import { requirePlatformAdmin } from "@/lib/auth/dal";
 import { getProject, listProjects } from "@/lib/projects/get-project";
 
 /**
@@ -11,6 +12,10 @@ import { getProject, listProjects } from "@/lib/projects/get-project";
  *
  * Which project is active: `?project=<slug>`, else `DEV_PROJECT_SLUG`, else the
  * most recently created one.
+ *
+ * Platform admins only. It reads any project by slug and lists them all, with
+ * no membership check, so it is an admin's bench, not a tenant's — tenants
+ * preview on their project's style & language page.
  */
 
 export const dynamic = "force-dynamic";
@@ -20,6 +25,7 @@ export default async function DevSketchPage({
 }: {
   searchParams: Promise<{ project?: string }>;
 }) {
+  await requirePlatformAdmin();
   const { project: requested } = await searchParams;
   const slug = requested ?? process.env.DEV_PROJECT_SLUG;
 

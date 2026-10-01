@@ -52,6 +52,38 @@ export function normalizeAvatar(row: unknown, parameters: Parameter[]): Avatar {
   };
 }
 
+const ANON_PREFIX = "Anon-";
+
+/**
+ * The name an avatar gets when its participant gave none — no question was
+ * declared, or the answer was left blank: `Anon-fish-celv`. The noun keeps it
+ * readable on a board; the four letters keep two of them on stage apart.
+ */
+export function anonymousName(noun: string): string {
+  const word = noun.trim().toLowerCase().replace(/\s+/g, "-") || "avatar";
+  const letters = Array.from(crypto.getRandomValues(new Uint8Array(4)), (b) =>
+    String.fromCharCode(97 + (b % 26)),
+  ).join("");
+  return `${ANON_PREFIX}${word}-${letters}`;
+}
+
+/**
+ * The name to save. A blank answer on an avatar that already has an anonymous
+ * name keeps it, so re-saving doesn't rename someone mid-event; anything else
+ * blank — a new avatar, or one saved before this existed under the project's
+ * name — gets a fresh one.
+ */
+export function avatarName(
+  answer: string,
+  storedName: string | null,
+  noun: string,
+): string {
+  const typed = answer.trim();
+  if (typed) return typed;
+  if (storedName?.startsWith(ANON_PREFIX)) return storedName;
+  return anonymousName(noun);
+}
+
 /** Splits a value set the way the schema does: questions vs render input. */
 export function splitValues(parameters: Parameter[], values: ParamValues) {
   const answers: Record<string, string> = {};

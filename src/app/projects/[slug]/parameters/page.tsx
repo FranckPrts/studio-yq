@@ -39,7 +39,7 @@ export default async function ParametersPage({
         </div>
         <div className="flex gap-4">
           <Link
-            href={`/dev/sketch?project=${slug}`}
+            href={`/projects/${slug}/participant-frontend`}
             className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
           >
             preview
