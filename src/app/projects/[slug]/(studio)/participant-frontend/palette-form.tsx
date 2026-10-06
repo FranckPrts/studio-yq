@@ -16,12 +16,9 @@ const ROLES = ["void", "paper", "dim"] as const;
 export default function PaletteForm({
   slug,
   palette,
-  onDraft,
 }: {
   slug: string;
   palette: Palette;
-  /** Every unsaved change, for the live preview next to the form. */
-  onDraft?: (palette: Palette) => void;
 }) {
   const [saved, setSaved] = useState(palette);
   const [state, action, pending] = useActionState<AppearanceState, FormData>(
@@ -38,15 +35,13 @@ export default function PaletteForm({
     },
     {},
   );
-  const [draft, setDraftState] = useState(palette);
+  const [draft, setDraft] = useState(palette);
 
   const dirty = ROLES.some((role) => draft[role] !== saved[role]);
   useUnsavedChanges(dirty);
 
   function set(role: (typeof ROLES)[number], value: string) {
-    const next = { ...draft, [role]: value.toLowerCase() };
-    setDraftState(next);
-    onDraft?.(next);
+    setDraft((prev) => ({ ...prev, [role]: value.toLowerCase() }));
   }
 
   const swatch = (key: (typeof ROLES)[number], label: string, hint: string) => (

@@ -15,9 +15,8 @@ import type {
  * stacked one — and it is scaled down to fit its column rather than squeezed,
  * which would show neither.
  *
- * One frame, one screen. `PreviewPane` drives a single frame from tabs; the
- * live preview page lays several side by side, each fixed on its own screen.
- * Messages are matched on `event.source`, so any number can share a page.
+ * One frame, one screen; `PreviewPane` chooses which from its tabs. Messages
+ * are matched on `event.source`, so the frame never reads another window's.
  */
 
 export const DEVICES = {
@@ -37,7 +36,6 @@ export default function PreviewFrame({
   device,
   onReady,
   onScreen,
-  lazy = false,
 }: {
   slug: string;
   theme: ProjectTheme;
@@ -48,8 +46,6 @@ export default function PreviewFrame({
   onReady?: (info: FrameInfo) => void;
   /** The participant moved to another screen by clicking inside the frame. */
   onScreen?: (screen: PreviewScreen) => void;
-  /** Defer loading until scrolled near — for pages showing many frames. */
-  lazy?: boolean;
 }) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -125,7 +121,6 @@ export default function PreviewFrame({
           ref={frameRef}
           src={`/projects/${slug}/preview-frame`}
           title="Participant page preview"
-          loading={lazy ? "lazy" : undefined}
           style={{
             width: size.width,
             height: size.height,

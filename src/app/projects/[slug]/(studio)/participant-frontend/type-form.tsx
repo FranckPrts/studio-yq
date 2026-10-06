@@ -18,13 +18,10 @@ export default function TypeForm({
   slug,
   font,
   lexicon,
-  onDraft,
 }: {
   slug: string;
   font: FontKey;
   lexicon: ProjectLexicon;
-  /** Every unsaved change, for the live preview next to the form. */
-  onDraft?: (font: FontKey, lexicon: ProjectLexicon) => void;
 }) {
   const [saved, setSaved] = useState({ font, ...lexicon });
   const [state, action, pending] = useActionState<AppearanceState, FormData>(
@@ -50,14 +47,8 @@ export default function TypeForm({
     words.nounPlural !== saved.nounPlural;
   useUnsavedChanges(dirty);
 
-  function setFont(next: FontKey) {
-    setDraftFont(next);
-    onDraft?.(next, words);
-  }
   function setWords(update: Partial<ProjectLexicon>) {
-    const next = { ...words, ...update };
-    setWordsState(next);
-    onDraft?.(draftFont, next);
+    setWordsState((prev) => ({ ...prev, ...update }));
   }
 
   return (
@@ -69,7 +60,7 @@ export default function TypeForm({
         <select
           name="font"
           value={draftFont}
-          onChange={(e) => setFont(e.target.value as FontKey)}
+          onChange={(e) => setDraftFont(e.target.value as FontKey)}
           className="term-input max-w-xs border-b border-paper/20 bg-void"
         >
           {Object.entries(FONTS).map(([key, f]) => (

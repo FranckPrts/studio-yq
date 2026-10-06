@@ -23,22 +23,19 @@ function submitted(formData: FormData): ProjectCopy {
 }
 
 /**
- * Every sentence a participant reads, as plain text. The live preview beside
- * the form shows each one in place, so the placeholders are checked by reading,
+ * Every sentence a participant reads, as plain text. Save, then check each
+ * one in place on the live preview tab — placeholders are checked by reading,
  * not by guessing.
  */
 export default function CopyForm({
   slug,
   copy,
-  onDraft,
 }: {
   slug: string;
   copy: ProjectCopy;
-  /** Every unsaved change, for the live preview next to the form. */
-  onDraft?: (copy: ProjectCopy) => void;
 }) {
   const [saved, setSaved] = useState<ProjectCopy>(copy);
-  const [draft, setDraftState] = useState<ProjectCopy>(copy);
+  const [draft, setDraft] = useState<ProjectCopy>(copy);
   const [state, action, pending] = useActionState<AppearanceState, FormData>(
     async (prev, formData) => {
       const result = await saveCopy(prev, formData);
@@ -52,12 +49,6 @@ export default function CopyForm({
     (key) => draft[key] !== saved[key],
   );
   useUnsavedChanges(dirty);
-  function setDraft(update: (d: ProjectCopy) => ProjectCopy) {
-    const next = update(draft);
-    setDraftState(next);
-    onDraft?.(next);
-  }
-
   return (
     <form action={action} className="flex flex-col gap-8">
       <input type="hidden" name="slug" value={slug} />
