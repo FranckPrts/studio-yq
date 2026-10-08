@@ -100,14 +100,6 @@
       "default": 180
     },
     {
-      "name": "fx_glow",
-      "type": "toggle",
-      "label": "glow shader",
-      "description": "The lit water behind the school",
-      "advanced": true,
-      "default": true
-    },
-    {
       "name": "fx_grain",
       "type": "toggle",
       "label": "grain shader",

@@ -54,7 +54,7 @@ const DEFAULTS = {
   /* Unlike the star, this one is wavy out of the box — a still school reads
      as a diagram. 35 is enough to see the water without smearing the bodies. */
   wave: 35,
-  fx_glow: true,
+  fx_glow: false,
   fx_wave: true,
   fx_grain: true,
   intensity: 1,
