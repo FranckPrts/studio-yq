@@ -15,7 +15,7 @@ export default async function SignInPage({
   return (
     <main className="flex min-h-screen items-center justify-center bg-void p-6 text-paper">
       <div className="w-full max-w-sm">
-        <h1 className="mb-1 text-sm">yq-experiences</h1>
+        <h1 className="mb-1 text-sm">studio-yq</h1>
         <p className="mb-6 text-xs text-dim">
           Sign in to manage your projects.
         </p>

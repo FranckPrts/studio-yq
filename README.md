@@ -1,4 +1,4 @@
-# yq-experiences
+# studio-yq
 
 A multi-tenant companion to [YouQuantified](https://github.com/mindhiveproject/You-Quantified).
 A research team (a *tenant*) sets up a project; participants open its link, design a
@@ -22,7 +22,7 @@ that one's record lives at
 
 | Path | Who | What |
 | --- | --- | --- |
-| `/e/[slug]` | Participants, no account | The experience itself |
+| `/p/[slug]` | Participants, no account | The experience itself |
 | `/projects` | Signed-in members | Projects you belong to |
 | `/projects/[slug]` | Members, by role | Overview, style & language, script & parameters, database |
 | `/projects/[slug]/console` | Members; staging needs collaborator+ | Live avatar list, staging, latest scores |

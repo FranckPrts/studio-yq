@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ParticipantExperience, { type Step } from "@/app/e/[slug]/experience";
-import Shut from "@/app/e/[slug]/shut";
+import ParticipantExperience, { type Step } from "@/app/p/[slug]/experience";
+import Shut from "@/app/p/[slug]/shut";
 import BoardView from "@/app/projects/[slug]/board/board-view";
 import type { BoardRow } from "@/lib/board";
 import type { Parameter } from "@/lib/params/types";

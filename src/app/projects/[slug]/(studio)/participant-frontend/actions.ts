@@ -81,6 +81,6 @@ export async function saveCopy(
   });
 
   revalidatePath(`/projects/${slug}/participant-frontend`, "layout");
-  revalidatePath(`/e/${slug}`);
+  revalidatePath(`/p/${slug}`);
   return { saved: true };
 }

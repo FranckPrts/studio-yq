@@ -1,6 +1,6 @@
 # Administration
 
-How people get into yq-experiences, and how an administrator gets back in when
+How people get into studio-yq, and how an administrator gets back in when
 nobody can.
 
 ## Roles

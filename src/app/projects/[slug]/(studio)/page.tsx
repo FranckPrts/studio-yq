@@ -112,7 +112,7 @@ export default async function ProjectOverviewPage({
           open={project.openForParticipation}
           canEdit={isOwner}
           missing={readiness.missing}
-          publicUrl={`${base}/e/${project.slug}`}
+          publicUrl={`${base}/p/${project.slug}`}
         />
       </section>
 

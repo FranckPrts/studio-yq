@@ -60,7 +60,7 @@ export default async function InvitePage({
 
   const what = invitation.project
     ? `You have been invited to ${invitation.project.name} as ${invitation.role.toLowerCase()}.`
-    : "You have been invited to yq-experiences.";
+    : "You have been invited to studio-yq.";
 
   if (user) {
     const mismatch =

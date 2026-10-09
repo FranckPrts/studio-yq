@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
 import { coerceCopy } from "@/lib/theme/project-copy";
-import Shut from "@/app/e/[slug]/shut";
+import Shut from "@/app/p/[slug]/shut";
 import Board from "./board";
 
 export const dynamic = "force-dynamic";

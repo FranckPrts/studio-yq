@@ -148,7 +148,7 @@ a replacement.
 | Parameters builder | `projects/[slug]/parameters/builder.tsx` | 9 buttons, 4 selects, 3 checkboxes |
 | Members | `projects/[slug]/members-section.tsx` | 5 buttons, 2 selects |
 | Live console | `projects/[slug]/console/console.tsx` | 5 buttons |
-| Participant runtime | `e/[slug]/experience.tsx` | 5 buttons |
+| Participant runtime | `p/[slug]/experience.tsx` | 5 buttons |
 | Avatar controls | `components/AvatarControls.tsx` | 3 buttons, 1 slider, 1 switch |
 | Database | `database/{danger,provision,section}.tsx` | 8 buttons, 1 select |
 | Invitations | `admin/invitations/{page,form,admins-section}.tsx` | 4 buttons, 2 selects |

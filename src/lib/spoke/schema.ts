@@ -47,7 +47,7 @@ export const TABLES = {
  * an already-live project changes nothing.
  */
 export function provisioningSql(): string {
-  return `-- yq-experiences schema v${SCHEMA_VERSION}
+  return `-- studio-yq schema v${SCHEMA_VERSION}
 -- Safe to run more than once.
 
 create extension if not exists "pgcrypto";
@@ -211,7 +211,7 @@ export function sceneSnippet(opts: {
   projectUrl: string;
   publishableKey: string;
 }): string {
-  return `// yq-experiences · schema v${SCHEMA_VERSION}
+  return `// studio-yq · schema v${SCHEMA_VERSION}
 // Paste into your scene script in YouQuantified.
 const DB = {
   url:     "${opts.projectUrl}",

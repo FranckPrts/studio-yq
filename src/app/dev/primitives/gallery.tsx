@@ -109,7 +109,7 @@ export default function PrimitivesGallery() {
           Every component exported from <code className="text-paper/70">@/design</code>, in every
           variant. The left column is an admin page: Geist, and the palette on{" "}
           <code className="text-paper/70">:root</code>. The right column sets a project&apos;s
-          palette and typeface as CSS variables, the way <code className="text-paper/70">/e/[slug]</code>{" "}
+          palette and typeface as CSS variables, the way <code className="text-paper/70">/p/[slug]</code>{" "}
           does. If a primitive looks wrong in only one of them, it has a colour or font hardcoded.
           Press Tab to move through the page and check the focus ring.
         </p>
