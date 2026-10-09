@@ -9,6 +9,7 @@ import { projectReadiness } from "@/lib/projects/readiness";
 import { pendingInvitations } from "@/lib/auth/invitations";
 import { buttonClass } from "@/design";
 import MembersSection from "./members-section";
+import { credentialsReadable } from "@/lib/supabase/management";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,15 @@ export default async function ProjectOverviewPage({
     where: { id: access.projectId },
     include: {
       connection: {
-        select: { projectRef: true, provisionedAt: true, accessTokenEnc: true },
+        select: {
+          id: true,
+          projectRef: true,
+          provisionedAt: true,
+          accessTokenEnc: true,
+          refreshTokenEnc: true,
+          secretKeyEnc: true,
+          keyVersion: true,
+        },
       },
       scripts: {
         orderBy: { version: "desc" },
@@ -76,13 +85,16 @@ export default async function ProjectOverviewPage({
   const readiness = await projectReadiness(access.projectId);
   const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
 
+  const needsReconnect = !!connection && !credentialsReadable(connection);
   const connectionState = !connection?.accessTokenEnc
     ? "not connected"
-    : !connection.projectRef
-      ? "no target chosen"
-      : connection.provisionedAt
-        ? `${connection.projectRef} · provisioned`
-        : `${connection.projectRef} · not provisioned`;
+    : needsReconnect
+      ? "reconnect needed"
+      : !connection.projectRef
+        ? "no target chosen"
+        : connection.provisionedAt
+          ? `${connection.projectRef} · provisioned`
+          : `${connection.projectRef} · not provisioned`;
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
@@ -154,7 +166,7 @@ export default async function ProjectOverviewPage({
           href={`/projects/${slug}/database`}
           title="database"
           state={connectionState}
-          ready={!!connection?.provisionedAt}
+          ready={!!connection?.provisionedAt && !needsReconnect}
           blurb="Your Supabase project, where participants and their avatars live."
         />
       </section>

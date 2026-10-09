@@ -8,7 +8,11 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
+  // The CLI (migrate, studio) wants a direct connection: migrations take
+  // advisory locks, which a transaction-mode pooler such as Neon's cannot hold.
+  // The app itself keeps the pooled DATABASE_URL — see src/lib/db.ts. Locally
+  // there is no pooler, so the unpooled variable is simply absent.
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: process.env["DATABASE_URL_UNPOOLED"] ?? process.env["DATABASE_URL"],
   },
 });

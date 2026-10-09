@@ -1,7 +1,11 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { db } from "@/lib/db";
-import { aadFor, decryptSecret } from "@/lib/crypto/envelope";
+import {
+  aadFor,
+  decryptSecret,
+  UnreadableSecretError,
+} from "@/lib/crypto/envelope";
 import { TABLES } from "./schema";
 
 /**
@@ -23,7 +27,12 @@ export const MAX_STAGED = 2;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-async function opsClient(projectId: string): Promise<SupabaseClient> {
+/** Said to the operator mid-event, so it leads with what is *not* wrong. */
+const NEEDS_RECONNECT =
+  "This project's Supabase connection needs renewing — an owner can reconnect it on the database page. Nothing in your Supabase project is lost.";
+
+/** Null when the stored secret no longer opens — see `UnreadableSecretError`. */
+async function opsClient(projectId: string): Promise<SupabaseClient | null> {
   const connection = await db.supabaseConnection.findUnique({
     where: { projectId },
     select: {
@@ -37,11 +46,17 @@ async function opsClient(projectId: string): Promise<SupabaseClient> {
     throw new Error("This project has no database connection with a secret key.");
   }
 
-  const secret = decryptSecret(
-    connection.secretKeyEnc,
-    aadFor(connection.id, "secretKey"),
-    connection.keyVersion,
-  );
+  let secret: string;
+  try {
+    secret = decryptSecret(
+      connection.secretKeyEnc,
+      aadFor(connection.id, "secretKey"),
+      connection.keyVersion,
+    );
+  } catch (error) {
+    if (error instanceof UnreadableSecretError) return null;
+    throw error;
+  }
 
   // Built per call and never cached: holding a decrypted service key in module
   // state would outlive the request that needed it.
@@ -68,6 +83,7 @@ export async function setStaged(
 ): Promise<StageResult> {
   if (!UUID.test(avatarId)) return { ok: false, error: "Unknown avatar." };
   const client = await opsClient(projectId);
+  if (!client) return { ok: false, error: NEEDS_RECONNECT };
 
   if (staged) {
     const { count, error } = await client
@@ -93,6 +109,7 @@ export async function setStaged(
 
 export async function unstageAll(projectId: string): Promise<StageResult> {
   const client = await opsClient(projectId);
+  if (!client) return { ok: false, error: NEEDS_RECONNECT };
   const { error } = await client
     .from(TABLES.avatars)
     .update({ is_staged: false })

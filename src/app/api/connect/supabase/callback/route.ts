@@ -6,7 +6,7 @@ import { requireProjectRole } from "@/lib/auth/dal";
 import {
   CURRENT_KEY_VERSION,
 } from "@/lib/crypto/envelope";
-import { exchangeCode, storeTokens } from "@/lib/supabase/management";
+import { exchangeCode, storeGrant } from "@/lib/supabase/management";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +63,8 @@ export async function GET(request: NextRequest) {
     const tokens = await exchangeCode(code, flow.codeVerifier);
 
     // The connection may already exist — reconnecting a project replaces its
-    // authorisation without disturbing the target or the keys already resolved.
+    // authorisation and re-reads its keys without disturbing the target or the
+    // provisioning state. That is also how a lost master key is recovered.
     const existing = await db.supabaseConnection.findUnique({
       where: { projectId },
       select: { id: true },
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    await storeTokens(connectionId, tokens);
+    await storeGrant(connectionId, tokens);
     return back(flow.slug);
   } catch (error) {
     console.error("[supabase oauth] exchange failed:", error);

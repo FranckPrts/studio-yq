@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import {
   accessTokenFor,
+  credentialsReadable,
   listSupabaseProjects,
   SCOPE_PURPOSE,
   SupabaseApiError,
@@ -26,10 +27,13 @@ async function connectionView(connection: {
   provisionedAt: Date | null;
   secretKeyEnc: string | null;
   accessTokenEnc: string | null;
+  refreshTokenEnc: string | null;
+  keyVersion: number;
 } | null): Promise<ConnectionView> {
   if (!connection || !connection.accessTokenEnc) {
     return {
       connected: false,
+      broken: false,
       projectRef: null,
       provisioned: false,
       hasSecretKey: false,
@@ -43,7 +47,14 @@ async function connectionView(connection: {
     projectRef: connection.projectRef,
     provisioned: !!connection.provisionedAt,
     hasSecretKey: !!connection.secretKeyEnc,
+    broken: false,
   };
+
+  // Checked before any network call: an unreadable token would only fail
+  // further down with a message about Supabase, which is not what is wrong.
+  if (!credentialsReadable(connection)) {
+    return { ...base, broken: true, available: null, listError: null };
+  }
 
   try {
     const token = await accessTokenFor(connection.id);
@@ -171,6 +182,8 @@ export default async function DatabasePage({
           anonSignInsEnabled: true,
           secretKeyEnc: true,
           accessTokenEnc: true,
+          refreshTokenEnc: true,
+          keyVersion: true,
         },
       },
     },

@@ -2,6 +2,8 @@ import "server-only";
 import { db } from "@/lib/db";
 import {
   aadFor,
+  canDecrypt,
+  CURRENT_KEY_VERSION,
   decryptSecret,
   encryptSecret,
 } from "@/lib/crypto/envelope";
@@ -137,6 +139,95 @@ export async function storeTokens(
       tokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
     },
   });
+}
+
+/**
+ * Writes a fresh OAuth grant onto a connection and re-seals everything derived
+ * from it under the current master key.
+ *
+ * This is also the recovery path for a lost master key. A replaced
+ * `APP_MASTER_KEY` cannot open the old envelopes, so the connection reads as
+ * broken rather than empty, and an owner reconnecting lands here. The target,
+ * the provisioning state and the tenant's data are all left alone — only our
+ * sealed copies of their credentials are replaced. The secret key is fetched
+ * again rather than kept, since the old copy may be exactly what failed.
+ */
+export async function storeGrant(
+  connectionId: string,
+  tokens: TokenResponse,
+): Promise<void> {
+  const connection = await db.supabaseConnection.findUniqueOrThrow({
+    where: { id: connectionId },
+    select: { projectRef: true, secretKeyEnc: true, keyVersion: true },
+  });
+
+  let keys: ProjectKeys | null = null;
+  if (connection.projectRef) {
+    try {
+      keys = await fetchProjectKeys(connection.projectRef, tokens.access_token);
+    } catch (error) {
+      console.warn("[supabase] re-reading keys on reconnect failed:", error);
+    }
+  }
+
+  // Without fresh keys, the old secret survives only if it still opens under
+  // the version this row is about to claim. Otherwise drop it: "no secret key"
+  // is honest and fixed by choosing the project again; an unreadable one is
+  // neither.
+  const keepOldSecret =
+    !keys &&
+    !!connection.secretKeyEnc &&
+    connection.keyVersion === CURRENT_KEY_VERSION &&
+    canDecrypt(connection.secretKeyEnc, aadFor(connectionId, "secretKey"));
+
+  await db.supabaseConnection.update({
+    where: { id: connectionId },
+    data: {
+      accessTokenEnc: encryptSecret(
+        tokens.access_token,
+        aadFor(connectionId, "accessToken"),
+      ),
+      refreshTokenEnc: encryptSecret(
+        tokens.refresh_token,
+        aadFor(connectionId, "refreshToken"),
+      ),
+      tokenExpiresAt: new Date(Date.now() + tokens.expires_in * 1000),
+      keyVersion: CURRENT_KEY_VERSION,
+      ...(keys?.publishableKey ? { publishableKey: keys.publishableKey } : {}),
+      secretKeyEnc: keys
+        ? keys.secretKey
+          ? encryptSecret(keys.secretKey, aadFor(connectionId, "secretKey"))
+          : null
+        : keepOldSecret
+          ? connection.secretKeyEnc
+          : null,
+    },
+  });
+}
+
+/**
+ * Whether every credential stored on a connection still opens. False means the
+ * master key changed underneath it, and the fix is a reconnect — not a
+ * disconnect, which would also forget the target and provisioning state that
+ * are still perfectly true.
+ */
+export function credentialsReadable(connection: {
+  id: string;
+  accessTokenEnc: string | null;
+  refreshTokenEnc: string | null;
+  secretKeyEnc: string | null;
+  keyVersion: number;
+}): boolean {
+  const sealed = [
+    ["accessToken", connection.accessTokenEnc],
+    ["refreshToken", connection.refreshTokenEnc],
+    ["secretKey", connection.secretKeyEnc],
+  ] as const;
+  return sealed.every(
+    ([field, envelope]) =>
+      !envelope ||
+      canDecrypt(envelope, aadFor(connection.id, field), connection.keyVersion),
+  );
 }
 
 /**

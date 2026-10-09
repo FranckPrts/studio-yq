@@ -12,6 +12,11 @@ export type ConnectionView = {
   projectRef: string | null;
   provisioned: boolean;
   hasSecretKey: boolean;
+  /**
+   * Our stored credentials no longer open — the master key was replaced. The
+   * target and provisioning are still true; only a reconnect is needed.
+   */
+  broken: boolean;
   /** Null when the token could not be used — expired, revoked, or misconfigured. */
   available: { ref: string; name: string; region?: string }[] | null;
   listError: string | null;
@@ -82,6 +87,34 @@ export default function ConnectionSection({
           </form>
         )}
       </div>
+
+      {view.broken && (
+        <div className="flex flex-col gap-2">
+          <p className="text-xs text-red-400">
+            This connection needs renewing — its stored credentials can no
+            longer be read.
+          </p>
+          <p className="text-[11px] leading-relaxed text-dim">
+            Your Supabase project, its tables and every participant&apos;s data
+            are untouched; only this app&apos;s sealed copy of the access is
+            unusable, usually because the server&apos;s encryption key was
+            replaced. Reconnecting authorises again and re-reads the keys. The
+            target and provisioning above are kept — do not disconnect.
+          </p>
+          {canEdit ? (
+            <a
+              href={`/api/connect/supabase/start?project=${slug}`}
+              className="self-start text-sm text-paper underline underline-offset-4"
+            >
+              reconnect Supabase
+            </a>
+          ) : (
+            <p className="text-[11px] text-dim">
+              An owner of this project can reconnect it.
+            </p>
+          )}
+        </div>
+      )}
 
       {view.listError && (
         <p className="text-xs text-red-400">{view.listError}</p>

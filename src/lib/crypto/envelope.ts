@@ -29,6 +29,22 @@ const KEY_BYTES = 32; // AES-256
 export const CURRENT_KEY_VERSION = 1;
 
 /**
+ * A stored secret this process cannot open — the master key that sealed it has
+ * been replaced or lost, or the envelope was altered.
+ *
+ * Kept distinct from a *missing* key, which is misconfiguration and should stay
+ * loud. This one is recoverable: what it seals is only our copy of a tenant's
+ * credentials, never their data, so callers treat it as a broken connection the
+ * owner can reconnect, not as anything lost.
+ */
+export class UnreadableSecretError extends Error {
+  constructor() {
+    super("A stored secret cannot be decrypted with the current master key");
+    this.name = "UnreadableSecretError";
+  }
+}
+
+/**
  * Binds a ciphertext to the exact place it belongs. A secret key encrypted for
  * project A cannot be moved to project B, nor into a different column, without
  * decryption failing.
@@ -88,26 +104,50 @@ export function decryptSecret(
   aad: Buffer,
   keyVersion: number = CURRENT_KEY_VERSION,
 ): string {
+  // Resolved outside the try: an unset or malformed key is configuration, and
+  // must not be mistaken for an envelope that merely fails to open.
+  const key = keyFor(keyVersion);
+
   const parts = envelope.split(":");
   if (parts.length !== 4 || parts[0] !== FORMAT) {
-    throw new Error("Malformed envelope");
+    throw new UnreadableSecretError();
   }
 
   const [, ivB64, tagB64, ciphertextB64] = parts;
-  const decipher = createDecipheriv(
-    "aes-256-gcm",
-    keyFor(keyVersion),
-    Buffer.from(ivB64, "base64"),
-  );
-  decipher.setAAD(aad);
-  decipher.setAuthTag(Buffer.from(tagB64, "base64"));
+  try {
+    const decipher = createDecipheriv(
+      "aes-256-gcm",
+      key,
+      Buffer.from(ivB64, "base64"),
+    );
+    decipher.setAAD(aad);
+    decipher.setAuthTag(Buffer.from(tagB64, "base64"));
 
-  // Throws if the tag does not verify — i.e. if the ciphertext, the AAD or the
-  // key is wrong. A failure here is tampering or misconfiguration, never noise.
-  return Buffer.concat([
-    decipher.update(Buffer.from(ciphertextB64, "base64")),
-    decipher.final(),
-  ]).toString("utf8");
+    // Throws if the tag does not verify — i.e. if the ciphertext, the AAD or
+    // the key is wrong. A failure here is tampering or a replaced key, never
+    // noise.
+    return Buffer.concat([
+      decipher.update(Buffer.from(ciphertextB64, "base64")),
+      decipher.final(),
+    ]).toString("utf8");
+  } catch {
+    throw new UnreadableSecretError();
+  }
+}
+
+/** Whether an envelope still opens. Configuration errors still throw. */
+export function canDecrypt(
+  envelope: string,
+  aad: Buffer,
+  keyVersion: number = CURRENT_KEY_VERSION,
+): boolean {
+  try {
+    decryptSecret(envelope, aad, keyVersion);
+    return true;
+  } catch (error) {
+    if (error instanceof UnreadableSecretError) return false;
+    throw error;
+  }
 }
 
 /** Constant-time compare, for the session-token lookups Phase 1 still needs. */
