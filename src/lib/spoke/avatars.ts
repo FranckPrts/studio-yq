@@ -7,7 +7,7 @@ import { isRenderParam } from "@/lib/params/types";
 
 /**
  * Reading and writing avatars in the tenant's database — the generic descendant
- * of `src/lib/planets.ts`.
+ * of the CCN app's single-tenant `planets` module, since removed.
  *
  * Still browser-side, as before, but now under real RLS rather than
  * `using (true)`. `normalizePlanet`'s discipline carries over: nothing trusts

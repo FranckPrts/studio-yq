@@ -20,8 +20,10 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Planet Sync",
-  description: "Create and tune a shared planet system",
+  // Generic on purpose: this is every tenant's tab title unless a page names
+  // its own — participant pages carry their project's name instead.
+  title: "yq-experiences",
+  description: "Parameterizable avatars for YouQuantified experiences",
   icons: {
     icon: "/favicon.svg",
   },

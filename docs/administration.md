@@ -65,6 +65,32 @@ Use it for bootstrap and recovery only. Day to day, promote people from
 `/admin/invitations`, which keeps a person in the loop who can see who is being
 promoted.
 
+### In production
+
+Production runs on Vercel, so there is no server shell — the command runs from
+a trusted machine instead, pointed at the production database for that one
+invocation. Holding the Neon connection string is the access check.
+
+```sh
+nvm use
+DATABASE_URL='<Neon connection string>' npm run admin -- --email you@example.com --name 'Name'
+```
+
+- **Leave out `--password`.** A generated one is printed once and never lands in
+  shell history; put it straight into a password manager. There is no
+  change-password screen yet — re-running this command is how a password is
+  changed.
+- The inline `DATABASE_URL` wins over the one in `.env` (`dotenv` never
+  overwrites a variable that is already set), so the local database is not
+  touched. Copy it from the Neon console or `vercel env pull`, and do not save
+  it into `.env`.
+- Start production with a **fresh** admin. Never carry over an account created
+  for local development — its password was chosen for a laptop.
+- `APP_MASTER_KEY` is not needed for this, and production must have its own,
+  never the local one. Copying local projects into production therefore leaves
+  their Supabase connections reading as "reconnect needed"; an owner reconnects
+  each, and nothing on the Supabase side is lost.
+
 ## Related commands
 
 | Command | Does |

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
@@ -18,6 +19,20 @@ import { coerceCopy, fillCopy } from "@/lib/theme/project-copy";
  */
 
 export const dynamic = "force-dynamic";
+
+/** The tab says the project's own name — never ours, never another tenant's. */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const project = await db.project.findUnique({
+    where: { slug },
+    select: { name: true },
+  });
+  return project ? { title: project.name } : {};
+}
 
 export default async function ExperiencePage({
   params,

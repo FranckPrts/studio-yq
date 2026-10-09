@@ -1,112 +1,92 @@
-# Planet Sync (Nowadays · CCN 2026)
+# yq-experiences
 
-Companion app for [YouQuantified](https://github.com/mindhiveproject/You-Quantified): participants create and tune personal stars; those stars are staged into live sync sessions; scores come back into this app for results and wrap-up.
+A multi-tenant companion to [YouQuantified](https://github.com/mindhiveproject/You-Quantified).
+A research team (a *tenant*) sets up a project; participants open its link, design a
+parameterizable p5 avatar, and the team stages pairs of avatars into a live
+YouQuantified session, whose scores come back to a console and a leaderboard.
 
-Built by [MindHive](https://mindhive.science) for **social hours** around the [Cognitive Computational Neuroscience (CCN) 2026](https://2026.ccneuro.org) conference at NYU (August 3–6, 2026).
+It grew out of **Planet Sync**, the single-tenant app that ran at CCN 2026 —
+that one's record lives at
+[mindhiveproject/nowadays-ccn-2026](https://github.com/mindhiveproject/nowadays-ccn-2026).
 
-**Live app:**  [https://constellation.youquantified.com/](https://constellation.youquantified.com/)
-**Source:** [mindhiveproject/nowadays-ccn-2026](https://github.com/mindhiveproject/nowadays-ccn-2026)
+## Where data lives
 
-## Archival notice
+- **Ours** (Postgres, via Prisma): people, sessions, invitations, projects, each
+  project's look and wording, its p5 scripts, and an *encrypted* copy of the
+  credentials that reach the tenant's Supabase.
+- **The tenant's own Supabase**: participants, their avatars and the session
+  scores — under anonymous auth and RLS that this app provisions. No participant
+  data is ever stored here.
 
-After the CCN 2026 social-hours experience ends, **this application’s database will be archived and deactivated**. Participant stars, staging state, and session scores will no longer be writable, but will be kept live. The codebase and this README remain as a record of what ran for YouQuantified at the event.
+## Routes
 
-## Links
-
-| What | Where |
-| --- | --- |
-| [MindHive](https://mindhive.science) | Citizen-science platform behind the lab |
-| [YouQuantified](https://github.com/mindhiveproject/You-Quantified) | EEG / MoBI sync experience this app feeds |
-| [Admin UI](https://constellation.youquantified.com/admin) | Constellation Admin UI |
-| [Conclusion page](https://constellation.youquantified.com/conclusion) | Final result! |
-| [CCN 2026](https://2026.ccneuro.org) | Conference host for this deployment |
-| [About the lab (slides)](https://docs.google.com/presentation/d/1qN0DVo8qp8470tybFpexpE6f0giwSPi4s3w4CrMs618) | Linked from the participant UI |
-| [About Constellation)](https://www.figma.com/deck/W5lG6bnmaCNL7BTBiqWwTI) | Figma slide |
-
-## What it does
-
-1. **Create** — Guests name themselves, then design a star (params + live p5 preview). Rows are stored as `planets` in Supabase.
-2. **Stage** — Ops pick up to two stars (`is_staged`) for the YouQuantified session.
-3. **Score** — YouQuantified posts pair scores (and strategy metadata) to this app’s API after each IRL run.
-4. **Reflect** — Participants see their runs, a global scoreboard, and a conclusion view of the score distribution.
-
-## App endpoints
-
-Base URL: `https://constellation.youquantified.com`
-
-### Participant pages
-
-| Path | Purpose |
-| --- | --- |
-| [`/`](https://constellation.youquantified.com/) | Identity + first star, or your star list |
-| [`/new`](https://constellation.youquantified.com/new) | Create another star |
-| [`/p/[id]`](https://constellation.youquantified.com/p/) | View one star |
-| [`/p/[id]/edit`](https://constellation.youquantified.com/p/) | Tune / rename a star |
-| [`/results`](https://constellation.youquantified.com/results) | Your runs and pair scores |
-| [`/leaderboard`](https://constellation.youquantified.com/leaderboard) | Global best-run scoreboard |
-| [`/conclusion`](https://constellation.youquantified.com/conclusion) | Score distribution / wrap-up |
-
-### Admin
-
-| Path | Purpose |
-| --- | --- |
-| [`/admin`](https://constellation.youquantified.com/admin) | Password-gated monitor: edit planets, stage pairs, manage scores |
-
-### API
-
-| Method | Path | Purpose |
+| Path | Who | What |
 | --- | --- | --- |
-| `POST` | `/api/session-scores` | YouQuantified score webhook (`Bearer YQ_API_SECRET`) |
-| `POST` | `/api/admin/login` | Admin password → session cookie |
-| `GET` | `/api/admin/session` | Check admin session |
-| `GET` / `POST` | `/api/admin/session-scores` | List / create scores (admin) |
-| `PATCH` / `DELETE` | `/api/admin/session-scores/[id]` | Update / delete a score (admin) |
+| `/e/[slug]` | Participants, no account | The experience itself |
+| `/projects` | Signed-in members | Projects you belong to |
+| `/projects/[slug]` | Members, by role | Overview, style & language, script & parameters, database |
+| `/projects/[slug]/console` | Members; staging needs collaborator+ | Live avatar list, staging, latest scores |
+| `/projects/[slug]/board` | Members | The leaderboard the room sees |
+| `/admin/invitations` | Platform admins | People: invitations and administrators |
+| `/invite/[token]`, `/signin` | Invitees, members | Registration is invite-only |
 
-## Quick how-to
+Roles, invitations and administrator recovery: [docs/administration.md](docs/administration.md).
 
-### Participants
+## Stack
 
-1. Open [`/`](https://constellation.youquantified.com/) on your phone.
-2. Enter your first name (email optional).
-3. Name your star, then tune core, frequency, scatter, and colors until it feels right — save when done.
-4. Join the IRL YouQuantified sync when ops stage your star with a partner.
-5. After runs land, open [`/results`](https://constellation.youquantified.com/results) for your scores, [`/leaderboard`](https://constellation.youquantified.com/leaderboard) for the room, and [`/conclusion`](https://constellation.youquantified.com/conclusion) for the wrap-up charts.
-6. Use the same device/browser if you want your star list again (identity is keyed to an anonymous id in local storage).
+Next.js 16 (App Router, Server Actions) · React 19 · Prisma 7 with `@prisma/adapter-pg`
+· Postgres · Supabase (tenant side, OAuth + Management API) · p5 1.11.3 in a
+sandboxed iframe · argon2id passwords, database-backed sessions · AES-256-GCM for
+stored tenant credentials.
 
-### Admins
+## Local development
 
-1. Open [`/admin`](https://constellation.youquantified.com/admin) and sign in with `ADMIN_PASSWORD`.
-2. Watch new planets arrive in realtime; filter / search as needed.
-3. Pre-select or stage **up to two** stars (`is_staged`) for the next YouQuantified pair.
-4. Confirm scores as YQ posts them (or enter/edit scores manually if needed).
-5. Unstage and restage between pairs; keep the live list synced with the floor.
+Requires **Node 24** (`.nvmrc`) — Prisma 7 refuses older versions — and a local
+Postgres.
 
-### Developers
-
-1. Clone [the repo](https://github.com/mindhiveproject/nowadays-ccn-2026), copy `.env.example` → `.env.local`, and fill in values:
-
-```bash
-# .env.local
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
-# Prefer sb_secret_... from Dashboard → Settings → API Keys
-SUPABASE_SECRET_KEY=your-secret-key
-# Legacy fallback (JWT service_role) — optional during migration
-# SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-ADMIN_PASSWORD=change-me
-YQ_API_SECRET=change-me-yq-shared-secret
+```sh
+nvm use
+cp .env.example .env          # then fill it in; APP_MASTER_KEY: openssl rand -base64 32
+npm install                   # also generates the Prisma client
+npx prisma migrate dev        # creates the tables
+npm run admin -- --email you@example.com   # first administrator, password printed once
+npm run dev                   # http://localhost:3100
 ```
 
-2. Apply migrations under `supabase/migrations/` to your project.
-3. `npm install` then `npm run dev` → [http://localhost:3000](http://localhost:3000).
-4. Participant UI hits Supabase with the publishable key; YQ writes via `POST /api/session-scores` (service role + shared secret).
-5. Stack: Next.js · Supabase (Realtime) · p5.
+| Command | Does |
+| --- | --- |
+| `npm run dev` | Dev server on port 3100 |
+| `npm run build` | Generates the Prisma client, then builds |
+| `npm run admin` | Create or recover a platform administrator |
+| `npm run invite` | Create an invitation from the terminal |
+| `npm run project:create` | Create a project from the terminal |
+| `npm run visual:check` | Validate a visual's parameter declaration |
+| `npm run connection:verify` | Prove a project's stored Supabase secret decrypts |
 
-## Status
+`/dev/sketch` and `/dev/primitives` are development benches; production serves
+neither.
 
-Built and run for live YouQuantified sessions at CCN 2026 social hours. Participant flow, admin staging/monitor, and the YQ score webhook are in place. Post-event, expect the database to be archived and deactivated (see above).
+## Deployment
 
-## Thank you everyone
+Production is **Vercel + Neon** (Neon added through the Vercel Marketplace).
 
-To everyone who named a star, tuned a corona, and synced up with a stranger at CCN!
-We’re glad you showed up, stay bright!!
+- Vercel runs `npm run vercel-build`: generate the client, apply migrations, build.
+  Migrations run on **production deployments only** — previews would otherwise
+  migrate production's database. Set `MIGRATE_ON_BUILD=1` on a preview that has
+  its own Neon branch.
+- Environment variables:
+
+  | Variable | |
+  | --- | --- |
+  | `DATABASE_URL` | Neon, **pooled** — the app at runtime (set by the integration) |
+  | `DATABASE_URL_UNPOOLED` | Neon, direct — migrations (set by the integration) |
+  | `APP_MASTER_KEY` | Production's own, never the local one. Keep a copy outside Vercel |
+  | `SUPABASE_OAUTH_CLIENT_ID`, `SUPABASE_OAUTH_CLIENT_SECRET` | The Supabase OAuth app |
+  | `SUPABASE_OAUTH_REDIRECT_URI` | `https://<domain>/api/connect/supabase/callback`, registered byte for byte |
+  | `APP_BASE_URL` | `https://<domain>` — invitation links and OAuth redirects |
+
+- The first production administrator is created from a trusted machine — see
+  [docs/administration.md](docs/administration.md#in-production).
+- If `APP_MASTER_KEY` is ever lost, set a new one: every Supabase connection then
+  reads as **reconnect needed**, an owner reconnects it, and nothing in the
+  tenant's Supabase is affected.
