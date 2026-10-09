@@ -28,6 +28,7 @@ that one's record lives at
 | `/projects/[slug]/console` | Members; staging needs collaborator+ | Live avatar list, staging, latest scores |
 | `/projects/[slug]/board` | Members | The leaderboard the room sees |
 | `/admin/invitations` | Platform admins | People: invitations and administrators |
+| `/account` | Signed-in members | Change your own password |
 | `/invite/[token]`, `/signin` | Invitees, members | Registration is invite-only |
 
 Roles, invitations and administrator recovery: [docs/administration.md](docs/administration.md).

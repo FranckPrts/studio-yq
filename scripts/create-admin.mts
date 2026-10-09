@@ -10,13 +10,15 @@
  *
  * On an existing account it resets the password, grants admin, and signs that
  * user out everywhere — a password reset that leaves old sessions alive is not
- * a reset.
+ * a reset. It also lifts any sign-in lockout on the address, since this is the
+ * way back in for someone locked out on purpose.
  */
 
 import "dotenv/config";
 import { randomBytes } from "node:crypto";
 import { db } from "../src/lib/db.ts";
 import { hashPassword, passwordProblem } from "../src/lib/auth/password.ts";
+import { accountKey, clearFailures } from "../src/lib/auth/throttle.ts";
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -60,6 +62,7 @@ async function main() {
 
   // Any session issued against the old password must not survive it.
   const { count } = await db.session.deleteMany({ where: { userId: user.id } });
+  await clearFailures(accountKey(email));
 
   console.log(`\n  ${existing ? "Updated" : "Created"} platform admin`);
   console.log(`    email     ${user.email}`);

@@ -36,9 +36,20 @@ export async function verifyPassword(
   }
 }
 
-/** Minimum viable policy. Length is the part that actually matters. */
+/**
+ * Minimum viable policy. Length is the part that actually matters, and 12 is
+ * the floor for accounts that can reach tenants' databases.
+ *
+ * Applied only when a password is *set* — sign-in never checks it — so an
+ * account made under an older, shorter floor keeps working until its owner
+ * next changes it.
+ */
+export const MIN_PASSWORD_LENGTH = 12;
+
 export function passwordProblem(password: string): string | null {
-  if (password.length < 9) return "Use at least 9 characters.";
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return `Use at least ${MIN_PASSWORD_LENGTH} characters.`;
+  }
   if (password.length > 200) return "That is longer than 200 characters.";
   return null;
 }

@@ -27,6 +27,12 @@ export default async function ProjectsPage() {
               invitations
             </Link>
           )}
+          <Link
+            href="/account"
+            className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+          >
+            account
+          </Link>
           <form action={signOut}>
             <button
               type="submit"

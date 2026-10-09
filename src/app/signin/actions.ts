@@ -5,6 +5,14 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSession, destroySession } from "@/lib/auth/session";
+import {
+  accountKey,
+  checkThrottle,
+  clearFailures,
+  recordFailure,
+  throttledMessage,
+  throttleKeys,
+} from "@/lib/auth/throttle";
 
 export type SignInState = { error?: string };
 
@@ -25,6 +33,12 @@ export async function signIn(
     return { error: "Enter your email and password." };
   }
 
+  // Before any lookup, and keyed on the address as typed: an address nobody
+  // holds locks exactly like a real one, so the lock reveals nothing.
+  const keys = await throttleKeys(email);
+  const throttle = await checkThrottle(keys);
+  if (throttle.blocked) return { error: throttledMessage(throttle) };
+
   const user = await db.user.findUnique({
     where: { email },
     select: { id: true, passwordHash: true },
@@ -40,8 +54,10 @@ export async function signIn(
       );
 
   if (!user || !ok) {
+    await recordFailure(keys);
     return { error: "That email and password do not match." };
   }
+  await clearFailures(accountKey(email));
 
   const userAgent = (await headers()).get("user-agent");
   await createSession(user.id, userAgent);

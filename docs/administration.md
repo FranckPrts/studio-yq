@@ -55,7 +55,11 @@ npm run admin -- --email someone@example.com --password 'a-long-password' --name
 - If it exists, its password is reset and it is made an administrator.
 - Either way, **every session that account already has is signed out** — a
   password reset that leaves old sessions alive is not a reset.
+- It also **lifts a sign-in lockout** on that address (see below).
 - Omit `--password` to have one generated and printed once.
+- Anyone who still knows their password changes it themselves at `/account`,
+  which signs out their other devices. This command is for when they do not —
+  there is no reset by email.
 
 It needs shell access to the server and the database connection in `.env`. That
 requirement is the security model: it is deliberately not reachable from the
@@ -77,9 +81,8 @@ DATABASE_URL='<Neon connection string>' npm run admin -- --email you@example.com
 ```
 
 - **Leave out `--password`.** A generated one is printed once and never lands in
-  shell history; put it straight into a password manager. There is no
-  change-password screen yet — re-running this command is how a password is
-  changed.
+  shell history; put it straight into a password manager, or sign in and change
+  it at `/account`.
 - The inline `DATABASE_URL` wins over the one in `.env` (`dotenv` never
   overwrites a variable that is already set), so the local database is not
   touched. Copy it from the Neon console or `vercel env pull`, and do not save
@@ -90,6 +93,22 @@ DATABASE_URL='<Neon connection string>' npm run admin -- --email you@example.com
   never the local one. Copying local projects into production therefore leaves
   their Supabase connections reading as "reconnect needed"; an owner reconnects
   each, and nothing on the Supabase side is lost.
+
+## Passwords and lockouts
+
+- Passwords are at least **12 characters**. The rule applies when a password is
+  set — at invitation, at `/account`, or by `npm run admin` — so an older,
+  shorter one keeps working until its owner changes it.
+- **10 wrong passwords for one address in 15 minutes** lock that address, for
+  sign-in and for `/account` alike, until the oldest of them is 15 minutes old.
+  The same happens for an address nobody holds, so a lockout says nothing about
+  whether an account exists.
+- **30 wrong passwords from one network in 15 minutes** lock that network. It
+  is set high because a team at one venue shares an address; participants never
+  sign in here, so they never count.
+- Someone can lock another person out on purpose by guessing wrong in their
+  name. It lasts at most 15 minutes, and `npm run admin` on the address lifts
+  it at once.
 
 ## Related commands
 

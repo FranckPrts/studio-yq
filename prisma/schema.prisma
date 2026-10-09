@@ -112,6 +112,26 @@ model Session {
   @@map("sessions")
 }
 
+/// One row per wrong password, so guessing can be throttled across every
+/// server instance — on Vercel, memory is not shared and a counter there would
+/// reset with each cold start.
+///
+/// Deliberately not related to `User`: an attempt against an address nobody
+/// holds must be throttled exactly like one against a real account, or the
+/// lockout itself would reveal which addresses exist. For the same reason, and
+/// because IP addresses are personal data, only a hash of the subject is kept.
+/// Rows older than the window are pruned as new ones arrive.
+model AuthFailure {
+  id          String   @id @default(cuid())
+  /// SHA-256 of "<scope>:<value>" — "account:a@example.com" or "ip:203.0.113.4".
+  subjectHash String
+  createdAt   DateTime @default(now())
+
+  @@index([subjectHash, createdAt])
+  @@index([createdAt])
+  @@map("auth_failures")
+}
+
 // ─── Tenancy ────────────────────────────────────────────────────────────────
 
 enum Role {

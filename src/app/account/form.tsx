@@ -1,51 +1,40 @@
 "use client";
 
 import { useActionState } from "react";
-import { acceptInvitation, type AcceptState } from "./actions";
+import { changeOwnPassword, type PasswordState } from "./actions";
 
-export default function AcceptForm({
-  token,
-  lockedEmail,
-}: {
-  token: string;
-  lockedEmail: string | null;
-}) {
-  const [state, action, pending] = useActionState<AcceptState, FormData>(
-    acceptInvitation,
+export default function PasswordForm({ email }: { email: string }) {
+  const [state, action, pending] = useActionState<PasswordState, FormData>(
+    changeOwnPassword,
     {},
   );
 
   return (
     <form action={action} className="flex flex-col gap-4">
-      <input type="hidden" name="token" value={token} />
+      {/* Lets a password manager file the new password under the right
+          account; never read by the action. */}
+      <input
+        type="email"
+        name="username"
+        autoComplete="username"
+        value={email}
+        readOnly
+        hidden
+      />
 
       <label className="flex flex-col gap-1">
-        <span className="text-xs text-dim">email</span>
+        <span className="text-xs text-dim">current password</span>
         <input
-          name="email"
-          type="email"
-          autoComplete="username"
+          name="current"
+          type="password"
+          autoComplete="current-password"
           required
-          defaultValue={lockedEmail ?? ""}
-          readOnly={!!lockedEmail}
-          className={`term-input border-b border-paper/20 ${
-            lockedEmail ? "text-dim" : ""
-          }`}
-        />
-      </label>
-
-      <label className="flex flex-col gap-1">
-        <span className="text-xs text-dim">name (optional)</span>
-        <input
-          name="displayName"
-          type="text"
-          autoComplete="name"
           className="term-input border-b border-paper/20"
         />
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-xs text-dim">password</span>
+        <span className="text-xs text-dim">new password</span>
         <input
           name="password"
           type="password"
@@ -57,7 +46,7 @@ export default function AcceptForm({
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="text-xs text-dim">confirm password</span>
+        <span className="text-xs text-dim">confirm new password</span>
         <input
           name="confirm"
           type="password"
@@ -73,13 +62,18 @@ export default function AcceptForm({
           {state.error}
         </p>
       )}
+      {state.done && (
+        <p role="status" className="text-xs text-dim">
+          {state.done}
+        </p>
+      )}
 
       <button
         type="submit"
         disabled={pending}
         className="mt-2 self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
       >
-        {pending ? "creating…" : "create account"}
+        {pending ? "changing…" : "change password"}
       </button>
     </form>
   );

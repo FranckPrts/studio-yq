@@ -116,6 +116,15 @@ export async function destroySession(): Promise<void> {
   jar.delete(SESSION_COOKIE);
 }
 
+/**
+ * The stored hash of the session making this request, or null. Lets a caller
+ * say "every session but this one" without the raw token leaving this module.
+ */
+export async function currentSessionTokenHash(): Promise<string | null> {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  return token ? hashToken(token) : null;
+}
+
 /** Signs a user out of every device — used when a password changes. */
 export async function destroyAllSessions(userId: string): Promise<void> {
   await db.session.deleteMany({ where: { userId } });
