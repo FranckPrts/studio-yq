@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
  * The room, while an event is running: who has made an avatar, which two are
  * on stage, and the scores coming back from the scene.
  *
- * Viewers may watch. Staging needs a collaborator or owner.
+ * Viewers may watch. Staging, and correcting or deleting a session, need a
+ * collaborator or owner.
  */
 export default async function ConsolePage({
   params,
@@ -75,7 +76,7 @@ export default async function ConsolePage({
           code={script?.code ?? null}
           scriptVersion={script?.version ?? null}
           lexicon={coerceLexicon(project.lexicon)}
-          canStage={access.role === "OWNER" || access.role === "COLLABORATOR"}
+          canOperate={access.role === "OWNER" || access.role === "COLLABORATOR"}
         />
       ) : (
         <p className="text-xs text-dim">

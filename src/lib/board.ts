@@ -70,6 +70,12 @@ export function buildBoard(
   return rows;
 }
 
+/**
+ * A few sentences, typed by the experimenter after a run. Enforced when a
+ * session is edited, so a strategy always sits on the board without swamping it.
+ */
+export const MAX_STRATEGY_LENGTH = 500;
+
 /** One decimal is all the board needs. */
 export function formatScore(score: number): string {
   return Number.isFinite(score) ? score.toFixed(1) : "--";

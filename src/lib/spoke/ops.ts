@@ -19,7 +19,9 @@ import { TABLES } from "./schema";
  *
  * Staging is different. It changes what the scene puts on stage, so it is
  * authorised against project membership first, and made with the secret key,
- * which never leaves this module.
+ * which never leaves this module. So is correcting a session afterwards: the
+ * provisioned schema gives the publishable key no update or delete on scores
+ * at all, deliberately, so only this path can change one.
  */
 
 /** The scene renders a pair, and takes the first two staged by `updated_at`. */
@@ -65,7 +67,7 @@ async function opsClient(projectId: string): Promise<SupabaseClient | null> {
   });
 }
 
-export type StageResult = { ok: true } | { ok: false; error: string };
+export type OpsResult = { ok: true } | { ok: false; error: string };
 
 /**
  * Stages or un-stages one avatar.
@@ -80,7 +82,7 @@ export async function setStaged(
   projectId: string,
   avatarId: string,
   staged: boolean,
-): Promise<StageResult> {
+): Promise<OpsResult> {
   if (!UUID.test(avatarId)) return { ok: false, error: "Unknown avatar." };
   const client = await opsClient(projectId);
   if (!client) return { ok: false, error: NEEDS_RECONNECT };
@@ -107,7 +109,7 @@ export async function setStaged(
   return error ? { ok: false, error: error.message } : { ok: true };
 }
 
-export async function unstageAll(projectId: string): Promise<StageResult> {
+export async function unstageAll(projectId: string): Promise<OpsResult> {
   const client = await opsClient(projectId);
   if (!client) return { ok: false, error: NEEDS_RECONNECT };
   const { error } = await client
@@ -115,4 +117,51 @@ export async function unstageAll(projectId: string): Promise<StageResult> {
     .update({ is_staged: false })
     .eq("is_staged", true);
   return error ? { ok: false, error: error.message } : { ok: true };
+}
+
+/** What the experimenter may correct on a session the scene recorded. */
+export type ScoreEdit = {
+  strategy: string | null;
+  score: number;
+  duration: number | null;
+};
+
+/** Gone already is not the operator's mistake, so it says what happened. */
+const SCORE_GONE = "That session is no longer there — someone may have deleted it.";
+
+export async function updateScore(
+  projectId: string,
+  scoreId: string,
+  edit: ScoreEdit,
+): Promise<OpsResult> {
+  if (!UUID.test(scoreId)) return { ok: false, error: "Unknown session." };
+  const client = await opsClient(projectId);
+  if (!client) return { ok: false, error: NEEDS_RECONNECT };
+
+  // `select` so that an update matching no row reads as an error rather than
+  // a silent success.
+  const { data, error } = await client
+    .from(TABLES.scores)
+    .update(edit)
+    .eq("id", scoreId)
+    .select("id");
+  if (error) return { ok: false, error: error.message };
+  return data?.length ? { ok: true } : { ok: false, error: SCORE_GONE };
+}
+
+export async function deleteScore(
+  projectId: string,
+  scoreId: string,
+): Promise<OpsResult> {
+  if (!UUID.test(scoreId)) return { ok: false, error: "Unknown session." };
+  const client = await opsClient(projectId);
+  if (!client) return { ok: false, error: NEEDS_RECONNECT };
+
+  const { data, error } = await client
+    .from(TABLES.scores)
+    .delete()
+    .eq("id", scoreId)
+    .select("id");
+  if (error) return { ok: false, error: error.message };
+  return data?.length ? { ok: true } : { ok: false, error: SCORE_GONE };
 }
