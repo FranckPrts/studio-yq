@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ParticipantExperience, { type Step } from "@/app/p/[slug]/experience";
 import Shut from "@/app/p/[slug]/shut";
 import BoardView from "@/app/projects/[slug]/board/board-view";
-import type { BoardRow } from "@/lib/board";
+import type { BoardRow, BoardRun } from "@/lib/board";
 import type { Parameter } from "@/lib/params/types";
 import type { EmailQuestion } from "@/lib/projects/participant-details";
 import {
@@ -34,6 +34,18 @@ const SAMPLE_ROWS: BoardRow[] = [
   { id: "s2", rank: 2, score: 87.1, recordedAt: `${today}T14:31:00`, strategy: null, names: ["Night Ferry", "Paper Moon"] },
   { id: "s3", rank: 3, score: 74.6, recordedAt: `${today}T14:10:00`, strategy: null, names: ["Quiet Static", "Salt Garden"] },
   { id: "s4", rank: 4, score: 61.0, recordedAt: `${today}T13:48:00`, strategy: null, names: ["Glass Orchard", ""] },
+];
+
+/**
+ * The board's runs plus the ones that didn't place, so the histogram has a
+ * shape. The latest lands mid-field, where the dotted line is easiest to judge.
+ */
+const SAMPLE_RUNS: BoardRun[] = [
+  ...SAMPLE_ROWS.map((r) => ({ score: r.score, recordedAt: r.recordedAt })),
+  ...[8, 14, 19, 22, 26, 29, 31, 33, 35, 37, 38, 40, 41, 43, 44, 46, 48, 50, 51, 53, 56, 58, 65, 69, 78].map(
+    (score, i) => ({ score, recordedAt: `${today}T13:${String(i).padStart(2, "0")}:00` }),
+  ),
+  { score: 47.3, recordedAt: `${today}T14:58:00` },
 ];
 
 function toParent(message: FromPreview) {
@@ -157,6 +169,7 @@ export default function LivePreview({
             lexicon={lexicon}
             copy={copy}
             rows={shown === "board" ? SAMPLE_ROWS : []}
+            runs={shown === "board" ? SAMPLE_RUNS : []}
           />
         </div>
       )}

@@ -1,6 +1,7 @@
 /**
- * The leaderboard's ranking, ported from the CCN scoreboard onto `avatars` and
- * `session_scores`. Pure, so the page stays a thin reader.
+ * The leaderboard's ranking and its score histogram, ported from the CCN
+ * scoreboard onto `avatars` and `session_scores`. Pure, so the page stays a
+ * thin reader.
  */
 
 export type BoardScore = {
@@ -68,6 +69,70 @@ export function buildBoard(
   }
 
   return rows;
+}
+
+/** One run as the histogram needs it: where it landed, and when. */
+export type BoardRun = { score: number; recordedAt: string };
+
+export type ScoreBin = { start: number; end: number; count: number };
+
+export type ScoreScale = {
+  min: number;
+  max: number;
+  binWidth: number;
+  tickStep: number;
+};
+
+/**
+ * The histogram's axis: 0–100 in bins of 4, as the CCN plate drew it, widened
+ * in steps of 20 to take whatever the scene actually scored — runs above 100
+ * do happen. Past a span of 200, bins and ticks widen together, so the plate
+ * never holds more than 50 bars or 11 labels.
+ */
+export function scoreScale(scores: readonly number[]): ScoreScale {
+  const finite = scores.filter(Number.isFinite);
+  const min = Math.min(0, Math.floor(Math.min(...finite) / 20) * 20);
+  const max = Math.max(100, Math.ceil(Math.max(...finite) / 20) * 20);
+  const k = Math.ceil((max - min) / 200);
+  return { min, max, binWidth: 4 * k, tickStep: 20 * k };
+}
+
+/**
+ * Counts scores into equal-width bins across [min, max], as the CCN conclusion
+ * plate did. A score off the scale is clamped into the end bin rather than
+ * dropped, so the plate always accounts for every run.
+ */
+export function buildBins(
+  scores: readonly number[],
+  min: number,
+  max: number,
+  binWidth: number,
+): ScoreBin[] {
+  const binCount = Math.max(1, Math.round((max - min) / binWidth));
+  const bins: ScoreBin[] = Array.from({ length: binCount }, (_, i) => ({
+    start: min + i * binWidth,
+    end: min + (i + 1) * binWidth,
+    count: 0,
+  }));
+
+  for (const score of scores) {
+    if (!Number.isFinite(score)) continue;
+    const idx = Math.floor((score - min) / binWidth);
+    bins[Math.min(binCount - 1, Math.max(0, idx))].count += 1;
+  }
+
+  return bins;
+}
+
+/** The most recently recorded run; null when there are none. */
+export function latestRun(runs: readonly BoardRun[]): BoardRun | null {
+  let latest: BoardRun | null = null;
+  for (const run of runs) {
+    if (!latest || Date.parse(run.recordedAt) > Date.parse(latest.recordedAt)) {
+      latest = run;
+    }
+  }
+  return latest;
 }
 
 /**
