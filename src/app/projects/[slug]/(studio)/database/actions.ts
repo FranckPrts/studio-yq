@@ -279,6 +279,11 @@ async function guardDestructive(
   };
 }
 
+/** ", and 3 email address(es)" — nothing at all for a database without the table. */
+function emailCount(rows: number | null): string {
+  return rows === null ? "" : ` and ${rows} email address(es)`;
+}
+
 /** Empties the tables, leaving the schema in place. Participant data is gone. */
 export async function wipeData(
   _prev: DestructiveState,
@@ -290,11 +295,15 @@ export async function wipeData(
   try {
     const token = await accessTokenFor(guard.connection.id);
     const before = await inspectSpoke(guard.connection.projectRef, token);
-    await runQuery(guard.connection.projectRef, token, wipeDataSql());
+    await runQuery(
+      guard.connection.projectRef,
+      token,
+      wipeDataSql(before.contacts.exists),
+    );
 
     revalidatePath(`/projects/${guard.slug}/database`);
     return {
-      done: `Deleted ${before.avatars.rows ?? 0} avatar(s) and ${before.scores.rows ?? 0} score(s). The tables and policies are still in place.`,
+      done: `Deleted ${before.avatars.rows ?? 0} avatar(s), ${before.scores.rows ?? 0} score(s)${emailCount(before.contacts.rows)}. The tables and policies are still in place.`,
     };
   } catch (error) {
     console.warn("[spoke] wipe data failed:", error);
@@ -325,7 +334,7 @@ export async function wipeSchema(
     revalidatePath(`/projects/${guard.slug}/database`);
     revalidatePath(`/projects/${guard.slug}`);
     return {
-      done: `Dropped both tables, along with ${before.avatars.rows ?? 0} avatar(s) and ${before.scores.rows ?? 0} score(s). Provision again to start over.`,
+      done: `Dropped the tables, along with ${before.avatars.rows ?? 0} avatar(s), ${before.scores.rows ?? 0} score(s)${emailCount(before.contacts.rows)}. Provision again to start over.`,
     };
   } catch (error) {
     console.warn("[spoke] wipe schema failed:", error);

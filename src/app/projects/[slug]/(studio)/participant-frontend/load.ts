@@ -2,6 +2,10 @@ import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
 import { coerceCopy } from "@/lib/theme/project-copy";
+import {
+  askedEmail,
+  coerceParticipantDetails,
+} from "@/lib/projects/participant-details";
 
 /** What every style & language page starts from: the saved look and words. */
 export async function loadFrontend(slug: string) {
@@ -13,6 +17,8 @@ export async function loadFrontend(slug: string) {
       theme: true,
       lexicon: true,
       copy: true,
+      participantDetails: true,
+      connection: { select: { schemaVersion: true } },
       scripts: {
         orderBy: { version: "desc" },
         take: 1,
@@ -28,7 +34,12 @@ export async function loadFrontend(slug: string) {
     lexicon: coerceLexicon(project.lexicon),
     copy: coerceCopy(project.copy),
     /** Whether the participant gets a questions screen at all. */
-    hasQuestions: parameters.some((p) => p.type === "text"),
+    hasQuestions:
+      parameters.some((p) => p.type === "text") ||
+      !!askedEmail(
+        coerceParticipantDetails(project.participantDetails),
+        project.connection?.schemaVersion,
+      ),
     canEdit: access.role === "OWNER" || access.role === "COLLABORATOR",
   };
 }

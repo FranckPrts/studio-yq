@@ -41,6 +41,12 @@ export const COPY_FIELDS = {
     default: "finding your {noun}…",
     multiline: false,
   },
+  optionalMarker: {
+    group: "making it",
+    label: "after an optional question",
+    default: "(optional)",
+    multiline: false,
+  },
   nextButton: {
     group: "making it",
     label: "after the questions",

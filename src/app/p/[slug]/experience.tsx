@@ -17,6 +17,13 @@ import {
   saveAvatar,
   splitValues,
 } from "@/lib/spoke/avatars";
+import { myEmail, normalizeEmail, saveEmail } from "@/lib/spoke/contacts";
+import {
+  emailLabel,
+  isPlausibleEmail,
+  MAX_EMAIL_LENGTH,
+  type EmailQuestion,
+} from "@/lib/projects/participant-details";
 import {
   FONTS,
   themeCssVars,
@@ -45,6 +52,7 @@ export default function ParticipantExperience({
   scriptVersion,
   parameters,
   copy,
+  email = null,
   preview = false,
   step: stepProp,
   onStepChange,
@@ -58,6 +66,12 @@ export default function ParticipantExperience({
   scriptVersion: number;
   parameters: Parameter[];
   copy: ProjectCopy;
+  /**
+   * The email question, when the project asks one and the tenant's database
+   * can store the answer. Kept out of `values` entirely: an address is about
+   * the person, so it must never reach `answers`, `{name}` or the sketch.
+   */
+  email?: EmailQuestion | null;
   /**
    * The participant-frontend preview: the same page, with no anonymous sign-in
    * and a save that writes nothing, so a tenant can walk through it without
@@ -76,7 +90,9 @@ export default function ParticipantExperience({
   const [values, setValues] = useState<ParamValues>(() =>
     coerceAll(parameters, defaults(parameters)),
   );
-  const firstStep: Step = questions.length > 0 ? "questions" : "tune";
+  const hasQuestions = questions.length > 0 || !!email;
+  const asksEmail = !!email;
+  const firstStep: Step = hasQuestions ? "questions" : "tune";
   // Returning participants skip the welcome: the effect below moves them
   // straight to tuning once their avatar is found.
   const [ownStep, setOwnStep] = useState<Step>(
@@ -96,7 +112,9 @@ export default function ParticipantExperience({
   );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [emailValue, setEmailValue] = useState("");
   const clientRef = useRef<SupabaseClient | null>(null);
+  const userIdRef = useRef<string | null>(null);
 
   // Sign in anonymously, then adopt any avatar this identity already made — so
   // returning to the experience continues rather than starts again.
@@ -115,6 +133,7 @@ export default function ParticipantExperience({
         setStatus("error");
         return;
       }
+      userIdRef.current = session.userId;
 
       try {
         const mine = await myAvatar(client, session.userId, parameters);
@@ -130,6 +149,14 @@ export default function ParticipantExperience({
       } catch {
         // A read failure is not fatal — they can still make a new one.
       }
+      if (asksEmail) {
+        try {
+          const stored = await myEmail(client, session.userId);
+          if (!cancelled && stored) setEmailValue(stored);
+        } catch {
+          // Nor is this: they can type it again.
+        }
+      }
       if (!cancelled) setStatus("ready");
     }
 
@@ -139,7 +166,7 @@ export default function ParticipantExperience({
     };
     // `setStep` is recreated each render but only ever sets state and reports.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preview, supabaseUrl, publishableKey, parameters]);
+  }, [preview, supabaseUrl, publishableKey, parameters, asksEmail]);
 
   const sketchParams = useMemo(
     () => renderValues(parameters, values),
@@ -150,7 +177,23 @@ export default function ParticipantExperience({
     setValues((prev) => ({ ...prev, [name]: value }));
   }
 
+  /**
+   * Whether the email field would pass the questions form. A returning
+   * participant skips that form, so a project that started requiring an address
+   * after they first saved would otherwise never ask them for it.
+   */
+  function emailSettled(): boolean {
+    if (!email) return true;
+    const typed = normalizeEmail(emailValue);
+    return typed ? isPlausibleEmail(typed) : !email.required;
+  }
+
   async function save() {
+    if (!emailSettled()) {
+      // Back to the field, where the browser's own validation explains it.
+      setStep("questions");
+      return;
+    }
     if (preview) {
       // Walk on as if it saved; the id only switches the button to "save
       // changes", exactly as a real first save would.
@@ -177,6 +220,19 @@ export default function ParticipantExperience({
       );
       setAvatarId(saved.id);
       setStoredName(saved.name);
+
+      if (email && userIdRef.current) {
+        try {
+          await saveEmail(client, userIdRef.current, emailValue);
+        } catch {
+          // The avatar is safe; only the address needs another go, and saving
+          // again retries exactly that.
+          setError(
+            `Your ${lexicon.noun} is saved, but your email address couldn’t be. Try saving once more.`,
+          );
+          return;
+        }
+      }
       setStep("done");
     } catch (e) {
       setError(
@@ -292,6 +348,29 @@ export default function ParticipantExperience({
                 />
               </label>
             ))}
+            {email && (
+              <label className="flex flex-col gap-2">
+                <span className="text-sm">
+                  {emailLabel(email, t("optionalMarker"))}
+                </span>
+                {/* `type="email"` and `required` make the browser hold the
+                    form until the address is plausible — no message of ours
+                    to translate, and the right keyboard on a phone. */}
+                <input
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  className="term-input border-b"
+                  style={{ borderColor: `${theme.dim}55` }}
+                  value={emailValue}
+                  placeholder={email.placeholder}
+                  maxLength={MAX_EMAIL_LENGTH}
+                  required={email.required}
+                  onChange={(e) => setEmailValue(e.target.value)}
+                  autoFocus={questions.length === 0}
+                />
+              </label>
+            )}
             <button
               type="submit"
               className="self-start text-sm underline underline-offset-4"
@@ -323,7 +402,7 @@ export default function ParticipantExperience({
               >
                 {saving ? "saving…" : avatarId ? t("saveChangesButton") : t("saveButton")}
               </button>
-              {questions.length > 0 && (
+              {hasQuestions && (
                 <button
                   type="button"
                   onClick={() => setStep("questions")}

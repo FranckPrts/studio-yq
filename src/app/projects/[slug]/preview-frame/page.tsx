@@ -2,6 +2,10 @@ import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
 import { coerceCopy } from "@/lib/theme/project-copy";
+import {
+  askedEmail,
+  coerceParticipantDetails,
+} from "@/lib/projects/participant-details";
 import { validateParameters } from "@/lib/params/validate";
 import type { Parameter } from "@/lib/params/types";
 import LivePreview from "./live-preview";
@@ -30,6 +34,8 @@ export default async function ParticipantPreviewPage({
       theme: true,
       lexicon: true,
       copy: true,
+      participantDetails: true,
+      connection: { select: { schemaVersion: true } },
       scripts: {
         orderBy: { version: "desc" },
         take: 1,
@@ -55,6 +61,10 @@ export default async function ParticipantPreviewPage({
         theme={coerceTheme(project.theme)}
         lexicon={coerceLexicon(project.lexicon)}
         copy={coerceCopy(project.copy)}
+        email={askedEmail(
+          coerceParticipantDetails(project.participantDetails),
+          project.connection?.schemaVersion,
+        )}
         script={
           usable
             ? { code: script.code, version: script.version, parameters }

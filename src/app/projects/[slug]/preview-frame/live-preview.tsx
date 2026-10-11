@@ -6,6 +6,7 @@ import Shut from "@/app/p/[slug]/shut";
 import BoardView from "@/app/projects/[slug]/board/board-view";
 import type { BoardRow } from "@/lib/board";
 import type { Parameter } from "@/lib/params/types";
+import type { EmailQuestion } from "@/lib/projects/participant-details";
 import {
   coerceLexicon,
   coerceTheme,
@@ -51,19 +52,23 @@ export default function LivePreview({
   theme: savedTheme,
   lexicon: savedLexicon,
   copy: savedCopy,
+  email,
   script,
 }: {
   projectName: string;
   theme: ProjectTheme;
   lexicon: ProjectLexicon;
   copy: ProjectCopy;
+  /** As participants are asked it — null when they are not. */
+  email: EmailQuestion | null;
   script: { code: string; version: number; parameters: Parameter[] } | null;
 }) {
   const [theme, setTheme] = useState(savedTheme);
   const [lexicon, setLexicon] = useState(savedLexicon);
   const [copy, setCopy] = useState(savedCopy);
 
-  const hasQuestions = !!script?.parameters.some((p) => p.type === "text");
+  const hasQuestions =
+    !!script?.parameters.some((p) => p.type === "text") || !!email;
   const firstStep: Step = hasQuestions ? "questions" : "tune";
   const [screen, setScreen] = useState<PreviewScreen>(
     savedCopy.introEnabled ? "intro" : firstStep,
@@ -127,6 +132,7 @@ export default function LivePreview({
           scriptVersion={script.version}
           parameters={script.parameters}
           copy={copy}
+          email={email}
           step={
             EXPERIENCE_STEPS.includes(shown) ? (shown as Step) : undefined
           }

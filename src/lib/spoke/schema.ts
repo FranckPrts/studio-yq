@@ -30,15 +30,19 @@
  */
 
 /**
- * Bumped whenever the shape below changes in a way a scene script would notice.
- * Stored on the connection, and quoted in the snippet a tenant pastes into
- * their scene, so a project and its scene can be told apart when they drift.
+ * Bumped whenever the shape below changes. Stored on the connection, and quoted
+ * in the snippet a tenant pastes into their scene, so a project and its scene
+ * can be told apart when they drift.
+ *
+ * v2 added `participant_contacts`. The scene never reads it, so a snippet
+ * issued at v1 is still valid against v2.
  */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export const TABLES = {
   avatars: "avatars",
   scores: "session_scores",
+  contacts: "participant_contacts",
 } as const;
 
 /**
@@ -110,6 +114,39 @@ create index if not exists session_scores_a_idx on public.${TABLES.scores} (avat
 create index if not exists session_scores_b_idx on public.${TABLES.scores} (avatar_b_id);
 create index if not exists session_scores_recorded_at_idx on public.${TABLES.scores} (recorded_at desc);
 
+-- ─── participant_contacts ───────────────────────────────────────────────────
+-- Private, where avatars are public: an email address belongs to the person,
+-- never to a board or a scene. One row per participant, keyed by them rather
+-- than by their avatar. Only filled when the project asks for an email.
+
+create table if not exists public.${TABLES.contacts} (
+  owner uuid primary key default auth.uid() references auth.users (id) on delete cascade,
+  -- Null when an optional address was given and then cleared. The same loose
+  -- shape check the participant page applies, so the two never disagree.
+  email text check (
+    email is null
+    or (char_length(email) <= 254 and email ~ '^[^@[:space:]]+@[^@[:space:]]+$')
+  ),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create or replace function public.set_participant_contacts_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists participant_contacts_set_updated_at on public.${TABLES.contacts};
+create trigger participant_contacts_set_updated_at
+  before update on public.${TABLES.contacts}
+  for each row
+  execute function public.set_participant_contacts_updated_at();
+
 -- ─── privileges ─────────────────────────────────────────────────────────────
 -- Explicit, because Supabase's defaults are generous and this is the only way
 -- to stop the scene's key from rewriting avatars it should only be un-staging.
@@ -126,6 +163,14 @@ grant update (is_staged) on public.${TABLES.avatars} to anon;
 
 grant select on public.${TABLES.scores} to anon, authenticated;
 grant insert on public.${TABLES.scores} to anon;
+
+-- Nothing at all for anon: the publishable key ships to every browser, and
+-- with it, a grant here would hand out every address. Participants may write
+-- only the address itself — owner and timestamps come from defaults.
+revoke all on public.${TABLES.contacts} from anon, authenticated;
+grant select on public.${TABLES.contacts} to authenticated;
+grant insert (email) on public.${TABLES.contacts} to authenticated;
+grant update (email) on public.${TABLES.contacts} to authenticated;
 
 -- ─── row level security ─────────────────────────────────────────────────────
 
@@ -178,8 +223,33 @@ create policy "session_scores_insert_by_scene"
   to anon
   with check (true);
 
+-- Own row only, for every verb. Unlike avatars, reads are narrow too: no
+-- participant may see another's address.
+alter table public.${TABLES.contacts} enable row level security;
+
+drop policy if exists "contacts_select_own" on public.${TABLES.contacts};
+create policy "contacts_select_own"
+  on public.${TABLES.contacts} for select
+  to authenticated
+  using (auth.uid() = owner);
+
+drop policy if exists "contacts_insert_own" on public.${TABLES.contacts};
+create policy "contacts_insert_own"
+  on public.${TABLES.contacts} for insert
+  to authenticated
+  with check (auth.uid() = owner);
+
+drop policy if exists "contacts_update_own" on public.${TABLES.contacts};
+create policy "contacts_update_own"
+  on public.${TABLES.contacts} for update
+  to authenticated
+  using (auth.uid() = owner)
+  with check (auth.uid() = owner);
+
 -- ─── realtime ───────────────────────────────────────────────────────────────
 -- For the ops console's live list. The scene polls instead.
+-- participant_contacts is deliberately left out: realtime would broadcast
+-- addresses to subscribers, and nothing needs them live.
 
 alter table public.${TABLES.avatars} replica identity full;
 

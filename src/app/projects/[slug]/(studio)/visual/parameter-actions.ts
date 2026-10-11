@@ -6,12 +6,18 @@ import { requireProjectRole } from "@/lib/auth/dal";
 import { validateParameters } from "@/lib/params/validate";
 import { analyzeScript } from "@/lib/params/analyze";
 import type { Parameter } from "@/lib/params/types";
+import {
+  coerceParticipantDetails,
+  CONTACTS_SCHEMA_VERSION,
+  type ParticipantDetails,
+} from "@/lib/projects/participant-details";
 
 export type SaveState = {
   error?: string;
   problems?: string[];
   warnings?: string[];
-  saved?: { version: number };
+  /** `version` only when the declaration changed and a new one was cut. */
+  saved?: { version?: number };
 };
 
 /**
@@ -23,6 +29,11 @@ export type SaveState = {
  * declaration change — which can break an experience just as thoroughly as a
  * code change — had no way back. A version is cheap; a mid-event mistake with
  * no undo is not.
+ *
+ * The email question rides along on the same form but is saved in place on the
+ * project: it is not part of the declaration, and an upload must not drop it.
+ * Each part arrives only when it changed, so editing just the email question
+ * does not cut a script version.
  */
 export async function saveParameters(
   _prev: SaveState,
@@ -31,10 +42,36 @@ export async function saveParameters(
   const slug = String(formData.get("slug") ?? "");
   const { projectId, user } = await requireProjectRole(slug, "COLLABORATOR");
 
-  const raw = String(formData.get("parameters") ?? "");
+  const rawParameters = formData.get("parameters");
+  const rawDetails = formData.get("participantDetails");
+  if (rawParameters === null && rawDetails === null) {
+    return { error: "There was nothing to save." };
+  }
+
+  let details: ParticipantDetails | null = null;
+  if (rawDetails !== null) {
+    try {
+      details = coerceParticipantDetails(JSON.parse(String(rawDetails)));
+    } catch {
+      return { error: "The email question could not be read." };
+    }
+    const refusal = await refuseEmailWithoutTable(projectId, details);
+    if (refusal) return { error: refusal };
+  }
+
+  if (rawParameters === null) {
+    await db.project.update({
+      where: { id: projectId },
+      data: { participantDetails: details! },
+    });
+    revalidatePath(`/projects/${slug}`);
+    revalidatePath(`/projects/${slug}/visual`);
+    return { saved: {} };
+  }
+
   let parameters: Parameter[];
   try {
-    parameters = JSON.parse(raw) as Parameter[];
+    parameters = JSON.parse(String(rawParameters)) as Parameter[];
   } catch {
     return { error: "The declaration could not be read." };
   }
@@ -66,19 +103,56 @@ export async function saveParameters(
   }
 
   const version = current.version + 1;
-  await db.avatarScript.create({
-    data: {
-      projectId,
-      version,
-      label: current.label,
-      code: current.code,
-      parameters: parameters as never,
-      extensions: current.extensions as never,
-      uploadedById: user.id,
-    },
+  // Together or not at all: one save button should not half-apply.
+  await db.$transaction(async (tx) => {
+    await tx.avatarScript.create({
+      data: {
+        projectId,
+        version,
+        label: current.label,
+        code: current.code,
+        parameters: parameters as never,
+        extensions: current.extensions as never,
+        uploadedById: user.id,
+      },
+    });
+    if (details) {
+      await tx.project.update({
+        where: { id: projectId },
+        data: { participantDetails: details },
+      });
+    }
   });
 
   revalidatePath(`/projects/${slug}`);
   revalidatePath(`/projects/${slug}/visual`);
   return { saved: { version }, warnings: warnings.length ? warnings : undefined };
+}
+
+/**
+ * Switching the email question on is refused while the tenant's database has
+ * nowhere to put the answer — participants would type an address that is then
+ * lost. Already-on stays editable, and off is always allowed, so a project
+ * re-pointed at an older database can still be tidied up.
+ */
+async function refuseEmailWithoutTable(
+  projectId: string,
+  details: ParticipantDetails,
+): Promise<string | null> {
+  if (!details.email.enabled) return null;
+
+  const project = await db.project.findUniqueOrThrow({
+    where: { id: projectId },
+    select: {
+      participantDetails: true,
+      connection: { select: { schemaVersion: true } },
+    },
+  });
+  if (coerceParticipantDetails(project.participantDetails).email.enabled) {
+    return null;
+  }
+  if ((project.connection?.schemaVersion ?? 0) >= CONTACTS_SCHEMA_VERSION) {
+    return null;
+  }
+  return `Asking for an email needs database schema v${CONTACTS_SCHEMA_VERSION}. Re-run the schema on the database page first.`;
 }

@@ -9,6 +9,8 @@ export type LiveState = {
   installed: boolean;
   avatars: { exists: boolean; rows: number | null; rlsEnabled: boolean; policies: number };
   scores: { exists: boolean; rows: number | null; rlsEnabled: boolean; policies: number };
+  /** Absent before schema v2. Counted, never read: the addresses stay in Supabase. */
+  contacts: { exists: boolean; rows: number | null; rlsEnabled: boolean; policies: number };
   stagedCount: number | null;
   /** Our record says provisioned, but the tables are not actually there. */
   drifted: boolean;
@@ -176,6 +178,22 @@ export default function DangerSection({
                 </>
               }
             />
+            {live.contacts.exists && (
+              <Row
+                label="participant_contacts"
+                value={
+                  <>
+                    {live.contacts.rows} email address
+                    {live.contacts.rows === 1 ? "" : "es"}
+                    <span className="text-dim">
+                      {" "}
+                      · RLS {live.contacts.rlsEnabled ? "on" : "OFF"} ·{" "}
+                      {live.contacts.policies} policies
+                    </span>
+                  </>
+                }
+              />
+            )}
             {live.stagedCount !== null && (
               <Row label="currently staged" value={`${live.stagedCount} of 2`} />
             )}
@@ -207,8 +225,8 @@ export default function DangerSection({
             title="Delete all participant data"
             blurb={
               live.installed && live.reachable
-                ? `Removes ${live.avatars.rows ?? 0} avatar(s) and ${live.scores.rows ?? 0} score(s). The tables, policies and grants stay, so the experience can run again immediately. Cannot be undone.`
-                : "Removes every avatar and score, leaving the tables in place. Cannot be undone."
+                ? `Removes ${live.avatars.rows ?? 0} avatar(s), ${live.scores.rows ?? 0} score(s)${live.contacts.exists ? ` and ${live.contacts.rows ?? 0} email address(es)` : ""}. The tables, policies and grants stay, so the experience can run again immediately. Cannot be undone.`
+                : "Removes every avatar, score and email address, leaving the tables in place. Cannot be undone."
             }
             confirmLabel="delete the data"
             disabledReason={blockedReason ?? "delete data"}
@@ -218,7 +236,7 @@ export default function DangerSection({
             slug={slug}
             action={wipeSchema}
             title="Delete data and tables"
-            blurb="Drops both tables along with everything in them, and marks this project un-provisioned. Your Supabase project, its auth users and anything else you keep in it are untouched — only what we created is removed. Cannot be undone."
+            blurb="Drops the tables we created along with everything in them, and marks this project un-provisioned. Your Supabase project, its auth users and anything else you keep in it are untouched — only what we created is removed. Cannot be undone."
             confirmLabel="drop everything"
             disabledReason={blockedReason ?? "drop tables"}
           />

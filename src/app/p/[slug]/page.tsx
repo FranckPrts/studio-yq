@@ -7,6 +7,10 @@ import type { Parameter } from "@/lib/params/types";
 import ParticipantExperience from "./experience";
 import Shut from "./shut";
 import { coerceCopy, fillCopy } from "@/lib/theme/project-copy";
+import {
+  askedEmail,
+  coerceParticipantDetails,
+} from "@/lib/projects/participant-details";
 
 /**
  * The participant's door. No sign-in, no account — the only identity involved
@@ -49,11 +53,13 @@ export default async function ExperiencePage({
       theme: true,
       lexicon: true,
       copy: true,
+      participantDetails: true,
       connection: {
         select: {
           projectUrl: true,
           publishableKey: true,
           provisionedAt: true,
+          schemaVersion: true,
         },
       },
       scripts: {
@@ -139,6 +145,10 @@ export default async function ExperiencePage({
         scriptVersion={script!.version}
         parameters={parameters}
         copy={copy}
+        email={askedEmail(
+          coerceParticipantDetails(project.participantDetails),
+          connection!.schemaVersion,
+        )}
       />
     </>
   );

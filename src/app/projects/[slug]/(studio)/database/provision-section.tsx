@@ -118,9 +118,10 @@ export default function ProvisionSection({
       </div>
 
       <p className="text-[11px] leading-relaxed text-dim">
-        Creates <code className="text-paper/60">avatars</code> and{" "}
-        <code className="text-paper/60">session_scores</code> with row-level
-        security, and turns on anonymous sign-ins. Every statement is safe to run
+        Creates <code className="text-paper/60">avatars</code>,{" "}
+        <code className="text-paper/60">session_scores</code> and{" "}
+        <code className="text-paper/60">participant_contacts</code> with
+        row-level security, and turns on anonymous sign-ins. Every statement is safe to run
         twice, so re-running after a change or a partial failure is fine.
       </p>
 

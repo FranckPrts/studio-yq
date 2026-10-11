@@ -24,6 +24,8 @@ export type TableState = {
 export type SpokeState = {
   avatars: TableState;
   scores: TableState;
+  /** Only from schema v2, and only ever counted, never read. */
+  contacts: TableState;
   /** True only if both tables are present. */
   installed: boolean;
   stagedCount: number | null;
@@ -55,7 +57,7 @@ export async function inspectSpoke(
        from pg_class c
        join pg_namespace n on n.oid = c.relnamespace
       where n.nspname = 'public'
-        and c.relname in ('${TABLES.avatars}', '${TABLES.scores}');`,
+        and c.relname in ('${TABLES.avatars}', '${TABLES.scores}', '${TABLES.contacts}');`,
   );
 
   const rows = Array.isArray(catalog) ? catalog : [];
@@ -73,26 +75,43 @@ export async function inspectSpoke(
 
   const avatars = find(TABLES.avatars);
   const scores = find(TABLES.scores);
+  const contacts = find(TABLES.contacts);
   const installed = avatars.exists && scores.exists;
 
   if (!installed) {
-    return { avatars, scores, installed, stagedCount: null };
+    return { avatars, scores, contacts, installed, stagedCount: null };
   }
 
+  // A v1 database has no contacts table, and naming a missing table fails the
+  // whole statement — so it is only counted when the catalogue found it.
+  // Addresses, not rows: a cleared optional address leaves its row behind.
   const counts = await runQuery<
-    { avatars: number | string; scores: number | string; staged: number | string }[]
+    {
+      avatars: number | string;
+      scores: number | string;
+      staged: number | string;
+      contacts?: number | string;
+    }[]
   >(
     ref,
     accessToken,
     `select (select count(*) from public.${TABLES.avatars}) as avatars,
             (select count(*) from public.${TABLES.scores}) as scores,
-            (select count(*) from public.${TABLES.avatars} where is_staged) as staged;`,
+            (select count(*) from public.${TABLES.avatars} where is_staged) as staged${
+              contacts.exists
+                ? `,
+            (select count(email) from public.${TABLES.contacts}) as contacts`
+                : ""
+            };`,
   );
 
   const c = Array.isArray(counts) ? counts[0] : undefined;
   return {
     avatars: { ...avatars, rows: Number(c?.avatars ?? 0) },
     scores: { ...scores, rows: Number(c?.scores ?? 0) },
+    contacts: contacts.exists
+      ? { ...contacts, rows: Number(c?.contacts ?? 0) }
+      : contacts,
     installed,
     stagedCount: Number(c?.staged ?? 0),
   };
@@ -105,9 +124,11 @@ export async function inspectSpoke(
  * cascade, deleting in dependency order keeps the statement honest about what
  * it is doing rather than relying on a side effect.
  */
-export function wipeDataSql(): string {
+export function wipeDataSql(includeContacts: boolean): string {
   return `delete from public.${TABLES.scores};
-delete from public.${TABLES.avatars};`;
+delete from public.${TABLES.avatars};${
+    includeContacts ? `\ndelete from public.${TABLES.contacts};` : ""
+  }`;
 }
 
 /**
@@ -118,5 +139,7 @@ delete from public.${TABLES.avatars};`;
 export function wipeSchemaSql(): string {
   return `drop table if exists public.${TABLES.scores} cascade;
 drop table if exists public.${TABLES.avatars} cascade;
-drop function if exists public.set_avatars_updated_at() cascade;`;
+drop table if exists public.${TABLES.contacts} cascade;
+drop function if exists public.set_avatars_updated_at() cascade;
+drop function if exists public.set_participant_contacts_updated_at() cascade;`;
 }

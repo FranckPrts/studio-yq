@@ -121,6 +121,7 @@ async function liveState(connection: {
     installed: false,
     avatars: { exists: false, rows: null, rlsEnabled: false, policies: 0 },
     scores: { exists: false, rows: null, rlsEnabled: false, policies: 0 },
+    contacts: { exists: false, rows: null, rlsEnabled: false, policies: 0 },
     stagedCount: null,
     drifted: false,
   };
@@ -144,6 +145,12 @@ async function liveState(connection: {
         rows: state.scores.rows,
         rlsEnabled: state.scores.rlsEnabled,
         policies: state.scores.policies,
+      },
+      contacts: {
+        exists: state.contacts.exists,
+        rows: state.contacts.rows,
+        rlsEnabled: state.contacts.rlsEnabled,
+        policies: state.contacts.policies,
       },
       stagedCount: state.stagedCount,
       drifted: !!connection.provisionedAt && !state.installed,

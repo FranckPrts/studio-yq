@@ -170,6 +170,13 @@ model Project {
   /// rendered on our page, outside the sandbox. Defaults live in the app.
   copy Json?
 
+  /// Which questions about the participant themselves the experience asks —
+  /// today only whether to ask for an email, and how. Configuration, not data:
+  /// the answers go to the tenant's Supabase (`participant_contacts`), never
+  /// here. Project-level rather than in the parameter declaration, because a
+  /// script upload replaces the declaration and must not drop this with it.
+  participantDetails Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

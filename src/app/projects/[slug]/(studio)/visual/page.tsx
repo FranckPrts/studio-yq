@@ -1,6 +1,11 @@
 import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import type { Parameter } from "@/lib/params/types";
+import {
+  coerceParticipantDetails,
+  CONTACTS_SCHEMA_VERSION,
+} from "@/lib/projects/participant-details";
+import { coerceCopy } from "@/lib/theme/project-copy";
 import PageHeader from "../page-header";
 import ScriptSection from "./section";
 import ParameterBuilder from "./builder";
@@ -24,6 +29,9 @@ export default async function VisualPage({
   const project = await db.project.findUniqueOrThrow({
     where: { id: access.projectId },
     select: {
+      copy: true,
+      participantDetails: true,
+      connection: { select: { schemaVersion: true } },
       scripts: {
         orderBy: { version: "desc" },
         take: 20,
@@ -41,6 +49,8 @@ export default async function VisualPage({
   const canEdit = access.role === "OWNER" || access.role === "COLLABORATOR";
   const active = project.scripts[0];
   const parameters = (active?.parameters ?? []) as unknown as Parameter[];
+  const { email } = coerceParticipantDetails(project.participantDetails);
+  const { optionalMarker } = coerceCopy(project.copy);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 p-8">
@@ -95,9 +105,19 @@ export default async function VisualPage({
               slug={slug}
               scriptVersion={active.version}
               initial={parameters}
+              initialEmail={email}
+              emailAvailable={
+                (project.connection?.schemaVersion ?? 0) >=
+                CONTACTS_SCHEMA_VERSION
+              }
+              optionalMarker={optionalMarker}
             />
           ) : (
-            <ParameterList parameters={parameters} />
+            <ParameterList
+              parameters={parameters}
+              email={email.enabled ? email : null}
+              optionalMarker={optionalMarker}
+            />
           ))}
       </section>
     </main>

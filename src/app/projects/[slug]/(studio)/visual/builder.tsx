@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import Link from "next/link";
 import AvatarControls from "@/components/AvatarControls";
 import { coerceAll, defaults } from "@/lib/params/coerce";
 import type { ParamValues } from "@/lib/params/coerce";
@@ -11,6 +12,11 @@ import type {
   ParameterType,
   ParameterValue,
 } from "@/lib/params/types";
+import {
+  CONTACTS_SCHEMA_VERSION,
+  emailLabel,
+  type EmailQuestion,
+} from "@/lib/projects/participant-details";
 import { saveParameters, type SaveState } from "./parameter-actions";
 import { useUnsavedChanges } from "../use-unsaved-changes";
 import { GROUPS, type Group } from "./groups";
@@ -60,14 +66,118 @@ const input =
 const select =
   "term-input border-b border-paper/20 bg-void text-sm";
 
+/**
+ * The one question that is not a parameter. It sits on the questions screen
+ * with the others, but belongs to the project rather than the script — so an
+ * upload never drops it — and its answer goes to a private table rather than
+ * to `answers`, which everyone can read.
+ */
+function EmailCard({
+  slug,
+  email,
+  available,
+  optionalMarker,
+  onChange,
+}: {
+  slug: string;
+  email: EmailQuestion;
+  available: boolean;
+  optionalMarker: string;
+  onChange: (patch: Partial<EmailQuestion>) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3 border-b border-paper/10 pb-4">
+      <label className="flex items-baseline gap-2 text-sm text-paper">
+        <input
+          type="checkbox"
+          checked={email.enabled}
+          // Switching it off is always allowed; on, only where the answer
+          // has somewhere to go.
+          disabled={!available && !email.enabled}
+          onChange={(e) => onChange({ enabled: e.target.checked })}
+        />
+        <span>
+          ask for an email{" "}
+          <span className="text-dim">
+            · kept private — only the participant and your Supabase dashboard
+            can read it
+          </span>
+        </span>
+      </label>
+
+      {!available && (
+        <p className="text-[11px] leading-relaxed text-amber-400/80">
+          Addresses are stored in a table that needs database schema v
+          {CONTACTS_SCHEMA_VERSION}. Re-run the schema on the{" "}
+          <Link
+            href={`/projects/${slug}/database`}
+            className="underline underline-offset-4"
+          >
+            database page
+          </Link>{" "}
+          first.
+          {email.enabled && " Until then, participants are not asked."}
+        </p>
+      )}
+
+      {email.enabled && (
+        <div className="flex flex-col gap-4 pl-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="label" hint="what the participant sees">
+              <input
+                className={input}
+                value={email.label}
+                onChange={(e) => onChange({ label: e.target.value })}
+              />
+            </Field>
+            <Field label="placeholder" hint="optional">
+              <input
+                className={input}
+                value={email.placeholder}
+                onChange={(e) => onChange({ placeholder: e.target.value })}
+              />
+            </Field>
+          </div>
+          <label className="flex items-center gap-2 text-[11px] text-dim">
+            <input
+              type="checkbox"
+              checked={email.required}
+              onChange={(e) => onChange({ required: e.target.checked })}
+            />
+            required — participants cannot go on without one
+          </label>
+          <p className="text-[11px] leading-relaxed text-dim">
+            Participants see{" "}
+            <span className="text-paper">
+              {emailLabel(
+                { ...email, label: email.label.trim() || "email" },
+                optionalMarker,
+              )}
+            </span>
+            {!email.required &&
+              ` — “${optionalMarker}” is edited with the rest of the wording.`}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ParameterBuilder({
   slug,
   initial,
   scriptVersion,
+  initialEmail,
+  emailAvailable,
+  optionalMarker,
 }: {
   slug: string;
   initial: Parameter[];
   scriptVersion: number;
+  initialEmail: EmailQuestion;
+  /** Whether the tenant's database has the table an address is stored in. */
+  emailAvailable: boolean;
+  optionalMarker: string;
 }) {
   const [draft, setDraft] = useState<Parameter[]>(initial);
   // A new upload on this page replaces the declaration underneath the builder,
@@ -79,6 +189,13 @@ export default function ParameterBuilder({
     setSeenJson(initialJson);
     setDraft(initial);
   }
+  const [email, setEmail] = useState<EmailQuestion>(initialEmail);
+  const initialEmailJson = JSON.stringify(initialEmail);
+  const [seenEmailJson, setSeenEmailJson] = useState(initialEmailJson);
+  if (initialEmailJson !== seenEmailJson) {
+    setSeenEmailJson(initialEmailJson);
+    setEmail(initialEmail);
+  }
   const [open, setOpen] = useState<string | null>(null);
   const [json, setJson] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -88,10 +205,12 @@ export default function ParameterBuilder({
   );
 
   const problems = useMemo(() => validateParameters(draft), [draft]);
-  const dirty = useMemo(
+  const paramsDirty = useMemo(
     () => JSON.stringify(draft) !== initialJson,
     [draft, initialJson],
   );
+  const emailDirty = JSON.stringify(email) !== initialEmailJson;
+  const dirty = paramsDirty || emailDirty;
   useUnsavedChanges(dirty);
 
   // Preview values, re-derived whenever the shape changes. Coercing through the
@@ -624,6 +743,9 @@ export default function ParameterBuilder({
           const members = draft
             .map((param, index) => ({ param, index }))
             .filter(({ param }) => group.holds(param));
+          const withEmail = group.key === "questions";
+          const count =
+            members.length + (withEmail && email.enabled ? 1 : 0);
           return (
             <section
               key={group.key}
@@ -632,20 +754,29 @@ export default function ParameterBuilder({
               <header className="flex flex-col gap-1">
                 <div className="flex items-baseline justify-between gap-4">
                   <h3 className="text-sm text-paper">{group.title}</h3>
-                  <span className="shrink-0 text-xs text-dim">
-                    {members.length}
-                  </span>
+                  <span className="shrink-0 text-xs text-dim">{count}</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-dim">
                   {group.blurb}
                 </p>
               </header>
 
-              {members.length === 0 ? (
+              {members.length === 0 && !withEmail ? (
                 <p className="text-[11px] text-dim/70">none yet</p>
               ) : (
                 <div className="flex flex-col gap-4">
                   {members.map(({ param, index }) => renderCard(param, index, group))}
+                  {withEmail && (
+                    <EmailCard
+                      slug={slug}
+                      email={email}
+                      available={emailAvailable}
+                      optionalMarker={optionalMarker}
+                      onChange={(patch) =>
+                        setEmail((prev) => ({ ...prev, ...patch }))
+                      }
+                    />
+                  )}
                 </div>
               )}
 
@@ -708,11 +839,23 @@ export default function ParameterBuilder({
 
         <form action={action} className="flex items-center gap-4">
           <input type="hidden" name="slug" value={slug} />
-          <input
-            type="hidden"
-            name="parameters"
-            value={JSON.stringify(draft)}
-          />
+          {/* Each part is sent only when it changed: the declaration because
+              saving it cuts a new script version, the email question because
+              it belongs to the project and is saved in place. */}
+          {paramsDirty && (
+            <input
+              type="hidden"
+              name="parameters"
+              value={JSON.stringify(draft)}
+            />
+          )}
+          {emailDirty && (
+            <input
+              type="hidden"
+              name="participantDetails"
+              value={JSON.stringify({ email })}
+            />
+          )}
           <button
             type="submit"
             disabled={pending || problems.length > 0 || !dirty}
@@ -720,10 +863,14 @@ export default function ParameterBuilder({
           >
             {pending
               ? "saving…"
-              : `save as v${scriptVersion + 1}`}
+              : paramsDirty || !dirty
+                ? `save as v${scriptVersion + 1}`
+                : "save"}
           </button>
           {state.saved && (
-            <span className="text-xs text-dim">saved as v{state.saved.version}</span>
+            <span className="text-xs text-dim">
+              {state.saved.version ? `saved as v${state.saved.version}` : "saved"}
+            </span>
           )}
           {!dirty && !state.saved && (
             <span className="text-xs text-dim">no changes</span>

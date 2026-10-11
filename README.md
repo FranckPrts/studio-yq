@@ -15,7 +15,9 @@ that one's record lives at
   project's look and wording, its p5 scripts, and an *encrypted* copy of the
   credentials that reach the tenant's Supabase.
 - **The tenant's own Supabase**: participants, their avatars and the session
-  scores — under anonymous auth and RLS that this app provisions. No participant
+  scores — and, when a project asks for one, each participant's email address,
+  readable only by that participant and the tenant — under anonymous auth and
+  RLS that this app provisions. No participant
   data is ever stored here.
 
 ## Routes
