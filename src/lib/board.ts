@@ -49,26 +49,76 @@ export function buildBoard(
     if (placed.has(score.avatar_a_id) && placed.has(score.avatar_b_id)) continue;
     placed.add(score.avatar_a_id);
     placed.add(score.avatar_b_id);
-
-    const strategy =
-      typeof score.strategy === "string" && score.strategy.trim()
-        ? score.strategy.trim()
-        : null;
-
-    rows.push({
-      id: score.id,
-      rank: rows.length + 1,
-      score: Number(score.score),
-      recordedAt: score.recorded_at,
-      strategy,
-      names: [
-        nameById.get(score.avatar_a_id) ?? null,
-        nameById.get(score.avatar_b_id) ?? null,
-      ],
-    });
+    rows.push(toRow(score, nameById, rows.length + 1, false));
   }
 
   return rows;
+}
+
+/**
+ * One participant's results: every run any of their avatars took part in,
+ * best first, with theirs on the left of the `/`.
+ *
+ * A single list rather than one per avatar — someone with three avatars is
+ * still reading for their best run, not their best avatar. A run between two
+ * of their own appears once, as recorded.
+ */
+export function buildOwnBoard(
+  scores: BoardScore[],
+  nameById: ReadonlyMap<string, string>,
+  ownIds: ReadonlySet<string>,
+): BoardRow[] {
+  return scores
+    .filter((s) => ownIds.has(s.avatar_a_id) || ownIds.has(s.avatar_b_id))
+    .sort(byScoreDesc)
+    .map((score, i) =>
+      toRow(score, nameById, i + 1, !ownIds.has(score.avatar_a_id)),
+    );
+}
+
+function toRow(
+  score: BoardScore,
+  nameById: ReadonlyMap<string, string>,
+  rank: number,
+  /** Swaps the pair, so the reader's own avatar leads. */
+  flip: boolean,
+): BoardRow {
+  const strategy =
+    typeof score.strategy === "string" && score.strategy.trim()
+      ? score.strategy.trim()
+      : null;
+  const [a, b] = flip
+    ? [score.avatar_b_id, score.avatar_a_id]
+    : [score.avatar_a_id, score.avatar_b_id];
+
+  return {
+    id: score.id,
+    rank,
+    score: Number(score.score),
+    recordedAt: score.recorded_at,
+    strategy,
+    names: [nameById.get(a) ?? null, nameById.get(b) ?? null],
+  };
+}
+
+/** What one avatar has to show for itself, for the participant's list. */
+export type AvatarSummary = { runs: number; best: number | null };
+
+export function summarizeAvatar(
+  scores: readonly BoardScore[],
+  avatarId: string,
+): AvatarSummary {
+  let runs = 0;
+  let best: number | null = null;
+  for (const score of scores) {
+    if (score.avatar_a_id !== avatarId && score.avatar_b_id !== avatarId) {
+      continue;
+    }
+    runs += 1;
+    const value = Number(score.score);
+    if (best === null || value > best) best = value;
+  }
+  return { runs, best };
 }
 
 /** One run as the histogram needs it: where it landed, and when. */

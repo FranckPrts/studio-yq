@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ParticipantExperience, { type Step } from "@/app/p/[slug]/experience";
+import ParticipantExperience, {
+  type ExperienceSample,
+  type Step,
+} from "@/app/p/[slug]/experience";
 import Shut from "@/app/p/[slug]/shut";
 import BoardView from "@/app/projects/[slug]/board/board-view";
 import type { BoardRow, BoardRun } from "@/lib/board";
@@ -21,6 +24,8 @@ const EXPERIENCE_STEPS: readonly PreviewScreen[] = [
   "questions",
   "tune",
   "done",
+  "list",
+  "results",
 ];
 
 /**
@@ -47,6 +52,32 @@ const SAMPLE_RUNS: BoardRun[] = [
   ),
   { score: 47.3, recordedAt: `${today}T14:58:00` },
 ];
+
+/**
+ * A returning participant's own: two avatars from the sample board, and the
+ * runs they were in — the board's first and third rows, plus one that didn't
+ * place, so the results show more than the board does.
+ */
+const SAMPLE_MINE: ExperienceSample = {
+  avatars: [
+    { id: "mine-1", name: "Tide Chorus" },
+    { id: "mine-2", name: "Salt Garden" },
+  ],
+  runs: {
+    scores: [
+      { id: "s1", avatar_a_id: "mine-1", avatar_b_id: "other-1", score: 92.4, strategy: SAMPLE_ROWS[0].strategy, recorded_at: SAMPLE_ROWS[0].recordedAt },
+      { id: "s3", avatar_a_id: "other-2", avatar_b_id: "mine-2", score: 74.6, strategy: null, recorded_at: SAMPLE_ROWS[2].recordedAt },
+      { id: "r1", avatar_a_id: "mine-1", avatar_b_id: "other-3", score: 41.0, strategy: null, recorded_at: `${today}T13:22:00` },
+    ],
+    names: new Map([
+      ["mine-1", "Tide Chorus"],
+      ["mine-2", "Salt Garden"],
+      ["other-1", "Low Ember"],
+      ["other-2", "Quiet Static"],
+      ["other-3", "Night Ferry"],
+    ]),
+  },
+};
 
 function toParent(message: FromPreview) {
   if (window.parent !== window) {
@@ -135,6 +166,7 @@ export default function LivePreview({
       {script && (
         <ParticipantExperience
           preview
+          sample={SAMPLE_MINE}
           projectName={projectName}
           theme={theme}
           lexicon={lexicon}

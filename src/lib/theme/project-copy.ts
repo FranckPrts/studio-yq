@@ -90,6 +90,55 @@ export const COPY_FIELDS = {
     default: "keep tuning",
     multiline: false,
   },
+  listButton: {
+    group: "once saved",
+    label: "to all of theirs",
+    default: "my {nounPlural}",
+    multiline: false,
+  },
+  listTitle: {
+    group: "coming back",
+    label: "heading",
+    default: "Your {nounPlural}",
+    multiline: false,
+  },
+  listBody: {
+    group: "coming back",
+    label: "text",
+    default: "Tap one to keep tuning it, or make another.",
+    multiline: true,
+  },
+  resultsButton: {
+    group: "coming back",
+    label: "results button",
+    default: "view results",
+    multiline: false,
+  },
+  newButton: {
+    group: "coming back",
+    label: "make another button",
+    default: "create a new {noun}",
+    multiline: false,
+  },
+  resultsTitle: {
+    group: "results",
+    label: "heading",
+    default: "Your results",
+    multiline: false,
+  },
+  resultsBody: {
+    group: "results",
+    label: "text",
+    default: "Every run your {nounPlural} have been part of, best first.",
+    multiline: true,
+  },
+  resultsEmpty: {
+    group: "results",
+    label: "before the first score",
+    default:
+      "No runs yet. Your results show up here once one of your {nounPlural} has been paired.",
+    multiline: true,
+  },
   boardTitle: {
     group: "leaderboard",
     label: "heading",

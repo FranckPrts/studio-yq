@@ -109,25 +109,25 @@ export async function listAvatars(
 }
 
 /**
- * The caller's own avatar, if they have made one.
+ * Every avatar the caller has made, oldest first — the order their list shows
+ * them in. A participant may make as many as they like.
  *
  * Filtered by `owner` rather than relying on RLS to narrow it: reads are
  * deliberately wide — participants see each other — so the policy will happily
  * return everyone's.
  */
-export async function myAvatar(
+export async function myAvatars(
   client: SupabaseClient,
   userId: string,
   parameters: Parameter[],
-): Promise<Avatar | null> {
+): Promise<Avatar[]> {
   const { data, error } = await client
     .from(AVATARS_TABLE)
     .select("*")
     .eq("owner", userId)
-    .order("created_at", { ascending: true })
-    .limit(1);
+    .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
-  return data?.[0] ? normalizeAvatar(data[0], parameters) : null;
+  return (data ?? []).map((row) => normalizeAvatar(row, parameters));
 }
 
 export async function createAvatar(

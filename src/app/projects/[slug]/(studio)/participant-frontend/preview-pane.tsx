@@ -11,6 +11,8 @@ const SCREENS: { key: PreviewScreen; label: string }[] = [
   { key: "questions", label: "questions" },
   { key: "tune", label: "tuning" },
   { key: "done", label: "saved" },
+  { key: "list", label: "coming back" },
+  { key: "results", label: "results" },
   { key: "closed", label: "closed" },
   { key: "notReady", label: "not ready" },
   { key: "board", label: "leaderboard" },
@@ -128,8 +130,9 @@ export default function PreviewPane({
         The participant page itself, as saved, with the latest script — save on
         colours or text &amp; fonts to see a change here. Nothing here signs
         anyone in or saves an avatar. The background behind the avatar is drawn
-        by the script, not by the palette. The leaderboard shows made-up runs;
-        the real one opens from the overview.
+        by the script, not by the palette. The leaderboard, a returning
+        participant&rsquo;s list and their results show made-up runs; the real
+        leaderboard opens from the overview.
       </p>
     </section>
   );

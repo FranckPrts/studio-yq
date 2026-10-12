@@ -13,11 +13,16 @@ import {
 } from "@/lib/spoke/browser-client";
 import {
   avatarName,
-  myAvatar,
+  myAvatars,
+  normalizeAvatar,
   saveAvatar,
   splitValues,
+  type Avatar,
 } from "@/lib/spoke/avatars";
 import { myEmail, normalizeEmail, saveEmail } from "@/lib/spoke/contacts";
+import { myRuns, type MyRuns } from "@/lib/spoke/results";
+import { buildOwnBoard, formatScore, summarizeAvatar } from "@/lib/board";
+import BoardRowItem from "@/app/projects/[slug]/board/board-row";
 import {
   emailLabel,
   isPlausibleEmail,
@@ -32,15 +37,37 @@ import {
 } from "@/lib/theme/project-theme";
 import { fillCopy, type ProjectCopy } from "@/lib/theme/project-copy";
 
-export type Step = "intro" | "questions" | "tune" | "done";
+export type Step =
+  | "intro"
+  | "questions"
+  | "tune"
+  | "done"
+  | "list"
+  | "results";
+
+/** Made-up avatars and runs, for the preview's list and results screens. */
+export type ExperienceSample = {
+  avatars: { id: string; name: string }[];
+  runs: MyRuns;
+};
 
 /**
- * The participant runtime — `PlanetEditor` generalized.
+ * Scores land once a run, minutes apart, and are not in the realtime
+ * publication — the board's ten-second poll, and only while the list or the
+ * results are on screen.
+ */
+const RUNS_POLL_MS = 10_000;
+
+/**
+ * The participant runtime — `PlanetEditor` and the CCN star list generalized.
  *
  * The flow it inherits: answer, then tune, then done, with the canvas mounted
  * once and never unmounted between steps, so the avatar comes into being rather
  * than appearing. What changes is that every question and every control now
  * comes from the project's declaration instead of from six hardcoded sliders.
+ *
+ * A participant may make as many avatars as they like. Once they have one,
+ * their list is home: tap one to tune it, make another, or see their results.
  */
 export default function ParticipantExperience({
   projectName,
@@ -54,6 +81,7 @@ export default function ParticipantExperience({
   copy,
   email = null,
   preview = false,
+  sample,
   step: stepProp,
   onStepChange,
 }: {
@@ -78,6 +106,11 @@ export default function ParticipantExperience({
    * leaving participants — or rows — behind in their Supabase.
    */
   preview?: boolean;
+  /**
+   * Made-up avatars and runs for the preview's list and results screens. Only
+   * ever shown there: the questions and tuning screens stay a first visit's.
+   */
+  sample?: ExperienceSample;
   /** Controlled step, for the preview's screen tabs. */
   step?: Step;
   onStepChange?: (step: Step) => void;
@@ -94,7 +127,7 @@ export default function ParticipantExperience({
   const asksEmail = !!email;
   const firstStep: Step = hasQuestions ? "questions" : "tune";
   // Returning participants skip the welcome: the effect below moves them
-  // straight to tuning once their avatar is found.
+  // straight to their list once their avatars are found.
   const [ownStep, setOwnStep] = useState<Step>(
     copy.introEnabled ? "intro" : firstStep,
   );
@@ -103,10 +136,15 @@ export default function ParticipantExperience({
     setOwnStep(next);
     onStepChange?.(next);
   }
+  // Theirs, oldest first. Empty in the preview, which lists `sample` instead.
+  const [avatars, setAvatars] = useState<Avatar[]>([]);
+  // The one being tuned; null while a new one is being made.
   const [avatarId, setAvatarId] = useState<string | null>(null);
   // The name as stored, so a blank answer can keep an anonymous name it was
   // already given rather than drawing a new one on every save.
-  const [storedName, setStoredName] = useState<string | null>(null);
+  const storedName = avatars.find((a) => a.id === avatarId)?.name ?? null;
+  const [runs, setRuns] = useState<MyRuns | null>(null);
+  const [runsError, setRunsError] = useState<string | null>(null);
   const [status, setStatus] = useState<"starting" | "ready" | "error">(
     preview ? "ready" : "starting",
   );
@@ -116,8 +154,8 @@ export default function ParticipantExperience({
   const clientRef = useRef<SupabaseClient | null>(null);
   const userIdRef = useRef<string | null>(null);
 
-  // Sign in anonymously, then adopt any avatar this identity already made — so
-  // returning to the experience continues rather than starts again.
+  // Sign in anonymously, then find the avatars this identity already made — so
+  // returning to the experience lands on them rather than starting again.
   useEffect(() => {
     if (preview) return;
     let cancelled = false;
@@ -136,16 +174,10 @@ export default function ParticipantExperience({
       userIdRef.current = session.userId;
 
       try {
-        const mine = await myAvatar(client, session.userId, parameters);
+        const mine = await myAvatars(client, session.userId, parameters);
         if (cancelled) return;
-        if (mine) {
-          setAvatarId(mine.id);
-          setStoredName(mine.name);
-          setValues(
-            coerceAll(parameters, { ...mine.params, ...mine.answers }),
-          );
-          setStep("tune");
-        }
+        setAvatars(mine);
+        if (mine.length > 0) setStep("list");
       } catch {
         // A read failure is not fatal — they can still make a new one.
       }
@@ -176,6 +208,84 @@ export default function ParticipantExperience({
   function set(name: string, value: ParameterValue) {
     setValues((prev) => ({ ...prev, [name]: value }));
   }
+
+  // The list reads runs for each avatar's best, the results for every row.
+  const showsRuns = step === "list" || step === "results";
+  const avatarIdsKey = avatars.map((a) => a.id).join(",");
+  useEffect(() => {
+    const client = clientRef.current;
+    if (preview || !showsRuns || !client) return;
+    let cancelled = false;
+    const ids = avatarIdsKey ? avatarIdsKey.split(",") : [];
+
+    const load = async () => {
+      try {
+        const next = await myRuns(client, ids);
+        if (cancelled) return;
+        setRuns(next);
+        setRunsError(null);
+      } catch (e) {
+        // Keep showing the last good runs. The real message is for whoever is
+        // debugging; the participant gets a sentence, as at sign-in.
+        console.warn("[spoke] results read failed:", e);
+        if (!cancelled) setRunsError("Couldn’t load results. Trying again…");
+      }
+    };
+
+    void load();
+    const poll = setInterval(load, RUNS_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(poll);
+    };
+  }, [preview, showsRuns, avatarIdsKey]);
+
+  const sampleAvatars = useMemo(
+    () => sample?.avatars.map((a) => normalizeAvatar(a, parameters)) ?? [],
+    [sample, parameters],
+  );
+  const listed = preview ? sampleAvatars : avatars;
+  const shownRuns = preview ? (sample?.runs ?? null) : runs;
+  const resultRows = useMemo(
+    () =>
+      shownRuns
+        ? buildOwnBoard(
+            shownRuns.scores,
+            shownRuns.names,
+            new Set(listed.map((a) => a.id)),
+          )
+        : null,
+    [shownRuns, listed],
+  );
+  // An avatar saved with a blank name, or one no longer in the list.
+  const unnamed = `unnamed ${lexicon.noun}`;
+
+  /** From the list: tune one they already have. */
+  function openAvatar(avatar: Avatar) {
+    setAvatarId(avatar.id);
+    setValues(coerceAll(parameters, { ...avatar.params, ...avatar.answers }));
+    setError(null);
+    setStep("tune");
+  }
+
+  /**
+   * Another avatar, same person: the declaration's defaults again, but the
+   * email address stays — it belongs to them, not to any one avatar.
+   */
+  function newAvatar() {
+    setAvatarId(null);
+    setValues(coerceAll(parameters, defaults(parameters)));
+    setError(null);
+    setStep(firstStep);
+  }
+
+  // Back walks the flow in reverse — tune, questions, list — skipping any step
+  // this project or visit doesn't have. A first visit has no list to return to.
+  const tuneBack: Step | null = hasQuestions
+    ? "questions"
+    : avatars.length > 0
+      ? "list"
+      : null;
 
   /**
    * Whether the email field would pass the questions form. A returning
@@ -219,7 +329,11 @@ export default function ParticipantExperience({
         parameters,
       );
       setAvatarId(saved.id);
-      setStoredName(saved.name);
+      setAvatars((prev) =>
+        prev.some((a) => a.id === saved.id)
+          ? prev.map((a) => (a.id === saved.id ? saved : a))
+          : [...prev, saved],
+      );
 
       if (email && userIdRef.current) {
         try {
@@ -278,8 +392,11 @@ export default function ParticipantExperience({
           params={sketchParams}
           /* Held at 0 until the participant's own values have arrived, so the
              avatar fades in as *theirs*. Rendering the declaration's defaults
-             at full strength would show a stranger's avatar and then swap it. */
-          host={{ intensity: status === "ready" ? 1 : 0 }}
+             at full strength would show a stranger's avatar and then swap it.
+             Back to 0 on the list and the results, which are about all of
+             theirs: the names carry those screens, and the one tapped next
+             fades in. */
+          host={{ intensity: status === "ready" && !showsRuns ? 1 : 0 }}
           className="h-full w-full"
         />
         {status === "starting" && (
@@ -371,12 +488,24 @@ export default function ParticipantExperience({
                 />
               </label>
             )}
-            <button
-              type="submit"
-              className="self-start text-sm underline underline-offset-4"
-            >
-              {t("nextButton")}
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                type="submit"
+                className="text-sm underline underline-offset-4"
+              >
+                {t("nextButton")}
+              </button>
+              {avatars.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setStep("list")}
+                  className="text-xs underline-offset-4 hover:underline"
+                  style={{ color: theme.dim }}
+                >
+                  {t("backButton")}
+                </button>
+              )}
+            </div>
           </form>
         )}
 
@@ -402,10 +531,10 @@ export default function ParticipantExperience({
               >
                 {saving ? "saving…" : avatarId ? t("saveChangesButton") : t("saveButton")}
               </button>
-              {hasQuestions && (
+              {tuneBack && (
                 <button
                   type="button"
-                  onClick={() => setStep("questions")}
+                  onClick={() => setStep(tuneBack)}
                   className="text-xs underline-offset-4 hover:underline"
                   style={{ color: theme.dim }}
                 >
@@ -425,12 +554,139 @@ export default function ParticipantExperience({
             >
               {t("savedBody")}
             </p>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setStep("tune")}
+                className="text-sm underline underline-offset-4"
+              >
+                {t("keepTuningButton")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep("list")}
+                className="text-sm underline underline-offset-4"
+              >
+                {t("listButton")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {status === "ready" && step === "list" && (
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-sm">{t("listTitle")}</h1>
+              <p
+                className="whitespace-pre-line text-xs leading-relaxed"
+                style={{ color: theme.dim }}
+              >
+                {t("listBody")}
+              </p>
+            </div>
+            <div>
+              <ul>
+                {listed.map((avatar) => {
+                  const { runs: count, best } = summarizeAvatar(
+                    shownRuns?.scores ?? [],
+                    avatar.id,
+                  );
+                  return (
+                    <li key={avatar.id}>
+                      <div aria-hidden className="term-rule text-dim/40" />
+                      <button
+                        type="button"
+                        onClick={() => openAvatar(avatar)}
+                        className="flex w-full items-baseline gap-4 py-4 text-left transition-opacity hover:opacity-80"
+                      >
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                          {avatar.name || unnamed}
+                        </span>
+                        {/* Blank until runs have loaded, rather than claiming none. */}
+                        <span
+                          className="shrink-0 text-xs tabular-nums"
+                          style={{ color: theme.dim }}
+                        >
+                          {shownRuns === null
+                            ? ""
+                            : best === null
+                              ? "no runs yet"
+                              : `best ${formatScore(best)} · ${count} ${count === 1 ? "run" : "runs"}`}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div aria-hidden className="term-rule text-dim/40" />
+            </div>
+            {/* Results first: everyone should find their way to them. Making
+                another is the quieter choice under it. */}
+            <div className="flex flex-col items-start gap-3">
+              <button
+                type="button"
+                onClick={() => setStep("results")}
+                className="text-sm underline underline-offset-4"
+              >
+                {t("resultsButton")}
+              </button>
+              <button
+                type="button"
+                onClick={newAvatar}
+                className="text-sm underline-offset-4 hover:underline"
+                style={{ color: theme.dim }}
+              >
+                {t("newButton")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {status === "ready" && step === "results" && (
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-sm">{t("resultsTitle")}</h1>
+              <p
+                className="whitespace-pre-line text-xs leading-relaxed"
+                style={{ color: theme.dim }}
+              >
+                {t("resultsBody")}
+              </p>
+            </div>
+            <div>
+              {resultRows && resultRows.length > 0 ? (
+                <ul>
+                  {resultRows.map((row) => (
+                    <BoardRowItem
+                      key={row.id}
+                      row={row}
+                      unnamed={unnamed}
+                      compact
+                    />
+                  ))}
+                </ul>
+              ) : (
+                <>
+                  <div aria-hidden className="term-rule text-dim/40" />
+                  <p
+                    className="whitespace-pre-line py-4 text-xs leading-relaxed"
+                    style={{ color: theme.dim }}
+                  >
+                    {resultRows
+                      ? t("resultsEmpty")
+                      : (runsError ?? "loading…")}
+                  </p>
+                </>
+              )}
+              <div aria-hidden className="term-rule text-dim/40" />
+            </div>
             <button
               type="button"
-              onClick={() => setStep("tune")}
-              className="self-start text-sm underline underline-offset-4"
+              onClick={() => setStep("list")}
+              className="self-start text-xs underline-offset-4 hover:underline"
+              style={{ color: theme.dim }}
             >
-              {t("keepTuningButton")}
+              {t("backButton")}
             </button>
           </div>
         )}

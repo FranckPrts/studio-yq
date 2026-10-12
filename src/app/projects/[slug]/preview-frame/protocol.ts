@@ -8,6 +8,8 @@ export type PreviewScreen =
   | "questions"
   | "tune"
   | "done"
+  | "list"
+  | "results"
   | "closed"
   | "notReady"
   | "board"

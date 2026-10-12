@@ -2,7 +2,6 @@
 
 import { useMemo, type ReactNode } from "react";
 import {
-  formatRank,
   formatScore,
   formatTime,
   latestRun,
@@ -16,6 +15,7 @@ import {
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
 import { fillCopy, type ProjectCopy } from "@/lib/theme/project-copy";
+import BoardRowItem from "./board-row";
 import ScoreHistogram from "./score-histogram";
 
 /**
@@ -24,44 +24,6 @@ import ScoreHistogram from "./score-histogram";
  * preview feeds it sample rows and unsaved drafts. One view, so the preview
  * cannot drift from the real thing.
  */
-
-/** Rank column plus the row gap — sub-lines hang off the same left rail. */
-const RAIL = "pl-[calc(2ch+0.75rem)]";
-
-function Row({ row, unnamed }: { row: BoardRow; unnamed: string }) {
-  const [a, b] = row.names;
-  return (
-    <li>
-      <div aria-hidden className="term-rule text-dim/40" />
-      <div className="py-5">
-        <div className="flex items-baseline gap-3">
-          <span className="w-[2ch] shrink-0 text-sm tabular-nums text-dim">
-            {formatRank(row.rank)}
-          </span>
-          <p className="min-w-0 flex-1 text-lg leading-snug">
-            {a || unnamed}
-            <span className="px-2 text-dim">/</span>
-            {b || unnamed}
-          </p>
-          {/* Margin, not padding — `w-[5ch]` is border-box and `100.0` needs it all. */}
-          <span className="ml-1 w-[5ch] shrink-0 text-right text-xl tabular-nums">
-            {formatScore(row.score)}
-          </span>
-        </div>
-        <div className={`mt-1.5 ${RAIL}`}>
-          <p className="text-xs tabular-nums text-dim">
-            {formatTime(row.recordedAt)}
-          </p>
-          {row.strategy && (
-            <p className="mt-2.5 max-w-[46ch] text-sm leading-relaxed text-dim">
-              {row.strategy}
-            </p>
-          )}
-        </div>
-      </div>
-    </li>
-  );
-}
 
 export default function BoardView({
   projectName,
@@ -144,7 +106,7 @@ export default function BoardView({
           ) : (
             <ul>
               {rows.map((row) => (
-                <Row key={row.id} row={row} unnamed={unnamed} />
+                <BoardRowItem key={row.id} row={row} unnamed={unnamed} />
               ))}
             </ul>
           )}
