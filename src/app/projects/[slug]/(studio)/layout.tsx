@@ -9,7 +9,7 @@ import Sidebar from "./sidebar";
  *
  * What is used to *run* a project — the live console and the leaderboard —
  * sits outside this group on purpose. Both open in their own tab from the
- * overview, for a second screen or a projector, where a menu is in the way.
+ * menu, for a second screen or a projector, where a menu is in the way.
  */
 export default async function StudioLayout({
   children,
@@ -21,7 +21,7 @@ export default async function StudioLayout({
   const [project, readiness] = await Promise.all([
     db.project.findUniqueOrThrow({
       where: { id: access.projectId },
-      select: { name: true },
+      select: { name: true, openForParticipation: true },
     }),
     projectReadiness(access.projectId),
   ]);
@@ -32,6 +32,7 @@ export default async function StudioLayout({
         <Sidebar
           slug={slug}
           projectName={project.name}
+          open={project.openForParticipation}
           scriptReady={readiness.hasScript}
           databaseReady={readiness.hasConnection && readiness.provisioned}
         />

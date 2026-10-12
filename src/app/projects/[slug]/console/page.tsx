@@ -48,7 +48,7 @@ export default async function ConsolePage({
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 bg-void p-8 text-paper">
-      {/* Opened in its own tab from the overview, so no project menu — just
+      {/* Opened in its own tab from the project menu, so no menu here — just
           the way back to it. */}
       <header className="flex items-baseline justify-between gap-4 border-b border-paper/10 pb-3">
         <div className="min-w-0">

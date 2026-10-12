@@ -132,7 +132,7 @@ export default function PreviewPane({
         anyone in or saves an avatar. The background behind the avatar is drawn
         by the script, not by the palette. The leaderboard, a returning
         participant&rsquo;s list and their results show made-up runs; the real
-        leaderboard opens from the overview.
+        leaderboard opens from the menu.
       </p>
     </section>
   );

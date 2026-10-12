@@ -26,6 +26,24 @@
   --color-dim: #7f776b;
 }
 
+/*
+ * The "open" light in the project menu. Slower and softer than Tailwind's 2s
+ * `pulse`, so it reads as live without pulling the eye off the page beside it.
+ */
+@theme {
+  --animate-beacon: beacon 3s ease-in-out infinite;
+
+  @keyframes beacon {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+}
+
 body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }

@@ -7,7 +7,6 @@ import PageHeader from "./page-header";
 import ParticipationToggle from "./participation-toggle";
 import { projectReadiness } from "@/lib/projects/readiness";
 import { pendingInvitations } from "@/lib/auth/invitations";
-import { buttonClass } from "@/design";
 import MembersSection from "./members-section";
 import { credentialsReadable } from "@/lib/supabase/management";
 
@@ -43,7 +42,7 @@ function Bucket({
   );
 }
 
-export default async function ProjectOverviewPage({
+export default async function ProjectSettingsPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -99,7 +98,7 @@ export default async function ProjectOverviewPage({
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
       <PageHeader
-        title="overview"
+        title="settings"
         subtitle={`${project.slug} · you are ${access.role.toLowerCase()}${
           access.viaPlatformAdmin ? " (as administrator)" : ""
         }`}
@@ -114,32 +113,6 @@ export default async function ProjectOverviewPage({
           missing={readiness.missing}
           publicUrl={`${base}/p/${project.slug}`}
         />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xs text-dim">run</h2>
-        {/* Each opens in its own tab — the console on a second screen, the
-            board on a projector — so neither carries the project menu. */}
-        <div className="flex flex-wrap gap-x-8 gap-y-2">
-          <Link
-            href={`/projects/${slug}/console`}
-            target="_blank"
-            className={buttonClass("action")}
-          >
-            open live console ↗
-          </Link>
-          <Link
-            href={`/projects/${slug}/board`}
-            target="_blank"
-            className={buttonClass("action")}
-          >
-            open leaderboard ↗
-          </Link>
-        </div>
-        <p className="text-[11px] leading-relaxed text-dim">
-          The console is for whoever is running the session; the leaderboard is
-          what the room sees. Both open in a new tab.
-        </p>
       </section>
 
       <section className="flex flex-col gap-3">
