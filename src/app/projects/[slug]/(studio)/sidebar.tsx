@@ -105,6 +105,18 @@ export default function Sidebar({
           match: `${base}/report/map`,
           hint: "The room as every report shows it.",
         },
+        {
+          label: "email",
+          href: `${base}/report/email`,
+          match: `${base}/report/email`,
+          hint: "What each participant receives.",
+        },
+        {
+          label: "send",
+          href: `${base}/report/send`,
+          match: `${base}/report/send`,
+          hint: "Consent, the sending account, and sending.",
+        },
       ],
     },
     {

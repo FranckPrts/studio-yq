@@ -46,6 +46,8 @@ model User {
   invitationsSent     Invitation[] @relation("InvitedBy")
   invitationsAccepted Invitation[] @relation("AcceptedBy")
 
+  reportNoticesAcknowledged Project[] @relation("ReportNoticeAck")
+
   @@map("users")
 }
 
@@ -177,6 +179,20 @@ model Project {
   /// script upload replaces the declaration and must not drop this with it.
   participantDetails Json?
 
+  /// The participant report email: subject, sender name, reply-to, look, and
+  /// the body as light markdown with {placeholders}. Configuration only — who
+  /// it goes to is read from the tenant's Supabase at send time, never stored
+  /// here. Defaults live in `src/lib/report/email-template.ts`.
+  reportEmail Json?
+
+  /// Who agreed — and when, and to which wording — that sending reports
+  /// passes participants' email addresses through studio-yq. Nothing reads
+  /// `participant_contacts` for sending until this is set to the current
+  /// version of the notice (`src/lib/report/notice.ts`).
+  reportNoticeAckById String?
+  reportNoticeAckAt   DateTime?
+  reportNoticeVersion Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -186,6 +202,9 @@ model Project {
   scripts     AvatarScript[]
   miniScripts MiniScript[]
   invitations Invitation[]
+  gmail       GmailConnection?
+  reportRuns  ReportRun[]
+  reportNoticeAckBy User? @relation("ReportNoticeAck", fields: [reportNoticeAckById], references: [id], onDelete: SetNull)
 
   @@index([ownerId])
   @@map("projects")
@@ -323,4 +342,106 @@ model MiniScript {
   @@unique([projectId, version])
   @@index([projectId])
   @@map("mini_scripts")
+}
+
+// ─── Participant report sending ─────────────────────────────────────────────
+
+/// The Gmail account a project's reports are sent from, authorised by an owner
+/// with the `gmail.send` scope only — it can send as that account, never read
+/// it. The refresh token is envelope-encrypted like a Supabase secret.
+model GmailConnection {
+  id        String @id @default(cuid())
+  projectId String @unique
+
+  /// The account mail goes out as, read from Google at connection time.
+  googleEmail     String
+  refreshTokenEnc String
+  keyVersion      Int    @default(1)
+  scope           String
+
+  connectedById String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("gmail_connections")
+}
+
+enum ReportRunKind {
+  /// One participant's report, sent to members of the team.
+  TEST
+  /// Every participant's report, each sent to members of the team.
+  REHEARSAL
+  /// Chosen participants, each sent their own report.
+  PARTICIPANTS
+  /// Every participant with an email address.
+  EVERYONE
+
+  @@map("report_run_kind")
+}
+
+enum ReportDeliveryStatus {
+  SENT
+  FAILED
+
+  @@map("report_delivery_status")
+}
+
+/// One send, as confirmed: who may receive it (`plan`, fixed when it is
+/// created — the server refuses any recipient not in it), the email text as it
+/// stood (`template`), and the moment the map was frozen at.
+model ReportRun {
+  id        String        @id @default(cuid())
+  projectId String
+  kind      ReportRunKind
+
+  /// Avatars made and runs recorded after this are left off every email.
+  frozenAt     DateTime
+  /// The saved email at the time, so editing mid-send changes nothing.
+  template     Json
+  /// SHA-256 of `template`: a send to participants needs a team test of the
+  /// same text.
+  templateHash String
+  /// Recipient keys this run may deliver to — see ReportDelivery.
+  plan         Json
+  total        Int
+
+  createdById String
+  createdAt   DateTime  @default(now())
+  finishedAt  DateTime?
+  stoppedAt   DateTime?
+
+  project    Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deliveries ReportDelivery[]
+
+  @@index([projectId])
+  @@map("report_runs")
+}
+
+/// One email, sent or failed. Never an address: participants are their
+/// tenant uuid, team members their user id.
+model ReportDelivery {
+  id    String @id @default(cuid())
+  runId String
+
+  /// "p:<owner>" — a participant's own report; "t:<userId>:<owner>" — a team
+  /// member's copy of that participant's report. Unique per run, which is what
+  /// stops a retried request sending twice.
+  recipientKey String
+  /// Whose report it was (the tenant's auth uuid).
+  subjectOwner String
+  teamUserId   String?
+
+  status         ReportDeliveryStatus
+  error          String?
+  gmailMessageId String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  run ReportRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, recipientKey])
+  @@index([subjectOwner])
+  @@map("report_deliveries")
 }

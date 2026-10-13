@@ -28,6 +28,12 @@ export type DrawOptions = {
   sprites: Map<string, CanvasImageSource>;
   /** The participant (owner id) to highlight, or null for the plain map. */
   highlight: string | null;
+  /**
+   * Multiplies the highlight's text and lines. The email shows the map at
+   * half its pixel size in a 600px column, where the map page's labels would
+   * be unreadable.
+   */
+  labelScale?: number;
 };
 
 /**
@@ -124,7 +130,8 @@ function drawHighlight(
   const H = height;
   const px = (i: number) => [layout.nodes[i].x * H, layout.nodes[i].y * H] as const;
   const ring = (i: number) => ringRadius(layout.nodes[i].rad, H);
-  const fontPx = Math.round(H * 0.017);
+  const scale = o.labelScale ?? 1;
+  const fontPx = Math.round(H * 0.017 * scale);
   ctx.font = `${fontPx}px ${style.font}`;
   ctx.textBaseline = "middle";
   ctx.textAlign = "center";
@@ -135,17 +142,36 @@ function drawHighlight(
     taken.some((q) => r.x < q.x + q.w && r.x + r.w > q.x && r.y < q.y + q.h && r.y + r.h > q.y);
   const inside = (r: Rect) => r.x > 2 && r.y > 2 && r.x + r.w < width - 2 && r.y + r.h < height - 2;
 
+  // The rings themselves are taken first, so no label lands on a ringed node.
+  for (const i of [...mine, ...partners]) {
+    const [x, y] = px(i);
+    const r = ring(i);
+    taken.push({ x: x - r, y: y - r, w: r * 2, h: r * 2 });
+  }
+
   const names: { label: string; x: number; y: number; main: boolean }[] = [];
   const reserveName = (i: number, main: boolean) => {
     const [x, y] = px(i);
+    const r = ring(i);
     const label = layout.nodes[i].name;
     const w = ctx.measureText(label).width + 8;
     const h = fontPx * 1.5;
-    const ty = y + ring(i) + fontPx * 0.9;
-    // Kept on the canvas: a name under a node near the edge would run off it.
-    const tx = Math.min(Math.max(x, w / 2 + 2), width - w / 2 - 2);
-    taken.push({ x: tx - w / 2, y: ty - h / 2, w, h });
-    names.push({ label, x: tx, y: ty, main });
+    const gap = fontPx * 0.4;
+    // Below the ring, then above, right and left — the first spot free of
+    // every ring and label so far. Kept on the canvas either way.
+    const spots = [
+      { x, y: y + r + gap + h / 2 },
+      { x, y: y - r - gap - h / 2 },
+      { x: x + r + gap + w / 2, y },
+      { x: x - r - gap - w / 2, y },
+    ].map((p) => ({
+      x: Math.min(Math.max(p.x, w / 2 + 2), width - w / 2 - 2),
+      y: Math.min(Math.max(p.y, h / 2 + 2), height - h / 2 - 2),
+    }));
+    const at =
+      spots.find((p) => !collides({ x: p.x - w / 2, y: p.y - h / 2, w, h })) ?? spots[0];
+    taken.push({ x: at.x - w / 2, y: at.y - h / 2, w, h });
+    names.push({ label, x: at.x, y: at.y, main });
   };
   for (const i of mine) reserveName(i, true);
   for (const i of partners) reserveName(i, false);
@@ -180,8 +206,8 @@ function drawHighlight(
   }
 
   // ---- draw --------------------------------------------------------------
-  const dash = [H * 0.005, H * 0.006];
-  ctx.lineWidth = Math.max(1, H * 0.0014);
+  const dash = [H * 0.005 * scale, H * 0.006 * scale];
+  ctx.lineWidth = Math.max(1, H * 0.0014 * scale);
   for (const e of myEdges) {
     const [x0, y0] = px(e.a);
     const [x1, y1] = px(e.b);
@@ -201,7 +227,7 @@ function drawHighlight(
     ctx.stroke();
   }
   ctx.setLineDash([]);
-  ctx.lineWidth = Math.max(1.5, H * 0.0022);
+  ctx.lineWidth = Math.max(1.5, H * 0.0022 * scale);
   ctx.strokeStyle = style.paper;
   for (const i of mine) {
     const [x, y] = px(i);

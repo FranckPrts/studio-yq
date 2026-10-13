@@ -98,10 +98,12 @@ export default async function MapPage({
       ) : (
         <MapView
           slug={slug}
-          code={script.code}
-          extensions={script.extensions}
-          source={script.source}
-          scriptKey={`${script.source}:${script.version}`}
+          script={{
+            code: script.code,
+            extensions: script.extensions,
+            source: script.source,
+            key: `${script.source}:${script.version}`,
+          }}
           parameters={parameters}
           theme={{
             void: theme.void,

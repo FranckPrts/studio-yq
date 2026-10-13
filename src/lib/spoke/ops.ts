@@ -165,3 +165,54 @@ export async function deleteScore(
   if (error) return { ok: false, error: error.message };
   return data?.length ? { ok: true } : { ok: false, error: SCORE_GONE };
 }
+
+// ─── Participant report sending ─────────────────────────────────────────────
+//
+// The only reads of `participant_contacts` anywhere in studio-yq, and only for
+// sending: the table is private to each participant, so it takes the secret
+// key. Callers must have checked the project's acknowledgement of the
+// pass-through notice first. An address read here goes to Gmail and nowhere
+// else — never into our database, a log line, or a response.
+
+/** The participant's address, or null when they gave none. */
+export async function participantEmail(
+  projectId: string,
+  owner: string,
+): Promise<string | null> {
+  if (!UUID.test(owner)) return null;
+  const client = await opsClient(projectId);
+  if (!client) throw new Error(NEEDS_RECONNECT);
+  const { data, error } = await client
+    .from(TABLES.contacts)
+    .select("email")
+    .eq("owner", owner)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return typeof data?.email === "string" && data.email ? data.email : null;
+}
+
+/**
+ * Participants who can be sent a report: an address on file and at least one
+ * avatar made by `before`. Ids only — the addresses are not selected at all.
+ */
+export async function reachableOwners(
+  projectId: string,
+  before: Date,
+): Promise<string[]> {
+  const client = await opsClient(projectId);
+  if (!client) throw new Error(NEEDS_RECONNECT);
+  const [contacts, avatars] = await Promise.all([
+    client.from(TABLES.contacts).select("owner").not("email", "is", null).range(0, 9999),
+    client
+      .from(TABLES.avatars)
+      .select("owner")
+      .lte("created_at", before.toISOString())
+      .range(0, 9999),
+  ]);
+  if (contacts.error) throw new Error(contacts.error.message);
+  if (avatars.error) throw new Error(avatars.error.message);
+  const withAvatar = new Set((avatars.data ?? []).map((r) => String(r.owner)));
+  return [...new Set((contacts.data ?? []).map((r) => String(r.owner)))].filter((o) =>
+    withAvatar.has(o),
+  );
+}

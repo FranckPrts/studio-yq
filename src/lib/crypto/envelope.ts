@@ -51,7 +51,7 @@ export class UnreadableSecretError extends Error {
  */
 export function aadFor(
   connectionId: string,
-  field: "accessToken" | "refreshToken" | "secretKey",
+  field: "accessToken" | "refreshToken" | "secretKey" | "gmailRefreshToken",
 ): Buffer {
   return Buffer.from(`${FORMAT}|${connectionId}|${field}`, "utf8");
 }
