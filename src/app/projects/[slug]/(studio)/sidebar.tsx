@@ -77,8 +77,8 @@ export default function Sidebar({
           href: `${base}/participant-frontend/colours`,
           match: `${base}/participant-frontend`,
           children: [
-            { label: "colours", href: `${base}/participant-frontend/colours` },
-            { label: "text & fonts", href: `${base}/participant-frontend/text` },
+            { label: "colours & font", href: `${base}/participant-frontend/colours` },
+            { label: "text & participant copy", href: `${base}/participant-frontend/text` },
             { label: "live preview", href: `${base}/participant-frontend/preview` },
           ],
         },

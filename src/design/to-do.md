@@ -91,7 +91,7 @@ the next phase, deliberately not started.
 - [ ] **`field.tsx`** — the text input. The most-repeated string in the app
       (`term-input border-b border-paper/20`, ~12 sites) plus the
       label + hint + error wrapper that `builder.tsx`, `form.tsx` and
-      `copy-form.tsx` each re-declare locally. `FIELD` in `tokens.ts` is the
+      `text-form.tsx` each re-declare locally. `FIELD` in `tokens.ts` is the
       placeholder. **Highest-value next primitive.**
 - [ ] **`textarea.tsx`** — one site today (`builder.tsx`, the JSON box).
 - [ ] **`file-input.tsx`** — two sites in `visual/section.tsx`, with the
@@ -153,7 +153,7 @@ a replacement.
 | Database | `database/{danger,provision,section}.tsx` | 8 buttons, 1 select |
 | Invitations | `admin/invitations/{page,form,admins-section}.tsx` | 4 buttons, 2 selects |
 | Invite / signin | `invite/[token]/*`, `signin/form.tsx` | 4 buttons |
-| Style & language | `participant-frontend/{form,copy-form,preview-pane}.tsx` | 4 buttons, 1 select, 1 checkbox |
+| Style & language | `participant-frontend/{palette-form,text-form,preview-pane}.tsx` | 4 buttons, 1 select, 1 checkbox |
 | Visual | `projects/[slug]/visual/section.tsx` | 2 buttons |
 | Overview | `projects/[slug]/{page,settings-form,participation-toggle}.tsx` | 2 buttons |
 | Projects list | `projects/page.tsx` | 1 button |

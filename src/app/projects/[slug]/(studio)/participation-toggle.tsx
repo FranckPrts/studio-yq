@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   setOpenForParticipation,
   type ParticipationState,
@@ -23,6 +23,21 @@ export default function ParticipationToggle({
     setOpenForParticipation,
     {},
   );
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => () => clearTimeout(copiedTimer.current), []);
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+    } catch {
+      return;
+    }
+    setCopied(true);
+    clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(false), 2000);
+  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -50,12 +65,17 @@ export default function ParticipationToggle({
       {open ? (
         <p className="text-[11px] text-dim">
           Participants go to{" "}
-          <a
-            href={publicUrl}
-            className="text-paper/80 underline underline-offset-4"
+          <button
+            type="button"
+            onClick={copyLink}
+            title="Copy link"
+            className="text-paper/80 underline underline-offset-4 hover:text-paper"
           >
             {publicUrl}
-          </a>
+          </button>
+          <span aria-live="polite" className="ml-2 text-emerald-400/80">
+            {copied ? "copied ✓" : ""}
+          </span>
         </p>
       ) : missing.length > 0 ? (
         <p className="text-[11px] leading-relaxed text-amber-400/80">

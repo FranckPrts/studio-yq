@@ -15,10 +15,10 @@ export type AppearanceState = { saved?: boolean; error?: string };
  * owner is the project's name in a URL and whether participants can reach it
  * at all, both of which live on the project page.
  *
- * Partial on purpose. The palette and the typeface-and-noun are edited on
+ * Partial on purpose. The palette-and-typeface and the noun are edited on
  * separate pages, each posting only its own fields, so a field the form did not
  * send keeps its stored value. Coercing the absent ones instead would quietly
- * reset the typeface to the default every time someone saved a colour.
+ * reset the noun to the default every time someone saved a colour.
  */
 export async function saveAppearance(
   _prev: AppearanceState,
@@ -83,4 +83,18 @@ export async function saveCopy(
   revalidatePath(`/projects/${slug}/participant-frontend`, "layout");
   revalidatePath(`/p/${slug}`);
   return { saved: true };
+}
+
+/**
+ * The text page's one save: the noun and the wording together, as one form
+ * posts them. The noun goes first because `saveAppearance` is the one that can
+ * refuse; if it does, the wording is not touched either.
+ */
+export async function saveText(
+  prev: AppearanceState,
+  formData: FormData,
+): Promise<AppearanceState> {
+  const words = await saveAppearance(prev, formData);
+  if (words.error) return words;
+  return saveCopy(prev, formData);
 }

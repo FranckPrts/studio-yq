@@ -128,7 +128,7 @@ export default function PreviewPane({
 
       <p className="text-[11px] leading-relaxed text-dim">
         The participant page itself, as saved, with the latest script — save on
-        colours or text &amp; fonts to see a change here. Nothing here signs
+        colours &amp; font or text &amp; participant copy to see a change here. Nothing here signs
         anyone in or saves an avatar. The background behind the avatar is drawn
         by the script, not by the palette. The leaderboard, a returning
         participant&rsquo;s list and their results show made-up runs; the real

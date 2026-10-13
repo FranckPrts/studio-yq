@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { saveAppearance, type AppearanceState } from "./actions";
-import type { ProjectTheme } from "@/lib/theme/project-theme";
+import { FONTS, type FontKey, type ProjectTheme } from "@/lib/theme/project-theme";
 import { useUnsavedChanges } from "../use-unsaved-changes";
 
 export type Palette = Pick<ProjectTheme, "void" | "paper" | "dim">;
@@ -10,17 +10,20 @@ export type Palette = Pick<ProjectTheme, "void" | "paper" | "dim">;
 const ROLES = ["void", "paper", "dim"] as const;
 
 /**
- * The three colours. Posts only these, and `saveAppearance` keeps whatever it
- * was not sent, so the typeface saved on the text page is left alone.
+ * The three colours and the typeface. Posts only these, and `saveAppearance`
+ * keeps whatever it was not sent, so the noun saved on the text page is left
+ * alone.
  */
 export default function PaletteForm({
   slug,
   palette,
+  font,
 }: {
   slug: string;
   palette: Palette;
+  font: FontKey;
 }) {
-  const [saved, setSaved] = useState(palette);
+  const [saved, setSaved] = useState({ ...palette, font });
   const [state, action, pending] = useActionState<AppearanceState, FormData>(
     async (prev, formData) => {
       const result = await saveAppearance(prev, formData);
@@ -29,6 +32,7 @@ export default function PaletteForm({
           void: String(formData.get("void")),
           paper: String(formData.get("paper")),
           dim: String(formData.get("dim")),
+          font: String(formData.get("font")) as FontKey,
         });
       }
       return result;
@@ -36,8 +40,10 @@ export default function PaletteForm({
     {},
   );
   const [draft, setDraft] = useState(palette);
+  const [draftFont, setDraftFont] = useState(font);
 
-  const dirty = ROLES.some((role) => draft[role] !== saved[role]);
+  const dirty =
+    ROLES.some((role) => draft[role] !== saved[role]) || draftFont !== saved.font;
   useUnsavedChanges(dirty);
 
   function set(role: (typeof ROLES)[number], value: string) {
@@ -80,13 +86,33 @@ export default function PaletteForm({
         </p>
       </section>
 
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xs text-dim">typeface</h2>
+        <select
+          name="font"
+          value={draftFont}
+          onChange={(e) => setDraftFont(e.target.value as FontKey)}
+          className="term-input max-w-xs border-b border-paper/20 bg-void"
+        >
+          {Object.entries(FONTS).map(([key, f]) => (
+            <option key={key} value={key}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+        <p className="text-[11px] leading-relaxed text-dim">
+          Typefaces come from a list we host, so licensing and loading stay our
+          problem rather than yours.
+        </p>
+      </section>
+
       <div className="flex items-center gap-3">
         <button
           type="submit"
           disabled={pending || !dirty}
           className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
         >
-          {pending ? "saving…" : "save colours"}
+          {pending ? "saving…" : "save colours & font"}
         </button>
         {state.error ? (
           <p role="alert" className="text-xs text-red-400">

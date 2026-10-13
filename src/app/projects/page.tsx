@@ -18,7 +18,7 @@ export default async function ProjectsPage() {
             {user.isPlatformAdmin && " · administrator"}
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-baseline gap-4">
           {user.isPlatformAdmin && (
             <Link
               href="/admin/invitations"

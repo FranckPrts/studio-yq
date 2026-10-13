@@ -16,8 +16,8 @@ export default async function ColoursPage({
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
       <PageHeader
-        title="style & language · colours"
-        subtitle="The colours the participant page is drawn in."
+        title="style & language · colours & font"
+        subtitle="The colours and typeface the participant page is drawn in."
       >
         <PreviewLink slug={slug} />
       </PageHeader>
@@ -25,6 +25,7 @@ export default async function ColoursPage({
         <PaletteForm
           slug={slug}
           palette={{ void: theme.void, paper: theme.paper, dim: theme.dim }}
+          font={theme.font}
         />
       ) : (
         <p className="text-xs text-dim">You have read-only access to this project.</p>
