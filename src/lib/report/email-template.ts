@@ -4,8 +4,9 @@ import type { FontKey } from "@/lib/theme/project-theme";
  * The participant report email: what the tenant writes, and how it becomes a
  * message.
  *
- * The body is light markdown — paragraphs, **bold**, *italic*, [links](https://…),
- * "- " lists and "> " quotes — with {placeholders} for the participant's own
+ * The body is light markdown — paragraphs, **bold**, *italic*, links
+ * ([text](https://…), [text](mailto:…) or a bare https:// address), "- " lists
+ * and "> " quotes — with {placeholders} for the participant's own
  * details, and three image blocks, each on a paragraph of its own: {portrait},
  * {map} and {histogram}. Anything else is text: never HTML, from the tenant or
  * from a participant's name, so nothing either types can change the markup.
@@ -229,24 +230,50 @@ function parseBlocks(body: string): Block[] {
 }
 
 /**
- * Inline markdown on already-escaped text. Links must be http(s) — nothing
- * else can reach an href. Placeholders are sentinels at this point, so a
- * participant named "**x**" stays exactly that.
+ * Links, in markdown or bare: `[text](https://…)`, `[text](mailto:…)`, or an
+ * address pasted on its own. Only http(s) and mailto can reach an href.
+ * The bare form stops at whitespace, `<`, and the escaped quote/angle
+ * entities, and leaves trailing punctuation outside — "see https://x.org."
+ * links x.org, not "x.org.".
+ */
+const LINK =
+  /\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)|(https?:\/\/(?:(?!&quot;|&lt;|&gt;)[^\s<])+)/g;
+const TRAILING = /[.,;:!?)\]'"]+$/;
+/** Holds a finished link while bold and italics run, so they never touch it. */
+const LINK_SLOT = /\u0001(\d+)\u0001/g;
+
+/**
+ * Inline markdown on already-escaped text. Placeholders are sentinels at this
+ * point, so a participant named "**x**" stays exactly that.
+ *
+ * Links are made first and set aside, so an underscore pair inside a URL
+ * (`/my_page_here`) is never read as italics.
  */
 function inlineHtml(escaped: string, linkStyle: string): string {
+  const links: string[] = [];
+  const keep = (html: string) => {
+    links.push(html);
+    return `\u0001${links.length - 1}\u0001`;
+  };
   return escaped
-    .replace(
-      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-      (_, label: string, url: string) => `<a href="${url}" style="${linkStyle}">${label}</a>`,
-    )
+    .replace(LINK, (match, label?: string, url?: string, bare?: string) => {
+      if (label && url) return keep(`<a href="${url}" style="${linkStyle}">${label}</a>`);
+      const tail = bare!.match(TRAILING)?.[0] ?? "";
+      const href = bare!.slice(0, bare!.length - tail.length);
+      return keep(`<a href="${href}" style="${linkStyle}">${href}</a>`) + tail;
+    })
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?![*\w])/g, "$1<em>$2</em>")
-    .replace(/(^|[^_\w])_([^_\s][^_]*?)_(?![_\w])/g, "$1<em>$2</em>");
+    .replace(/(^|[^_\w])_([^_\s][^_]*?)_(?![_\w])/g, "$1<em>$2</em>")
+    .replace(LINK_SLOT, (_, i: string) => links[Number(i)]);
 }
 
 function inlineText(raw: string): string {
   return raw
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, "$1 ($2)")
+    .replace(
+      /\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g,
+      (_, label: string, url: string) => `${label} (${url.replace(/^mailto:/, "")})`,
+    )
     .replace(/\*\*([^*]+)\*\*/g, "$1");
 }
 

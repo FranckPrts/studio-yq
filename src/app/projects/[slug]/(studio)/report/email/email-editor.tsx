@@ -77,8 +77,12 @@ export default function EmailEditor({
 
   const set = (update: Partial<ReportEmail>) => setDraft((d) => ({ ...d, ...update }));
 
-  /** Puts a token at the cursor — or around the selection, for a conditional. */
-  function insert(open: string, close = "") {
+  /**
+   * Puts a token at the cursor — or around the selection, for a conditional or
+   * formatting. `back` leaves the caret that many characters before the end,
+   * e.g. inside a link's "(https://)" ready for the address.
+   */
+  function insert(open: string, close = "", back = 0) {
     const el = bodyRef.current;
     if (!el) return;
     const { selectionStart: a, selectionEnd: b, value } = el;
@@ -86,7 +90,7 @@ export default function EmailEditor({
     set({ body: next });
     requestAnimationFrame(() => {
       el.focus();
-      const caret = a + open.length + (b - a) + close.length;
+      const caret = a + open.length + (b - a) + close.length - back;
       el.setSelectionRange(caret, caret);
     });
   }
@@ -211,7 +215,8 @@ export default function EmailEditor({
           <p>
             Click to insert at the cursor. Line breaks are kept; a blank line
             starts a new paragraph. <code>**bold**</code>, <code>*italic*</code>,{" "}
-            <code>[a link](https://…)</code>, <code>- </code> lists and{" "}
+            <code>[link text](https://…)</code> (or <code>mailto:</code>, or an
+            address pasted on its own), <code>- </code> lists and{" "}
             <code>&gt; </code> quotes work; anything else is plain text, never
             HTML.
           </p>
@@ -242,6 +247,38 @@ export default function EmailEditor({
                   {`{${key}}`}
                 </button>
               ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-paper/70">formatting — wraps the selection</span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                title="Turns the selected words into a link; replace https:// with the address"
+                disabled={!canEdit}
+                onClick={() => insert("[", "](https://)", 1)}
+                className={chip}
+              >
+                [link](https://…)
+              </button>
+              <button
+                type="button"
+                title="Bold"
+                disabled={!canEdit}
+                onClick={() => insert("**", "**")}
+                className={chip}
+              >
+                **bold**
+              </button>
+              <button
+                type="button"
+                title="Italic"
+                disabled={!canEdit}
+                onClick={() => insert("*", "*")}
+                className={chip}
+              >
+                *italic*
+              </button>
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
