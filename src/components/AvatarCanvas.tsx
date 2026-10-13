@@ -32,6 +32,12 @@ type AvatarCanvasProps = {
   extensions?: { url: string }[];
   className?: string;
   onLog?: (log: SketchLog) => void;
+  /**
+   * Take one picture of the canvas once the sketch reaches `afterFrame`, as a
+   * PNG data URL. Read once at mount, like the initial params — remount (a new
+   * `key`) for another capture, which also restarts the sketch from frame 1.
+   */
+  capture?: { afterFrame: number; onImage: (dataUrl: string) => void };
 };
 
 /**
@@ -50,6 +56,7 @@ export default function AvatarCanvas({
   extensions = [],
   className = "",
   onLog,
+  capture,
 }: AvatarCanvasProps) {
   // Host knobs win: a declaration cannot override the page's own composition.
   // Compared by value, like `extensions` — an inline `{ intensity: 1 }` would
@@ -62,9 +69,12 @@ export default function AvatarCanvas({
   );
   const frameRef = useRef<HTMLIFrameElement>(null);
   const onLogRef = useRef(onLog);
+  const onImageRef = useRef(capture?.onImage);
   useEffect(() => {
     onLogRef.current = onLog;
+    onImageRef.current = capture?.onImage;
   });
+  const [captureAt] = useState(() => capture?.afterFrame ?? 0);
 
   /**
    * The frame is booted once with whatever params it had at mount; everything
@@ -121,6 +131,27 @@ export default function AvatarCanvas({
         }
       });
 
+      /*
+       * The capture. Taken in p5's 'post' hook — straight after draw(), before
+       * the browser composites — because a WebGL canvas may clear its drawing
+       * buffer once the frame is shown, and a picture taken later is blank.
+       * The parent cannot reach in for it: the frame has an opaque origin.
+       */
+      var __yqCaptureAt = ${captureAt};
+      if (__yqCaptureAt > 0 && typeof p5 !== 'undefined') {
+        var __yqCaptured = false;
+        p5.prototype.registerMethod('post', function () {
+          if (__yqCaptured || this.frameCount < __yqCaptureAt) return;
+          __yqCaptured = true;
+          try {
+            var canvas = (this._renderer && this._renderer.elt) || document.querySelector('canvas');
+            sendEvent({ capture: canvas.toDataURL('image/png') });
+          } catch (error) {
+            sendEvent({ log: { message: 'Capture failed: ' + (error.message || String(error)), type: 'error' } });
+          }
+        });
+      }
+
       window.addEventListener('error', function (event) {
         sendEvent({ log: {
           message: (event.error && event.error.message) || event.message || 'Unknown error',
@@ -175,7 +206,7 @@ export default function AvatarCanvas({
     </script>
   </body>
 </html>`;
-  }, [code, extensionsKey, initialParams]);
+  }, [code, extensionsKey, initialParams, captureAt]);
 
   // Hand new params to the running sketch without tearing it down.
   useEffect(() => {
@@ -188,7 +219,7 @@ export default function AvatarCanvas({
   useEffect(() => {
     function onMessage(event: MessageEvent) {
       if (event.source !== frameRef.current?.contentWindow) return;
-      let incoming: { log?: SketchLog } | null = null;
+      let incoming: { log?: SketchLog; capture?: unknown } | null = null;
       try {
         incoming =
           typeof event.data === "string" ? JSON.parse(event.data) : event.data;
@@ -196,6 +227,13 @@ export default function AvatarCanvas({
         return; // untrusted data, not a protocol
       }
       if (incoming?.log) onLogRef.current?.(incoming.log);
+      // Only ever a PNG we asked for; anything else claiming to be one is not.
+      if (
+        typeof incoming?.capture === "string" &&
+        incoming.capture.startsWith("data:image/png;base64,")
+      ) {
+        onImageRef.current?.(incoming.capture);
+      }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);

@@ -27,29 +27,23 @@ export function zipFiles(files: BundleFile[]): Uint8Array {
   return zipSync(entries, { level: 6 });
 }
 
-export async function starterFile(
-  which: "sketch" | "parameters" | "readme",
-): Promise<string> {
-  const name =
-    which === "sketch"
-      ? "sketch.js"
-      : which === "parameters"
-        ? "parameters.json"
-        : "README.md";
-  return readFile(path.join(STARTER_DIR, name), "utf8");
+export const STARTER_FILES = {
+  sketch: "sketch.js",
+  parameters: "parameters.json",
+  readme: "README.md",
+  mini: "mini.js",
+} as const;
+
+export type StarterFile = keyof typeof STARTER_FILES;
+
+export async function starterFile(which: StarterFile): Promise<string> {
+  return readFile(path.join(STARTER_DIR, STARTER_FILES[which]), "utf8");
 }
 
 export async function starterBundle(): Promise<BundleFile[]> {
-  const [sketch, parameters, readme] = await Promise.all([
-    starterFile("sketch"),
-    starterFile("parameters"),
-    starterFile("readme"),
-  ]);
-  return [
-    { name: "sketch.js", content: sketch },
-    { name: "parameters.json", content: parameters },
-    { name: "README.md", content: readme },
-  ];
+  const which = Object.keys(STARTER_FILES) as StarterFile[];
+  const contents = await Promise.all(which.map(starterFile));
+  return which.map((w, i) => ({ name: STARTER_FILES[w], content: contents[i] }));
 }
 
 /** A short note packed with a downloaded project script, so it is self-explaining. */

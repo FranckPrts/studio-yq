@@ -91,6 +91,17 @@ export default function Sidebar({
       ],
     },
     {
+      heading: "participant report",
+      items: [
+        {
+          label: "mini-avatar",
+          href: `${base}/report/mini-avatar`,
+          match: `${base}/report/mini-avatar`,
+          hint: "The simplified avatar drawn on the map and in the email.",
+        },
+      ],
+    },
+    {
       heading: "data",
       items: [
         {

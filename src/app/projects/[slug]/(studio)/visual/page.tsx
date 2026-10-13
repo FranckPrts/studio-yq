@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import type { Parameter } from "@/lib/params/types";
@@ -64,7 +65,15 @@ export default async function VisualPage({
           <h2 className="text-xs tracking-widest text-dim uppercase">script</h2>
           <p className="max-w-prose text-[11px] leading-relaxed text-dim">
             Authored in YouQuantified&rsquo;s editor and uploaded here as a
-            whole — nothing is edited in place.
+            whole — nothing is edited in place. The simplified version reports
+            draw lives under{" "}
+            <Link
+              href={`/projects/${slug}/report/mini-avatar`}
+              className="underline underline-offset-4 hover:text-paper"
+            >
+              mini-avatar
+            </Link>
+            .
           </p>
         </header>
         <ScriptSection

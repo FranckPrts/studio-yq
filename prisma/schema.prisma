@@ -184,6 +184,7 @@ model Project {
   members     Membership[]
   connection  SupabaseConnection?
   scripts     AvatarScript[]
+  miniScripts MiniScript[]
   invitations Invitation[]
 
   @@index([ownerId])
@@ -292,4 +293,34 @@ model AvatarScript {
   @@unique([projectId, version])
   @@index([projectId])
   @@map("avatar_scripts")
+}
+
+/// The simplified avatar drawn in participant reports — on the map, one per
+/// node, and in the email — e.g. one fish where the avatar is a whole school.
+///
+/// Its own table rather than a `kind` on AvatarScript: a dozen places take "the
+/// highest AvatarScript version" to be the live avatar, and none of them should
+/// ever be able to pick this up instead.
+///
+/// It has no declaration. It reads the same `data` as the main script, under
+/// the same names, so a participant's avatar needs no second set of values.
+/// Append-only and promotable, like the main script.
+model MiniScript {
+  id        String @id @default(cuid())
+  projectId String
+  version   Int
+
+  label String?
+  /// Null records a deliberate switch back to drawing reports with the main
+  /// script, kept as a version so the history says when it happened.
+  code  String?
+
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, version])
+  @@index([projectId])
+  @@map("mini_scripts")
 }

@@ -76,6 +76,15 @@ The same key works on any numeric parameter, not just hue.
 | --- | --- |
 | `size`, `intensity`, `center_y` | Host-only composition, same as the star. `AvatarCanvas` sends only declared parameters, so these fall to the sketch's defaults — which `knobs()` is written to expect. |
 
+## The mini-avatar
+
+`mini.js` is what participant reports draw: one fish in the participant's `hue`
+(body) and `hue2` (tail and water), in the first `shape` they chose. It ignores
+`count`, `wave` and the shaders — a school's density and the water's motion
+don't read at the size of a map node, and a 2D sketch with no shader passes is
+cheap to render once per avatar. Upload it on the project's **mini-avatar**
+page; it reads the same `data` as `sketch.js`, so it has no declaration.
+
 ## Checking it
 
 ```sh

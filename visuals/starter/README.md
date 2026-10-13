@@ -6,6 +6,7 @@ A working sketch and its declaration. Edit `sketch.js`, adjust
 ```
 sketch.js         the p5 sketch
 parameters.json   the controls the participant gets
+mini.js           optional: the simplified avatar participant reports draw
 ```
 
 ## The contract
@@ -86,3 +87,17 @@ for a relative path to resolve against and nothing to fetch from.
 Upload and the platform validates the declaration, then cross-checks it against
 the sketch and warns about names declared but never read, or read but never
 declared.
+
+## The mini-avatar (optional)
+
+Participant reports draw each person's avatar on a map and in their email.
+`mini.js` is a simplified version for that — one shape where the avatar is a
+crowd — uploaded on the project's **mini-avatar** page. Without one, reports
+draw `sketch.js` as it is.
+
+It has no `parameters.json`: it reads the same `data` as `sketch.js`, under the
+same names. On top of the main contract it must draw on a transparent
+background (`clear()`), centred and sized from `min(width, height)`; look the
+same every time (seed with `data.seed`, animate from `frameCount`); be posed by
+frame 60, when the picture is taken; and stay readable when small. The comment
+at the top of `mini.js` lists the rules in full.
