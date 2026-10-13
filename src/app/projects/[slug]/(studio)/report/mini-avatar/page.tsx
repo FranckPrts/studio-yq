@@ -124,6 +124,7 @@ export default async function MiniAvatarPage({
             code={script.code}
             extensions={script.extensions}
             source={script.source}
+            scriptKey={`${script.source}:${script.version}`}
             parameters={parameters}
             ground={theme.void}
             noun={lexicon.noun}

@@ -99,6 +99,12 @@ export default function Sidebar({
           match: `${base}/report/mini-avatar`,
           hint: "The simplified avatar drawn on the map and in the email.",
         },
+        {
+          label: "map",
+          href: `${base}/report/map`,
+          match: `${base}/report/map`,
+          hint: "The room as every report shows it.",
+        },
       ],
     },
     {
