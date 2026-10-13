@@ -18,6 +18,12 @@ export type EmailQuestion = {
   /** What the participant sees, before any "(optional)" marker. */
   label: string;
   placeholder: string;
+  /**
+   * One line under the field saying what the address is for — shown because
+   * people should know before they give it. A blank one falls back to the
+   * default rather than to silence.
+   */
+  purpose: string;
   required: boolean;
 };
 
@@ -31,9 +37,20 @@ export const MAX_EMAIL_LENGTH = 254;
 
 const MAX_LABEL_LENGTH = 80;
 const MAX_PLACEHOLDER_LENGTH = 120;
+export const MAX_PURPOSE_LENGTH = 240;
+
+/** What the address is for, as the participant report uses it. */
+export const DEFAULT_EMAIL_PURPOSE =
+  "Only used to email you your results after the event — your creation, the map of everyone who took part, and how you did. Never shared, never used for anything else.";
 
 export const DEFAULT_PARTICIPANT_DETAILS: ParticipantDetails = {
-  email: { enabled: false, label: "email", placeholder: "", required: false },
+  email: {
+    enabled: false,
+    label: "email",
+    placeholder: "",
+    purpose: DEFAULT_EMAIL_PURPOSE,
+    required: false,
+  },
 };
 
 function clean(value: unknown, max: number): string {
@@ -58,6 +75,7 @@ export function coerceParticipantDetails(value: unknown): ParticipantDetails {
       enabled: email.enabled === true,
       label: clean(email.label, MAX_LABEL_LENGTH) || fallback.label,
       placeholder: clean(email.placeholder, MAX_PLACEHOLDER_LENGTH),
+      purpose: clean(email.purpose, MAX_PURPOSE_LENGTH) || fallback.purpose,
       required: email.required === true,
     },
   };

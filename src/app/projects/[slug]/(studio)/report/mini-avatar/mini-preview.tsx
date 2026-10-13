@@ -164,7 +164,7 @@ export default function MiniPreview({
             extensions={extensions}
             ground={ground}
             record={queue.record}
-            className="h-60 w-60"
+            displayPx={240}
           />
           <figcaption className="text-[11px] text-dim">
             {queue.current

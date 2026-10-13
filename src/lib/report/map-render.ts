@@ -279,7 +279,9 @@ export function softenSprite(image: HTMLImageElement): HTMLCanvasElement {
   ctx.globalCompositeOperation = "destination-in";
   const r = size / 2;
   const g = ctx.createRadialGradient(r, r, 0, r, r, r);
-  g.addColorStop(0.55, "rgba(0,0,0,1)");
+  // Only the outer rim fades: a main script often draws out to the edges (a
+  // school's ring sits at ~70% of the radius), and an early fade erased it.
+  g.addColorStop(0.78, "rgba(0,0,0,1)");
   g.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);

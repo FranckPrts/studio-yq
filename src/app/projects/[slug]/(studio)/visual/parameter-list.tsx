@@ -56,6 +56,7 @@ export default function ParameterList({
                   <li className="border-b border-paper/10 pb-2">
                     {emailLabel(email, optionalMarker)}{" "}
                     <span className="text-dim">· email · kept private</span>
+                    <span className="block text-[11px] text-dim">{email.purpose}</span>
                   </li>
                 )}
               </ul>

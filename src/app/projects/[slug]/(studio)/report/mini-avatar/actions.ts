@@ -155,3 +155,18 @@ export async function revertToMainScript(formData: FormData): Promise<void> {
 
   revalidatePath(pagePath(slug));
 }
+
+/**
+ * Removes one version from the history for good. The newest version left is
+ * then the one drawn — an older mini-script, a switch back, or, with nothing
+ * left, the main script. The page says which before it is confirmed.
+ */
+export async function deleteMiniScript(formData: FormData): Promise<void> {
+  const slug = String(formData.get("slug") ?? "");
+  const version = Number(formData.get("version"));
+  const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
+  if (!Number.isInteger(version)) return;
+
+  await db.miniScript.deleteMany({ where: { projectId, version } });
+  revalidatePath(pagePath(slug));
+}

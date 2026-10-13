@@ -35,6 +35,11 @@
      size        school radius before scaling    (default 120)
      intensity   0–1, how present the school is  (default 1)
      center_y    vertical centre as a fraction   (default 0.5)
+     mini        true when a participant report is photographing it:
+                 the grain and wave passes are skipped, because at the
+                 size of a map node or an email picture they read as
+                 noise and wash the school out. What the participant
+                 chose still shows everywhere else.
 
    Missing or junk keys fall back to DEFAULTS, so a partial payload
    still renders rather than throwing.
@@ -374,6 +379,7 @@ function knobs() {
     fx_grain: flag(raw.fx_grain, DEFAULTS.fx_grain),
     intensity: num(raw.intensity, DEFAULTS.intensity),
     center_y: num(raw.center_y, DEFAULTS.center_y),
+    mini: flag(raw.mini, false),
   };
 }
 
@@ -608,12 +614,12 @@ draw = () => {
   updateParticles(u, t, dt);
   renderParticles(u, t);
 
-  if (u.fx_wave && u.wave > 0) {
+  if (u.fx_wave && u.wave > 0 && !u.mini) {
     waveShader.setUniform("uTime", t);
     filter(waveShader);
   }
 
-  if (u.fx_grain) {
+  if (u.fx_grain && !u.mini) {
     if (S.post.grainAnimate) {
       postShader.setUniform("uSeed", (frameCount * 0.618034) % 1);
     }

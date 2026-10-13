@@ -83,7 +83,7 @@ export function CapturingNotice({
         extensions={script.extensions}
         ground={ground}
         record={queue.record}
-        className="h-24 w-24 shrink-0"
+        displayPx={96}
       />
       <figcaption className="text-[11px] text-dim">
         Photographing mini-avatars: {queue.index + 1} of {queue.total}. Keep this

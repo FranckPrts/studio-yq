@@ -486,6 +486,9 @@ export default function ParticipantExperience({
                   onChange={(e) => setEmailValue(e.target.value)}
                   autoFocus={questions.length === 0}
                 />
+                <span className="text-xs leading-relaxed" style={{ color: theme.dim }}>
+                  {email.purpose}
+                </span>
               </label>
             )}
             <div className="flex items-center gap-4">

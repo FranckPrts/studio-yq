@@ -13,6 +13,15 @@ import type { ParamValues } from "@/lib/params/coerce";
 export const MINI_CAPTURE_FRAME = 60;
 
 /**
+ * The size, in CSS pixels, every mini-avatar is drawn at for its picture —
+ * whatever size the stage happens to be shown at. A sketch sizes itself from
+ * its window, so a picture taken through a 96px stage was a 96px picture,
+ * blown up and blurred in the email; and pixel-sized effects (a grain pass
+ * that offsets by 5px) scatter a small canvas far more than a large one.
+ */
+export const MINI_CAPTURE_PX = 512;
+
+/**
  * How long a capture may take before it is given up on. Loading p5 from the
  * CDN plus 60 frames is a second or two; this is for a sketch that errored or
  * called `noLoop()` and so never reaches the frame.

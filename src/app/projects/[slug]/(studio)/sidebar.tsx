@@ -70,6 +70,17 @@ export default function Sidebar({
       ],
     },
     {
+      heading: "data",
+      items: [
+        {
+          label: "database",
+          href: `${base}/database`,
+          match: `${base}/database`,
+          ready: databaseReady,
+        },
+      ],
+    },
+    {
       heading: "design",
       items: [
         {
@@ -116,17 +127,6 @@ export default function Sidebar({
           href: `${base}/report/send`,
           match: `${base}/report/send`,
           hint: "Consent, the sending account, and sending.",
-        },
-      ],
-    },
-    {
-      heading: "data",
-      items: [
-        {
-          label: "database",
-          href: `${base}/database`,
-          match: `${base}/database`,
-          ready: databaseReady,
         },
       ],
     },

@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
+  deleteMiniScript,
   promoteMiniScript,
   uploadMiniScript,
   revertToMainScript,
@@ -35,8 +36,15 @@ export default function MiniUploadSection({
     {},
   );
 
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+
   const active = versions[0];
   const usingMini = !!active?.hasCode;
+
+  const describe = (v: MiniVersion | undefined) =>
+    !v || !v.hasCode
+      ? "the main avatar"
+      : `v${v.version} (${v.label ?? "mini-script"})`;
 
   return (
     <div className="flex flex-col gap-5">
@@ -56,7 +64,18 @@ export default function MiniUploadSection({
           )}
         </div>
 
-        <div className="flex shrink-0 gap-4 text-xs">
+        <div className="flex shrink-0 flex-wrap items-baseline gap-4 text-xs">
+          {canEdit && usingMini && (
+            <form action={revertToMainScript}>
+              <input type="hidden" name="slug" value={slug} />
+              <button
+                type="submit"
+                className="rounded border border-paper/20 px-2 py-0.5 text-paper/90 hover:border-paper/50 hover:text-paper"
+              >
+                reset to the main avatar
+              </button>
+            </form>
+          )}
           {usingMini && (
             <a
               href={`/api/projects/${slug}/mini-script`}
@@ -128,25 +147,13 @@ export default function MiniUploadSection({
             </div>
           )}
 
-          <div className="flex flex-wrap items-baseline gap-6">
-            <button
-              type="submit"
-              disabled={pending}
-              className="text-sm text-paper underline underline-offset-4 disabled:text-dim"
-            >
-              {pending ? "uploading…" : "upload version"}
-            </button>
-            {usingMini && (
-              <button
-                type="submit"
-                formAction={revertToMainScript}
-                formNoValidate
-                className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
-              >
-                draw with the main script instead
-              </button>
-            )}
-          </div>
+          <button
+            type="submit"
+            disabled={pending}
+            className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+          >
+            {pending ? "uploading…" : "upload version"}
+          </button>
         </form>
       )}
 
@@ -157,8 +164,9 @@ export default function MiniUploadSection({
             {versions.map((v, i) => (
               <li
                 key={v.version}
-                className="flex items-baseline justify-between gap-4 border-b border-paper/10 pb-2"
+                className="flex flex-col gap-2 border-b border-paper/10 pb-2"
               >
+                <div className="flex items-baseline justify-between gap-4">
                 <span className={i === 0 ? "" : "text-dim"}>
                   v{v.version} ·{" "}
                   {v.hasCode ? (v.label ?? "mini-script") : "back to the main script"}
@@ -186,7 +194,46 @@ export default function MiniUploadSection({
                       </button>
                     </form>
                   )}
+                  {canEdit && confirmDelete !== v.version && (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(v.version)}
+                      className="underline-offset-4 hover:text-red-300 hover:underline"
+                    >
+                      delete
+                    </button>
+                  )}
                 </span>
+                </div>
+                {canEdit && confirmDelete === v.version && (
+                  <form
+                    action={deleteMiniScript}
+                    onSubmit={() => setConfirmDelete(null)}
+                    className="flex flex-wrap items-baseline gap-4 rounded border border-red-500/40 p-2"
+                  >
+                    <input type="hidden" name="slug" value={slug} />
+                    <input type="hidden" name="version" value={v.version} />
+                    <span className="text-red-200">
+                      Delete v{v.version} for good?
+                      {i === 0 &&
+                        ` Reports will be drawn with ${describe(versions[1])} instead.`}
+                    </span>
+                    <button
+                      type="submit"
+                      className="text-red-200 underline underline-offset-4"
+                    >
+                      delete
+                    </button>
+                    <button
+                      type="button"
+                      autoFocus
+                      onClick={() => setConfirmDelete(null)}
+                      className="text-dim hover:text-paper"
+                    >
+                      keep it
+                    </button>
+                  </form>
+                )}
               </li>
             ))}
           </ul>

@@ -5,6 +5,7 @@ import AvatarCanvas, { type SketchLog } from "@/components/AvatarCanvas";
 import type { ParamValues } from "@/lib/params/coerce";
 import {
   MINI_CAPTURE_FRAME,
+  MINI_CAPTURE_PX,
   MINI_CAPTURE_TIMEOUT_MS,
   miniHost,
 } from "@/lib/report/mini";
@@ -29,7 +30,7 @@ export type CaptureResult = { image: string } | { error: string };
  */
 const taken = new Map<string, string>();
 const cacheKey = (script: string, s: CaptureSubject) =>
-  `${script}|${s.id}|${JSON.stringify(s.params)}`;
+  `${script}|${MINI_CAPTURE_PX}|${s.id}|${JSON.stringify(s.params)}`;
 
 export function useCaptureQueue(subjects: CaptureSubject[], script: string) {
   const [results, setResults] = useState<Map<string, CaptureResult>>(new Map());
@@ -68,12 +69,25 @@ export function useCaptureQueue(subjects: CaptureSubject[], script: string) {
     setRun((n) => n + 1);
   }
 
-  return { resultOf, current, index, total: subjects.length, record, restart, run };
+  return {
+    resultOf,
+    current,
+    index,
+    total: subjects.length,
+    record,
+    restart,
+    run,
+  };
 }
 
 /**
  * The visible frame the queue photographs through. Gives up on a subject after
  * a timeout, reporting the first error the sketch logged if there was one.
+ *
+ * The sketch always runs in a frame of MINI_CAPTURE_PX square, shrunk with a
+ * CSS transform to fit the box it is shown in — so the picture is the same
+ * size and quality on every page. Shrunk, not hidden: it stays on screen,
+ * which is what keeps the browser animating it.
  */
 export function CaptureStage({
   current,
@@ -82,6 +96,7 @@ export function CaptureStage({
   extensions,
   ground,
   record,
+  displayPx,
   className = "",
 }: {
   current: CaptureSubject | null;
@@ -90,6 +105,8 @@ export function CaptureStage({
   extensions: { url: string }[];
   ground: string;
   record: (subject: CaptureSubject, result: CaptureResult) => void;
+  /** How big the stage is shown, in CSS pixels. Does not change the picture. */
+  displayPx: number;
   className?: string;
 }) {
   const firstError = useRef<string | null>(null);
@@ -119,23 +136,32 @@ export function CaptureStage({
 
   return (
     <div
-      className={`relative overflow-hidden border border-paper/10 ${className}`}
-      style={{ background: ground }}
+      className={`relative shrink-0 overflow-hidden border border-paper/10 ${className}`}
+      style={{ background: ground, width: displayPx, height: displayPx }}
     >
       {current && (
-        <AvatarCanvas
-          key={`${run}:${current.id}`}
-          code={code}
-          extensions={extensions}
-          params={current.params}
-          host={miniHost(current.id)}
-          onLog={onLog}
-          capture={{
-            afterFrame: MINI_CAPTURE_FRAME,
-            onImage: (image) => recordRef.current(current, { image }),
+        <div
+          className="absolute top-0 left-0 origin-top-left"
+          style={{
+            width: MINI_CAPTURE_PX,
+            height: MINI_CAPTURE_PX,
+            transform: `scale(${displayPx / MINI_CAPTURE_PX})`,
           }}
-          className="absolute inset-0 h-full w-full"
-        />
+        >
+          <AvatarCanvas
+            key={`${run}:${current.id}`}
+            code={code}
+            extensions={extensions}
+            params={current.params}
+            host={miniHost(current.id)}
+            onLog={onLog}
+            capture={{
+              afterFrame: MINI_CAPTURE_FRAME,
+              onImage: (image) => recordRef.current(current, { image }),
+            }}
+            className="h-full w-full"
+          />
+        </div>
       )}
     </div>
   );

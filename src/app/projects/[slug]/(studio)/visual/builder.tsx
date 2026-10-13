@@ -14,7 +14,9 @@ import type {
 } from "@/lib/params/types";
 import {
   CONTACTS_SCHEMA_VERSION,
+  DEFAULT_EMAIL_PURPOSE,
   emailLabel,
+  MAX_PURPOSE_LENGTH,
   type EmailQuestion,
 } from "@/lib/projects/participant-details";
 import { saveParameters, type SaveState } from "./parameter-actions";
@@ -138,6 +140,19 @@ function EmailCard({
               />
             </Field>
           </div>
+          <Field
+            label="what it's for"
+            hint="shown under the field — people should know before they give it"
+          >
+            <textarea
+              className={`${input} resize-y`}
+              rows={2}
+              maxLength={MAX_PURPOSE_LENGTH}
+              value={email.purpose}
+              placeholder={DEFAULT_EMAIL_PURPOSE}
+              onChange={(e) => onChange({ purpose: e.target.value })}
+            />
+          </Field>
           <label className="flex items-center gap-2 text-[11px] text-dim">
             <input
               type="checkbox"
