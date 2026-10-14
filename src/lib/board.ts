@@ -121,6 +121,63 @@ export function summarizeAvatar(
   return { runs, best };
 }
 
+/** The conclusion's figures: the whole experience, and where theirs landed. */
+export type ConclusionStats = {
+  runs: number;
+  /** Avatars in at least one run. */
+  avatars: number;
+  median: number | null;
+  best: number | null;
+  /** Every score their avatars took part in — the histogram's marks. */
+  mine: number[];
+  myBest: number | null;
+  /** Share of all runs that scored below their best, 0–1. */
+  beaten: number | null;
+};
+
+export function conclusionStats(
+  scores: readonly BoardScore[],
+  ownIds: ReadonlySet<string>,
+): ConclusionStats {
+  const values = scores.map((s) => Number(s.score)).filter(Number.isFinite);
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  const median =
+    sorted.length === 0
+      ? null
+      : sorted.length % 2
+        ? sorted[mid]
+        : (sorted[mid - 1] + sorted[mid]) / 2;
+
+  const inRuns = new Set<string>();
+  const mine: number[] = [];
+  for (const s of scores) {
+    inRuns.add(s.avatar_a_id);
+    inRuns.add(s.avatar_b_id);
+    const value = Number(s.score);
+    if (
+      Number.isFinite(value) &&
+      (ownIds.has(s.avatar_a_id) || ownIds.has(s.avatar_b_id))
+    ) {
+      mine.push(value);
+    }
+  }
+  const myBest = mine.length > 0 ? Math.max(...mine) : null;
+
+  return {
+    runs: values.length,
+    avatars: inRuns.size,
+    median,
+    best: sorted.length > 0 ? sorted[sorted.length - 1] : null,
+    mine,
+    myBest,
+    beaten:
+      myBest === null
+        ? null
+        : values.filter((v) => v < myBest).length / values.length,
+  };
+}
+
 /** One run as the histogram needs it: where it landed, and when. */
 export type BoardRun = { score: number; recordedAt: string };
 

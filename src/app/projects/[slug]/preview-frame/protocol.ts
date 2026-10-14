@@ -10,6 +10,8 @@ export type PreviewScreen =
   | "done"
   | "list"
   | "results"
+  | "conclusion"
+  | "conclusionPending"
   | "closed"
   | "notReady"
   | "board"

@@ -50,6 +50,7 @@ export default async function ExperiencePage({
     select: {
       name: true,
       openForParticipation: true,
+      conclusionPublishedAt: true,
       theme: true,
       lexicon: true,
       copy: true,
@@ -136,6 +137,7 @@ export default async function ExperiencePage({
       />
       <link rel="preconnect" href={connection!.projectUrl!} crossOrigin="" />
       <ParticipantExperience
+        slug={slug}
         projectName={project.name}
         theme={theme}
         lexicon={lexicon}
@@ -145,6 +147,7 @@ export default async function ExperiencePage({
         scriptVersion={script!.version}
         parameters={parameters}
         copy={copy}
+        conclusionOpen={project.conclusionPublishedAt !== null}
         email={askedEmail(
           coerceParticipantDetails(project.participantDetails),
           connection!.schemaVersion,

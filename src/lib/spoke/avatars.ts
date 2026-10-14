@@ -130,6 +130,22 @@ export async function myAvatars(
   return (data ?? []).map((row) => normalizeAvatar(row, parameters));
 }
 
+/**
+ * Just the ids of the caller's avatars, for the pages that read their runs and
+ * never render the avatars themselves — no declaration needed to normalize.
+ */
+export async function myAvatarIds(
+  client: SupabaseClient,
+  userId: string,
+): Promise<string[]> {
+  const { data, error } = await client
+    .from(AVATARS_TABLE)
+    .select("id")
+    .eq("owner", userId);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => String((row as { id: string }).id));
+}
+
 export async function createAvatar(
   client: SupabaseClient,
   input: { name: string; answers: Record<string, string>; params: ParamValues },

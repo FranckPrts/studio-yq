@@ -17,7 +17,7 @@ export const SCORES_TABLE = "session_scores";
 
 export type MyRuns = {
   scores: BoardScore[];
-  /** Every avatar in those runs, theirs included, by id — names as they are now. */
+  /** Every avatar in those runs (or, from `allRuns`, every avatar), by id — names as they are now. */
   names: Map<string, string>;
 };
 
@@ -54,6 +54,32 @@ export async function myRuns(
     scores,
     names: new Map(
       (named.data as { id: string; name: string | null }[]).map((a) => [
+        a.id,
+        a.name?.trim() ?? "",
+      ]),
+    ),
+  };
+}
+
+/**
+ * Every run in the experience, and every avatar's name — what the leaderboard
+ * and the conclusion are drawn from. Any client will do: both tables are
+ * readable to the publishable key, signed in or not.
+ */
+export async function allRuns(client: SupabaseClient): Promise<MyRuns> {
+  const [scoreRes, avatarRes] = await Promise.all([
+    client
+      .from(SCORES_TABLE)
+      .select("id,avatar_a_id,avatar_b_id,score,strategy,recorded_at"),
+    client.from(AVATARS_TABLE).select("id,name"),
+  ]);
+  if (scoreRes.error || avatarRes.error) {
+    throw new Error((scoreRes.error ?? avatarRes.error)!.message);
+  }
+  return {
+    scores: scoreRes.data as BoardScore[],
+    names: new Map(
+      (avatarRes.data as { id: string; name: string | null }[]).map((a) => [
         a.id,
         a.name?.trim() ?? "",
       ]),

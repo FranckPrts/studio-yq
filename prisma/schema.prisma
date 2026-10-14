@@ -157,6 +157,12 @@ model Project {
   /// participant while this is false, whatever the script's own visibility.
   openForParticipation Boolean @default(false)
 
+  /// When the conclusion page (/p/[slug]/conclusion) was opened to
+  /// participants — null while it is held back until after the event. A
+  /// timestamp rather than a flag so the settings page can say since when.
+  /// Still behind `openForParticipation`, like every participant page.
+  conclusionPublishedAt DateTime?
+
   /// Palette and typography — "a more elaborate dark-mode switch", defaulting
   /// to the Nowadays palette. Shape lives in the app, not in a table, because
   /// it is read whole and never queried by field.

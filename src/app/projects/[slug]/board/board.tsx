@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { buildBoard, type BoardRun, type BoardScore } from "@/lib/board";
+import { allRuns } from "@/lib/spoke/results";
 import type { ProjectLexicon, ProjectTheme } from "@/lib/theme/project-theme";
 import type { ProjectCopy } from "@/lib/theme/project-copy";
 import BoardView from "./board-view";
@@ -49,27 +50,16 @@ export default function Board({
     let cancelled = false;
 
     async function load() {
-      const [scoreRes, avatarRes] = await Promise.all([
-        client
-          .from("session_scores")
-          .select("id,avatar_a_id,avatar_b_id,score,strategy,recorded_at"),
-        client.from("avatars").select("id,name"),
-      ]);
-      if (cancelled) return;
-      if (scoreRes.error || avatarRes.error) {
+      try {
+        const next = await allRuns(client);
+        if (cancelled) return;
+        setError(null);
+        setScores(next.scores);
+        setNames(next.names);
+      } catch (e) {
         // Keep showing the last good board; say so quietly underneath.
-        setError((scoreRes.error ?? avatarRes.error)!.message);
-        return;
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       }
-      setError(null);
-      setScores(scoreRes.data as BoardScore[]);
-      setNames(
-        new Map(
-          (avatarRes.data as { id: string; name: string | null }[]).map(
-            (a) => [a.id, a.name?.trim() ?? ""],
-          ),
-        ),
-      );
     }
 
     void load();

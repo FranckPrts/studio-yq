@@ -68,3 +68,27 @@ export async function setOpenForParticipation(
   revalidatePath(`/projects/${slug}`);
   return {};
 }
+
+/**
+ * Publishes or withdraws the conclusion — held back until the event is over,
+ * so no one reads how the runs went while theirs are still to come. Owner
+ * only, like opening: it decides what participants can reach. Needs no
+ * readiness check of its own; the conclusion sits behind the project's open
+ * state either way.
+ */
+export async function setConclusionPublished(
+  _prev: ParticipationState,
+  formData: FormData,
+): Promise<ParticipationState> {
+  const slug = String(formData.get("slug") ?? "");
+  const { projectId } = await requireProjectRole(slug, "OWNER");
+  const publish = formData.get("publish") === "true";
+
+  await db.project.update({
+    where: { id: projectId },
+    data: { conclusionPublishedAt: publish ? new Date() : null },
+  });
+
+  revalidatePath(`/projects/${slug}`);
+  return {};
+}

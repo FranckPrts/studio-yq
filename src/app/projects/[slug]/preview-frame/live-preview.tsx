@@ -6,8 +6,16 @@ import ParticipantExperience, {
   type Step,
 } from "@/app/p/[slug]/experience";
 import Shut from "@/app/p/[slug]/shut";
+import ResultsView from "@/app/p/[slug]/results/results-view";
+import ConclusionView from "@/app/p/[slug]/conclusion/conclusion-view";
+import type { Nav } from "@/app/p/[slug]/nav";
 import BoardView from "@/app/projects/[slug]/board/board-view";
-import type { BoardRow, BoardRun } from "@/lib/board";
+import {
+  buildOwnBoard,
+  type BoardRow,
+  type BoardRun,
+  type BoardScore,
+} from "@/lib/board";
 import type { Parameter } from "@/lib/params/types";
 import type { EmailQuestion } from "@/lib/projects/participant-details";
 import {
@@ -26,6 +34,7 @@ const EXPERIENCE_STEPS: readonly PreviewScreen[] = [
   "done",
   "list",
   "results",
+  "conclusion",
 ];
 
 /**
@@ -79,6 +88,40 @@ const SAMPLE_MINE: ExperienceSample = {
   },
 };
 
+const SAMPLE_MINE_IDS = new Set(SAMPLE_MINE.avatars.map((a) => a.id));
+const SAMPLE_RESULTS = buildOwnBoard(
+  SAMPLE_MINE.runs.scores,
+  SAMPLE_MINE.runs.names,
+  SAMPLE_MINE_IDS,
+);
+
+/**
+ * The whole experience as the conclusion reads it: the participant's runs, the
+ * board's other two, and the histogram's filler, between a small named crowd
+ * so "who did best" never shows a row of unnamed pairs.
+ */
+const CROWD = ["Iron Lantern", "Soft Signal", "Far Meadow", "Blue Hour", "Still Water", "Red Kite"];
+const SAMPLE_ALL_SCORES: BoardScore[] = [
+  ...SAMPLE_MINE.runs.scores,
+  { id: "s2", avatar_a_id: "other-3", avatar_b_id: "other-4", score: 87.1, strategy: null, recorded_at: SAMPLE_ROWS[1].recordedAt },
+  { id: "s4", avatar_a_id: "other-5", avatar_b_id: "other-6", score: 61.0, strategy: null, recorded_at: SAMPLE_ROWS[3].recordedAt },
+  ...SAMPLE_RUNS.slice(SAMPLE_ROWS.length).map((run, i) => ({
+    id: `c${i}`,
+    avatar_a_id: `crowd-${i % CROWD.length}`,
+    avatar_b_id: `crowd-${(i + 1) % CROWD.length}`,
+    score: run.score,
+    strategy: null,
+    recorded_at: run.recordedAt,
+  })),
+];
+const SAMPLE_ALL_NAMES = new Map([
+  ...SAMPLE_MINE.runs.names,
+  ["other-4", "Paper Moon"],
+  ["other-5", "Glass Orchard"],
+  ["other-6", ""],
+  ...CROWD.map((name, i) => [`crowd-${i}`, name] as [string, string]),
+]);
+
 function toParent(message: FromPreview) {
   if (window.parent !== window) {
     window.parent.postMessage(message, window.location.origin);
@@ -91,17 +134,26 @@ function toParent(message: FromPreview) {
  * shows what saving would produce — defaults for blank fields included.
  */
 export default function LivePreview({
+  slug,
   projectName,
   theme: savedTheme,
   lexicon: savedLexicon,
   copy: savedCopy,
+  conclusionOpen,
   email,
   script,
 }: {
+  /** The experience takes it for its links, though here they step in place. */
+  slug: string;
   projectName: string;
   theme: ProjectTheme;
   lexicon: ProjectLexicon;
   copy: ProjectCopy;
+  /**
+   * Whether participants are shown links to the conclusion. Its own tab shows
+   * it either way, so it can be checked before it is published.
+   */
+  conclusionOpen: boolean;
   /** As participants are asked it — null when they are not. */
   email: EmailQuestion | null;
   script: { code: string; version: number; parameters: Parameter[] } | null;
@@ -148,18 +200,28 @@ export default function LivePreview({
     project: projectName,
   };
 
+  function go(next: PreviewScreen) {
+    setScreen(next);
+    toParent({ type: "yq-preview:screen", screen: next });
+  }
+  // Results and the conclusion step in place here, never to the real pages.
+  const nav: Nav = { onNavigate: (to) => go(to === "home" ? "list" : to) };
+
   const board = shown === "board" || shown === "boardEmpty";
+  const reading = shown === "results" || shown === "conclusion";
   const overlay =
-    board
+    board || reading
       ? null
       : shown === "closed"
       ? fillCopy(copy.closedMessage, vars)
       : shown === "notReady"
         ? fillCopy(copy.notReadyMessage, vars)
-        : !script
-          ? // Ours, not the tenant's: it only ever appears in this preview.
-            `No valid script yet. Add one under parameters to see the ${lexicon.noun} here.`
-          : null;
+        : shown === "conclusionPending"
+          ? fillCopy(copy.conclusionPending, vars)
+          : !script
+            ? // Ours, not the tenant's: it only ever appears in this preview.
+              `No valid script yet. Add one under parameters to see the ${lexicon.noun} here.`
+            : null;
 
   return (
     <>
@@ -167,6 +229,7 @@ export default function LivePreview({
         <ParticipantExperience
           preview
           sample={SAMPLE_MINE}
+          slug={slug}
           projectName={projectName}
           theme={theme}
           lexicon={lexicon}
@@ -176,14 +239,12 @@ export default function LivePreview({
           scriptVersion={script.version}
           parameters={script.parameters}
           copy={copy}
+          conclusionOpen={conclusionOpen}
           email={email}
           step={
             EXPERIENCE_STEPS.includes(shown) ? (shown as Step) : undefined
           }
-          onStepChange={(next) => {
-            setScreen(next);
-            toParent({ type: "yq-preview:screen", screen: next });
-          }}
+          onStepChange={go}
         />
       )}
       {/* Laid over the experience rather than replacing it, so flicking to the
@@ -191,6 +252,34 @@ export default function LivePreview({
       {overlay !== null && (
         <div className="fixed inset-0 z-10 overflow-auto">
           <Shut theme={theme} title={projectName} message={overlay} />
+        </div>
+      )}
+      {shown === "results" && (
+        <div className="fixed inset-0 z-10 overflow-auto">
+          <ResultsView
+            projectName={projectName}
+            theme={theme}
+            lexicon={lexicon}
+            copy={copy}
+            nav={nav}
+            conclusionOpen={conclusionOpen}
+            rows={SAMPLE_RESULTS}
+          />
+        </div>
+      )}
+      {shown === "conclusion" && (
+        <div className="fixed inset-0 z-10 overflow-auto">
+          <ConclusionView
+            projectName={projectName}
+            theme={theme}
+            lexicon={lexicon}
+            copy={copy}
+            nav={nav}
+            scores={SAMPLE_ALL_SCORES}
+            names={SAMPLE_ALL_NAMES}
+            mine={SAMPLE_MINE_IDS}
+            hasAvatar
+          />
         </div>
       )}
       {board && (

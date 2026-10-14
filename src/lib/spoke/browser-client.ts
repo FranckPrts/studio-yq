@@ -66,6 +66,20 @@ export async function ensureParticipant(
   return { userId: data.user.id };
 }
 
+/**
+ * The participant's user id if this browser already has one, without signing
+ * anyone in. For the pages a participant comes back to read — results, the
+ * conclusion — where taking out a fresh anonymous identity would make a
+ * stranger with nothing to show, and spend a sign-in from a room that shares
+ * one rate limit.
+ */
+export async function existingParticipant(
+  client: SupabaseClient,
+): Promise<string | null> {
+  const { data } = await client.auth.getSession();
+  return data.session?.user?.id ?? null;
+}
+
 function participantMessage(error: { message?: string; status?: number } | null): string {
   const message = error?.message?.toLowerCase() ?? "";
 

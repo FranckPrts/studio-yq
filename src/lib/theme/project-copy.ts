@@ -114,6 +114,12 @@ export const COPY_FIELDS = {
     default: "view results",
     multiline: false,
   },
+  conclusionButton: {
+    group: "coming back",
+    label: "conclusion button",
+    default: "see the conclusion",
+    multiline: false,
+  },
   newButton: {
     group: "coming back",
     label: "make another button",
@@ -137,6 +143,45 @@ export const COPY_FIELDS = {
     label: "before the first score",
     default:
       "No runs yet. Your results show up here once one of your {nounPlural} has been paired.",
+    multiline: true,
+  },
+  noAvatarMessage: {
+    group: "results",
+    label: "on a device with none",
+    default:
+      "There’s no {noun} on this device yet. Make one to take part — your results show up here once it has been paired.",
+    multiline: true,
+  },
+  conclusionTitle: {
+    group: "conclusion",
+    label: "heading",
+    default: "Conclusion",
+    multiline: false,
+  },
+  conclusionBody: {
+    group: "conclusion",
+    label: "text",
+    default: "Every run across {project}, and where yours landed among them.",
+    multiline: true,
+  },
+  conclusionTop: {
+    group: "conclusion",
+    label: "best runs heading",
+    default: "who did best",
+    multiline: false,
+  },
+  conclusionPending: {
+    group: "conclusion",
+    label: "before it's published",
+    default:
+      "The conclusion isn’t out yet. It appears here once the experience is over.",
+    multiline: true,
+  },
+  conclusionEmpty: {
+    group: "conclusion",
+    label: "before the first score",
+    default:
+      "No runs have been recorded yet. The conclusion fills in as pairs take part.",
     multiline: true,
   },
   boardTitle: {

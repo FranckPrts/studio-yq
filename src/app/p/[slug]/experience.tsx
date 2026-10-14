@@ -21,8 +21,7 @@ import {
 } from "@/lib/spoke/avatars";
 import { myEmail, normalizeEmail, saveEmail } from "@/lib/spoke/contacts";
 import { myRuns, type MyRuns } from "@/lib/spoke/results";
-import { buildOwnBoard, formatScore, summarizeAvatar } from "@/lib/board";
-import BoardRowItem from "@/app/projects/[slug]/board/board-row";
+import { formatScore, summarizeAvatar } from "@/lib/board";
 import {
   emailLabel,
   isPlausibleEmail,
@@ -36,6 +35,7 @@ import {
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
 import { fillCopy, type ProjectCopy } from "@/lib/theme/project-copy";
+import { NavLink, type Nav } from "./nav";
 
 export type Step =
   | "intro"
@@ -43,7 +43,10 @@ export type Step =
   | "tune"
   | "done"
   | "list"
-  | "results";
+  // Pages of their own (`/results`, `/conclusion`). Steps only in the
+  // preview, which shows them in place rather than leaving its frame.
+  | "results"
+  | "conclusion";
 
 /** Made-up avatars and runs, for the preview's list and results screens. */
 export type ExperienceSample = {
@@ -53,8 +56,8 @@ export type ExperienceSample = {
 
 /**
  * Scores land once a run, minutes apart, and are not in the realtime
- * publication — the board's ten-second poll, and only while the list or the
- * results are on screen.
+ * publication — the board's ten-second poll, and only while the list is on
+ * screen.
  */
 const RUNS_POLL_MS = 10_000;
 
@@ -67,9 +70,11 @@ const RUNS_POLL_MS = 10_000;
  * comes from the project's declaration instead of from six hardcoded sliders.
  *
  * A participant may make as many avatars as they like. Once they have one,
- * their list is home: tap one to tune it, make another, or see their results.
+ * their list is home: tap one to tune it, make another, or go to their results
+ * or the conclusion — each a page of its own.
  */
 export default function ParticipantExperience({
+  slug,
   projectName,
   theme,
   lexicon,
@@ -79,12 +84,14 @@ export default function ParticipantExperience({
   scriptVersion,
   parameters,
   copy,
+  conclusionOpen,
   email = null,
   preview = false,
   sample,
   step: stepProp,
   onStepChange,
 }: {
+  slug: string;
   projectName: string;
   theme: ProjectTheme;
   lexicon: ProjectLexicon;
@@ -94,6 +101,8 @@ export default function ParticipantExperience({
   scriptVersion: number;
   parameters: Parameter[];
   copy: ProjectCopy;
+  /** Whether the conclusion is published, and so linked from the list. */
+  conclusionOpen: boolean;
   /**
    * The email question, when the project asks one and the tenant's database
    * can store the answer. Kept out of `values` entirely: an address is about
@@ -144,7 +153,6 @@ export default function ParticipantExperience({
   // already given rather than drawing a new one on every save.
   const storedName = avatars.find((a) => a.id === avatarId)?.name ?? null;
   const [runs, setRuns] = useState<MyRuns | null>(null);
-  const [runsError, setRunsError] = useState<string | null>(null);
   const [status, setStatus] = useState<"starting" | "ready" | "error">(
     preview ? "ready" : "starting",
   );
@@ -209,8 +217,14 @@ export default function ParticipantExperience({
     setValues((prev) => ({ ...prev, [name]: value }));
   }
 
-  // The list reads runs for each avatar's best, the results for every row.
-  const showsRuns = step === "list" || step === "results";
+  // The list reads runs for each avatar's best.
+  const showsRuns = step === "list";
+  // Screens about all of theirs at once, where no one avatar is on show.
+  const offCanvas = showsRuns || step === "results" || step === "conclusion";
+  // Results and the conclusion are pages; the preview steps to them instead.
+  const nav: Nav = preview
+    ? { onNavigate: (to) => setStep(to === "home" ? "list" : to) }
+    : { slug };
   const avatarIdsKey = avatars.map((a) => a.id).join(",");
   useEffect(() => {
     const client = clientRef.current;
@@ -223,12 +237,10 @@ export default function ParticipantExperience({
         const next = await myRuns(client, ids);
         if (cancelled) return;
         setRuns(next);
-        setRunsError(null);
       } catch (e) {
-        // Keep showing the last good runs. The real message is for whoever is
-        // debugging; the participant gets a sentence, as at sign-in.
+        // Keep showing the last good runs; the list's summaries simply wait
+        // for the next poll. The message is for whoever is debugging.
         console.warn("[spoke] results read failed:", e);
-        if (!cancelled) setRunsError("Couldn’t load results. Trying again…");
       }
     };
 
@@ -246,17 +258,6 @@ export default function ParticipantExperience({
   );
   const listed = preview ? sampleAvatars : avatars;
   const shownRuns = preview ? (sample?.runs ?? null) : runs;
-  const resultRows = useMemo(
-    () =>
-      shownRuns
-        ? buildOwnBoard(
-            shownRuns.scores,
-            shownRuns.names,
-            new Set(listed.map((a) => a.id)),
-          )
-        : null,
-    [shownRuns, listed],
-  );
   // An avatar saved with a blank name, or one no longer in the list.
   const unnamed = `unnamed ${lexicon.noun}`;
 
@@ -393,10 +394,9 @@ export default function ParticipantExperience({
           /* Held at 0 until the participant's own values have arrived, so the
              avatar fades in as *theirs*. Rendering the declaration's defaults
              at full strength would show a stranger's avatar and then swap it.
-             Back to 0 on the list and the results, which are about all of
-             theirs: the names carry those screens, and the one tapped next
-             fades in. */
-          host={{ intensity: status === "ready" && !showsRuns ? 1 : 0 }}
+             Back to 0 on the list, which is about all of theirs: the names
+             carry that screen, and the one tapped next fades in. */
+          host={{ intensity: status === "ready" && !offCanvas ? 1 : 0 }}
           className="h-full w-full"
         />
         {status === "starting" && (
@@ -623,16 +623,17 @@ export default function ParticipantExperience({
               </ul>
               <div aria-hidden className="term-rule text-dim/40" />
             </div>
-            {/* Results first: everyone should find their way to them. Making
-                another is the quieter choice under it. */}
+            {/* Results and the conclusion first: everyone should find their
+                way to them. Making another is the quieter choice under them. */}
             <div className="flex flex-col items-start gap-3">
-              <button
-                type="button"
-                onClick={() => setStep("results")}
-                className="text-sm underline underline-offset-4"
-              >
+              <NavLink nav={nav} to="results" className="text-sm underline underline-offset-4">
                 {t("resultsButton")}
-              </button>
+              </NavLink>
+              {conclusionOpen && (
+                <NavLink nav={nav} to="conclusion" className="text-sm underline underline-offset-4">
+                  {t("conclusionButton")}
+                </NavLink>
+              )}
               <button
                 type="button"
                 onClick={newAvatar}
@@ -645,54 +646,6 @@ export default function ParticipantExperience({
           </div>
         )}
 
-        {status === "ready" && step === "results" && (
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-sm">{t("resultsTitle")}</h1>
-              <p
-                className="whitespace-pre-line text-xs leading-relaxed"
-                style={{ color: theme.dim }}
-              >
-                {t("resultsBody")}
-              </p>
-            </div>
-            <div>
-              {resultRows && resultRows.length > 0 ? (
-                <ul>
-                  {resultRows.map((row) => (
-                    <BoardRowItem
-                      key={row.id}
-                      row={row}
-                      unnamed={unnamed}
-                      compact
-                    />
-                  ))}
-                </ul>
-              ) : (
-                <>
-                  <div aria-hidden className="term-rule text-dim/40" />
-                  <p
-                    className="whitespace-pre-line py-4 text-xs leading-relaxed"
-                    style={{ color: theme.dim }}
-                  >
-                    {resultRows
-                      ? t("resultsEmpty")
-                      : (runsError ?? "loading…")}
-                  </p>
-                </>
-              )}
-              <div aria-hidden className="term-rule text-dim/40" />
-            </div>
-            <button
-              type="button"
-              onClick={() => setStep("list")}
-              className="self-start text-xs underline-offset-4 hover:underline"
-              style={{ color: theme.dim }}
-            >
-              {t("backButton")}
-            </button>
-          </div>
-        )}
         </div>
       </div>
     </main>

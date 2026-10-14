@@ -13,15 +13,21 @@ const AXIS_TYPE = { fontSize: "calc(0.875rem - 4pt)" } as const;
  * Drawn only with the `paper` / `dim` utilities the rest of the board uses, so
  * a project's palette reaches it through the variables `BoardView` sets, with
  * no colour of its own; the type inherits the project's face. Hover a bin for
- * its range and count; a dotted line marks the latest run.
+ * its range and count; a dotted line marks the latest run — or, on a
+ * participant's conclusion, each of theirs.
  */
 export default function ScoreHistogram({
   scores,
   latest,
+  marks = [],
+  label = "Score histogram of every run so far",
 }: {
   scores: readonly number[];
   /** The latest run's score, marked with a dotted line. */
   latest?: number;
+  /** More scores to mark the same way: a participant's own runs. */
+  marks?: readonly number[];
+  label?: string;
 }) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<{
@@ -73,7 +79,7 @@ export default function ScoreHistogram({
         viewBox={`0 0 ${width} ${height}`}
         className="w-full"
         role="img"
-        aria-label="Score histogram of every run so far"
+        aria-label={label}
         onMouseLeave={() => {
           setHoverIdx(null);
           setTooltip(null);
@@ -130,18 +136,21 @@ export default function ScoreHistogram({
 
         {/* Dim rather than the plate's old red: the board is drawn in the
             project's three colours, and dim reads over paper bars and void. */}
-        {latest !== undefined && Number.isFinite(latest) && (
-          <line
-            x1={xFor(latest)}
-            y1={padTop}
-            x2={xFor(latest)}
-            y2={padTop + plotH}
-            className="stroke-dim"
-            strokeWidth={1.25}
-            strokeDasharray="2.5 2.5"
-            style={{ pointerEvents: "none" }}
-          />
-        )}
+        {[...(latest !== undefined ? [latest] : []), ...marks]
+          .filter(Number.isFinite)
+          .map((score, i) => (
+            <line
+              key={i}
+              x1={xFor(score)}
+              y1={padTop}
+              x2={xFor(score)}
+              y2={padTop + plotH}
+              className="stroke-dim"
+              strokeWidth={1.25}
+              strokeDasharray="2.5 2.5"
+              style={{ pointerEvents: "none" }}
+            />
+          ))}
 
         <line
           x1={padLeft}

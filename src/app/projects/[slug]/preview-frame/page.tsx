@@ -34,6 +34,7 @@ export default async function ParticipantPreviewPage({
       theme: true,
       lexicon: true,
       copy: true,
+      conclusionPublishedAt: true,
       participantDetails: true,
       connection: { select: { schemaVersion: true } },
       scripts: {
@@ -57,10 +58,12 @@ export default async function ParticipantPreviewPage({
         crossOrigin="anonymous"
       />
       <LivePreview
+        slug={slug}
         projectName={project.name}
         theme={coerceTheme(project.theme)}
         lexicon={coerceLexicon(project.lexicon)}
         copy={coerceCopy(project.copy)}
+        conclusionOpen={project.conclusionPublishedAt !== null}
         email={askedEmail(
           coerceParticipantDetails(project.participantDetails),
           project.connection?.schemaVersion,

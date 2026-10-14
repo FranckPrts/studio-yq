@@ -5,6 +5,7 @@ import { coerceLexicon, coerceTheme, FONTS } from "@/lib/theme/project-theme";
 import { RenameForm } from "./settings-form";
 import PageHeader from "./page-header";
 import ParticipationToggle from "./participation-toggle";
+import ConclusionToggle from "./conclusion-toggle";
 import { projectReadiness } from "@/lib/projects/readiness";
 import { pendingInvitations } from "@/lib/auth/invitations";
 import MembersSection from "./members-section";
@@ -112,6 +113,13 @@ export default async function ProjectSettingsPage({
           canEdit={isOwner}
           missing={readiness.missing}
           publicUrl={`${base}/p/${project.slug}`}
+        />
+        <ConclusionToggle
+          slug={project.slug}
+          publishedAt={project.conclusionPublishedAt?.toISOString() ?? null}
+          open={project.openForParticipation}
+          canEdit={isOwner}
+          conclusionUrl={`${base}/p/${project.slug}/conclusion`}
         />
       </section>
 
