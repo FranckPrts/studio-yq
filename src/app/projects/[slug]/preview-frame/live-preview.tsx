@@ -8,7 +8,7 @@ import ParticipantExperience, {
 import Shut from "@/app/p/[slug]/shut";
 import ResultsView from "@/app/p/[slug]/results/results-view";
 import ConclusionView from "@/app/p/[slug]/conclusion/conclusion-view";
-import type { Nav } from "@/app/p/[slug]/nav";
+import { NavLink, type Nav } from "@/app/p/[slug]/nav";
 import BoardView from "@/app/projects/[slug]/board/board-view";
 import {
   buildOwnBoard,
@@ -25,6 +25,10 @@ import {
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
 import { coerceCopy, fillCopy, type ProjectCopy } from "@/lib/theme/project-copy";
+import {
+  coerceConclusionPage,
+  type ConclusionPage,
+} from "@/lib/report/conclusion-template";
 import type { FromPreview, PreviewScreen, ToPreview } from "./protocol";
 
 const EXPERIENCE_STEPS: readonly PreviewScreen[] = [
@@ -89,6 +93,7 @@ const SAMPLE_MINE: ExperienceSample = {
 };
 
 const SAMPLE_MINE_IDS = new Set(SAMPLE_MINE.avatars.map((a) => a.id));
+const NO_AVATARS: ReadonlySet<string> = new Set();
 const SAMPLE_RESULTS = buildOwnBoard(
   SAMPLE_MINE.runs.scores,
   SAMPLE_MINE.runs.names,
@@ -139,6 +144,7 @@ export default function LivePreview({
   theme: savedTheme,
   lexicon: savedLexicon,
   copy: savedCopy,
+  conclusion: savedConclusion,
   conclusionOpen,
   email,
   script,
@@ -149,6 +155,7 @@ export default function LivePreview({
   theme: ProjectTheme;
   lexicon: ProjectLexicon;
   copy: ProjectCopy;
+  conclusion: ConclusionPage;
   /**
    * Whether participants are shown links to the conclusion. Its own tab shows
    * it either way, so it can be checked before it is published.
@@ -161,6 +168,8 @@ export default function LivePreview({
   const [theme, setTheme] = useState(savedTheme);
   const [lexicon, setLexicon] = useState(savedLexicon);
   const [copy, setCopy] = useState(savedCopy);
+  const [conclusion, setConclusion] = useState(savedConclusion);
+  const [played, setPlayed] = useState(true);
 
   const hasQuestions =
     !!script?.parameters.some((p) => p.type === "text") || !!email;
@@ -178,6 +187,11 @@ export default function LivePreview({
         setTheme(coerceTheme(data.theme));
         setLexicon(coerceLexicon(data.lexicon));
         setCopy(coerceCopy(data.copy));
+        if (data.conclusion !== undefined) {
+          setConclusion(coerceConclusionPage(data.conclusion));
+        }
+      } else if (data?.type === "yq-preview:reader") {
+        setPlayed(data.played);
       } else if (data?.type === "yq-preview:show") {
         setScreen(data.screen);
       }
@@ -208,7 +222,8 @@ export default function LivePreview({
   const nav: Nav = { onNavigate: (to) => go(to === "home" ? "list" : to) };
 
   const board = shown === "board" || shown === "boardEmpty";
-  const reading = shown === "results" || shown === "conclusion";
+  const conclusionShown = shown === "conclusion" || shown === "conclusionEmpty";
+  const reading = shown === "results" || conclusionShown;
   const overlay =
     board || reading
       ? null
@@ -217,7 +232,7 @@ export default function LivePreview({
       : shown === "notReady"
         ? fillCopy(copy.notReadyMessage, vars)
         : shown === "conclusionPending"
-          ? fillCopy(copy.conclusionPending, vars)
+          ? fillCopy(conclusion.pending, vars)
           : !script
             ? // Ours, not the tenant's: it only ever appears in this preview.
               `No valid script yet. Add one under parameters to see the ${lexicon.noun} here.`
@@ -251,7 +266,17 @@ export default function LivePreview({
           closed screen and back keeps the avatar and whatever was typed. */}
       {overlay !== null && (
         <div className="fixed inset-0 z-10 overflow-auto">
-          <Shut theme={theme} title={projectName} message={overlay} />
+          <Shut theme={theme} title={projectName} message={overlay}>
+            {shown === "closed" && conclusionOpen && (
+              <NavLink
+                nav={nav}
+                to="conclusion"
+                className="text-sm underline underline-offset-4"
+              >
+                {fillCopy(copy.conclusionButton, vars)}
+              </NavLink>
+            )}
+          </Shut>
         </div>
       )}
       {shown === "results" && (
@@ -267,18 +292,19 @@ export default function LivePreview({
           />
         </div>
       )}
-      {shown === "conclusion" && (
+      {conclusionShown && (
         <div className="fixed inset-0 z-10 overflow-auto">
           <ConclusionView
             projectName={projectName}
             theme={theme}
             lexicon={lexicon}
             copy={copy}
+            conclusion={conclusion}
             nav={nav}
-            scores={SAMPLE_ALL_SCORES}
+            scores={shown === "conclusion" ? SAMPLE_ALL_SCORES : []}
             names={SAMPLE_ALL_NAMES}
-            mine={SAMPLE_MINE_IDS}
-            hasAvatar
+            mine={played ? SAMPLE_MINE_IDS : NO_AVATARS}
+            hasAvatar={played}
           />
         </div>
       )}

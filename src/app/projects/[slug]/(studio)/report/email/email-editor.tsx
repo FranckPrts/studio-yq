@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useState } from "react";
 import type { Parameter } from "@/lib/params/types";
 import {
   CONDITIONALS,
@@ -17,6 +17,7 @@ import { useUnsavedChanges } from "../../use-unsaved-changes";
 import type { ReportScriptInfo } from "../use-report-room";
 import { saveReportEmail, type EmailSaveState } from "./actions";
 import EmailPreview from "./email-preview";
+import TemplateField, { CONDITIONAL_CHIPS, FORMATTING } from "../template-field";
 
 const FIELDS: (keyof ReportEmail)[] = ["subject", "senderName", "replyTo", "look", "body"];
 
@@ -62,7 +63,6 @@ export default function EmailEditor({
 }) {
   const [saved, setSaved] = useState<ReportEmail>(initial);
   const [draft, setDraft] = useState<ReportEmail>(initial);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const [state, action, pending] = useActionState<EmailSaveState, FormData>(
     async (prev, formData) => {
       const result = await saveReportEmail(prev, formData);
@@ -76,27 +76,6 @@ export default function EmailEditor({
   useUnsavedChanges(dirty);
 
   const set = (update: Partial<ReportEmail>) => setDraft((d) => ({ ...d, ...update }));
-
-  /**
-   * Puts a token at the cursor — or around the selection, for a conditional or
-   * formatting. `back` leaves the caret that many characters before the end,
-   * e.g. inside a link's "(https://)" ready for the address.
-   */
-  function insert(open: string, close = "", back = 0) {
-    const el = bodyRef.current;
-    if (!el) return;
-    const { selectionStart: a, selectionEnd: b, value } = el;
-    const next = value.slice(0, a) + open + value.slice(a, b) + close + value.slice(b);
-    set({ body: next });
-    requestAnimationFrame(() => {
-      el.focus();
-      const caret = a + open.length + (b - a) + close.length - back;
-      el.setSelectionRange(caret, caret);
-    });
-  }
-
-  const chip =
-    "rounded border border-paper/15 px-1.5 py-0.5 font-mono text-[11px] text-paper/80 hover:border-paper/40 hover:text-paper disabled:opacity-40";
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
@@ -186,136 +165,54 @@ export default function EmailEditor({
             </div>
           </div>
 
-          <label className="flex flex-col gap-1">
-            <span className="flex items-baseline justify-between text-xs text-dim">
-              body
-              {canEdit && draft.body !== DEFAULT_REPORT_EMAIL.body && (
-                <button
-                  type="button"
-                  onClick={() => set({ body: DEFAULT_REPORT_EMAIL.body })}
-                  className="underline-offset-4 hover:text-paper hover:underline"
-                >
-                  restore the default text
-                </button>
-              )}
-            </span>
-            <textarea
-              ref={bodyRef}
-              name="body"
-              rows={22}
-              maxLength={REPORT_EMAIL_LIMITS.body}
-              value={draft.body}
-              onChange={(e) => set({ body: e.target.value })}
-              className="term-input resize-y border border-paper/15 p-3 font-mono text-[13px] leading-relaxed"
-            />
-          </label>
+          <TemplateField
+            name="body"
+            label="body"
+            value={draft.body}
+            defaultValue={DEFAULT_REPORT_EMAIL.body}
+            onChange={(body) => set({ body })}
+            canEdit={canEdit}
+            rows={22}
+            maxLength={REPORT_EMAIL_LIMITS.body}
+            syntax={
+              <>
+                Click to insert at the cursor. Line breaks are kept; a blank line
+                starts a new paragraph. <code>**bold**</code>, <code>*italic*</code>,{" "}
+                <code>[link text](https://…)</code> (or <code>mailto:</code>, or an
+                address pasted on its own), <code>- </code> lists and{" "}
+                <code>&gt; </code> quotes work; anything else is plain text, never
+                HTML.
+              </>
+            }
+            groups={[
+              {
+                label: "about them",
+                chips: [
+                  ...PLACEHOLDERS.map((p) => ({
+                    label: `{${p.key}}`,
+                    title: p.description,
+                    open: `{${p.key}}`,
+                  })),
+                  ...answerKeys.map((key) => ({
+                    label: `{${key}}`,
+                    title: "Their answer to this question",
+                    open: `{${key}}`,
+                  })),
+                ],
+              },
+              FORMATTING,
+              {
+                label: "pictures — each on a line of its own",
+                chips: IMAGE_BLOCKS.map((key) => ({
+                  label: `{${key}}`,
+                  title: IMAGE_DESCRIPTIONS[key],
+                  open: `\n\n{${key}}\n\n`,
+                })),
+              },
+              CONDITIONAL_CHIPS(CONDITIONALS),
+            ]}
+          />
         </fieldset>
-
-        <div className="flex flex-col gap-3 text-[11px] leading-relaxed text-dim">
-          <p>
-            Click to insert at the cursor. Line breaks are kept; a blank line
-            starts a new paragraph. <code>**bold**</code>, <code>*italic*</code>,{" "}
-            <code>[link text](https://…)</code> (or <code>mailto:</code>, or an
-            address pasted on its own), <code>- </code> lists and{" "}
-            <code>&gt; </code> quotes work; anything else is plain text, never
-            HTML.
-          </p>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-paper/70">about them</span>
-            <div className="flex flex-wrap gap-1.5">
-              {PLACEHOLDERS.map((p) => (
-                <button
-                  key={p.key}
-                  type="button"
-                  title={p.description}
-                  disabled={!canEdit}
-                  onClick={() => insert(`{${p.key}}`)}
-                  className={chip}
-                >
-                  {`{${p.key}}`}
-                </button>
-              ))}
-              {answerKeys.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  title="Their answer to this question"
-                  disabled={!canEdit}
-                  onClick={() => insert(`{${key}}`)}
-                  className={chip}
-                >
-                  {`{${key}}`}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-paper/70">formatting — wraps the selection</span>
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                title="Turns the selected words into a link; replace https:// with the address"
-                disabled={!canEdit}
-                onClick={() => insert("[", "](https://)", 1)}
-                className={chip}
-              >
-                [link](https://…)
-              </button>
-              <button
-                type="button"
-                title="Bold"
-                disabled={!canEdit}
-                onClick={() => insert("**", "**")}
-                className={chip}
-              >
-                **bold**
-              </button>
-              <button
-                type="button"
-                title="Italic"
-                disabled={!canEdit}
-                onClick={() => insert("*", "*")}
-                className={chip}
-              >
-                *italic*
-              </button>
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-paper/70">pictures — each on a line of its own</span>
-            <div className="flex flex-wrap gap-1.5">
-              {IMAGE_BLOCKS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  title={IMAGE_DESCRIPTIONS[key]}
-                  disabled={!canEdit}
-                  onClick={() => insert(`\n\n{${key}}\n\n`)}
-                  className={chip}
-                >
-                  {`{${key}}`}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <span className="text-paper/70">only for some — wraps the selection</span>
-            <div className="flex flex-wrap gap-1.5">
-              {CONDITIONALS.map((c) => (
-                <button
-                  key={c.open}
-                  type="button"
-                  title={c.description}
-                  disabled={!canEdit}
-                  onClick={() => insert(`${c.open}\n`, `\n${c.close}`)}
-                  className={chip}
-                >
-                  {`${c.open}…${c.close}`}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
       </form>
 
       <EmailPreview

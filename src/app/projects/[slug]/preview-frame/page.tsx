@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
 import { coerceCopy } from "@/lib/theme/project-copy";
+import { coerceConclusionPage } from "@/lib/report/conclusion-template";
 import {
   askedEmail,
   coerceParticipantDetails,
@@ -35,6 +36,7 @@ export default async function ParticipantPreviewPage({
       lexicon: true,
       copy: true,
       conclusionPublishedAt: true,
+      conclusionPage: true,
       participantDetails: true,
       connection: { select: { schemaVersion: true } },
       scripts: {
@@ -63,6 +65,7 @@ export default async function ParticipantPreviewPage({
         theme={coerceTheme(project.theme)}
         lexicon={coerceLexicon(project.lexicon)}
         copy={coerceCopy(project.copy)}
+        conclusion={coerceConclusionPage(project.conclusionPage)}
         conclusionOpen={project.conclusionPublishedAt !== null}
         email={askedEmail(
           coerceParticipantDetails(project.participantDetails),

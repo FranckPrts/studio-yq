@@ -6,6 +6,7 @@ import { validateParameters } from "@/lib/params/validate";
 import type { Parameter } from "@/lib/params/types";
 import ParticipantExperience from "./experience";
 import Shut from "./shut";
+import { NavLink } from "./nav";
 import { coerceCopy, fillCopy } from "@/lib/theme/project-copy";
 import {
   askedEmail,
@@ -84,13 +85,25 @@ export default async function ExperiencePage({
     project: project.name,
   };
 
+  // Closed means no new or edited avatars — not that the event is gone. Once
+  // the conclusion is published, the original link leads on to it.
   if (!project.openForParticipation) {
     return (
       <Shut
         theme={theme}
         title={project.name}
         message={fillCopy(copy.closedMessage, vars)}
-      />
+      >
+        {project.conclusionPublishedAt && (
+          <NavLink
+            nav={{ slug }}
+            to="conclusion"
+            className="text-sm underline underline-offset-4"
+          >
+            {fillCopy(copy.conclusionButton, vars)}
+          </NavLink>
+        )}
+      </Shut>
     );
   }
 

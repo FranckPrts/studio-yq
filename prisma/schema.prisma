@@ -166,14 +166,16 @@ model Project {
   name    String
   ownerId String
 
-  /// The participant-facing gate. Nothing about a project is reachable by a
-  /// participant while this is false, whatever the script's own visibility.
+  /// The participant-facing gate for making and editing avatars: the
+  /// experience page is shut while this is false, whatever the script's own
+  /// visibility. Results and the published conclusion stay readable.
   openForParticipation Boolean @default(false)
 
   /// When the conclusion page (/p/[slug]/conclusion) was opened to
   /// participants — null while it is held back until after the event. A
   /// timestamp rather than a flag so the settings page can say since when.
-  /// Still behind `openForParticipation`, like every participant page.
+  /// Independent of `openForParticipation`, which only governs making and
+  /// editing avatars: the conclusion is meant to be read once that is closed.
   conclusionPublishedAt DateTime?
 
   /// Palette and typography — "a more elaborate dark-mode switch", defaulting
@@ -203,6 +205,12 @@ model Project {
   /// it goes to is read from the tenant's Supabase at send time, never stored
   /// here. Defaults live in `src/lib/report/email-template.ts`.
   reportEmail Json?
+
+  /// The conclusion page as the tenant writes it: the body in the report
+  /// email's light markdown, with {histogram}/{figures}/{top} blocks, and the
+  /// sentences shown before the first score and before it is published.
+  /// Defaults live in `src/lib/report/conclusion-template.ts`.
+  conclusionPage Json?
 
   /// Who agreed — and when, and to which wording — that sending reports
   /// passes participants' email addresses through studio-yq. Nothing reads

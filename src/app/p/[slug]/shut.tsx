@@ -1,18 +1,23 @@
+import type { ReactNode } from "react";
 import { FONTS, themeCssVars, themeScheme, type ProjectTheme } from "@/lib/theme/project-theme";
 
 /**
  * What a participant meets when the project is not taking them: shut, or open
  * but incomplete. Shared with the participant-frontend preview, so what a
- * tenant previews is this component rather than a copy of it.
+ * tenant previews is this component rather than a copy of it. `children` sit
+ * under the message — the way on to the conclusion, once a closed project has
+ * published it.
  */
 export default function Shut({
   theme,
   title,
   message,
+  children,
 }: {
   theme: ProjectTheme;
   title: string;
   message: string;
+  children?: ReactNode;
 }) {
   return (
     <main
@@ -30,6 +35,7 @@ export default function Shut({
         <p className="mt-2 whitespace-pre-line text-xs" style={{ color: theme.dim }}>
           {message}
         </p>
+        {children && <div className="mt-6">{children}</div>}
       </div>
     </main>
   );

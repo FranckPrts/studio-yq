@@ -10,13 +10,18 @@ import {
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
 import { coerceCopy, fillCopy, type ProjectCopy } from "@/lib/theme/project-copy";
+import {
+  coerceConclusionPage,
+  type ConclusionPage,
+} from "@/lib/report/conclusion-template";
 import Shut from "./shut";
 
 /**
  * The door to the pages a participant comes back to read: results and the
- * conclusion. The same gate as the participant page — an unknown slug 404s, a
- * shut project says so — except that reading needs only the database, not a
- * script.
+ * conclusion. An unknown slug 404s, as on the participant page, but closing a
+ * project does not shut these: closed only stops new and edited avatars, and
+ * the conclusion is published after the event, once the doors are closed.
+ * Reading needs only the database, not a script.
  */
 
 export type ReadingProject = {
@@ -24,6 +29,7 @@ export type ReadingProject = {
   theme: ProjectTheme;
   lexicon: ProjectLexicon;
   copy: ProjectCopy;
+  conclusion: ConclusionPage;
   supabaseUrl: string;
   publishableKey: string;
   /** Published by the people running it, once the event is over. */
@@ -45,11 +51,11 @@ export async function loadReadingProject(
     where: { slug },
     select: {
       name: true,
-      openForParticipation: true,
       conclusionPublishedAt: true,
       theme: true,
       lexicon: true,
       copy: true,
+      conclusionPage: true,
       connection: {
         select: { projectUrl: true, publishableKey: true, provisionedAt: true },
       },
@@ -65,18 +71,6 @@ export async function loadReadingProject(
     nounPlural: lexicon.nounPlural,
     project: project.name,
   };
-
-  if (!project.openForParticipation) {
-    return {
-      shut: (
-        <Shut
-          theme={theme}
-          title={project.name}
-          message={fillCopy(copy.closedMessage, vars)}
-        />
-      ),
-    };
-  }
 
   const connection = project.connection;
   if (
@@ -101,6 +95,7 @@ export async function loadReadingProject(
       theme,
       lexicon,
       copy,
+      conclusion: coerceConclusionPage(project.conclusionPage),
       supabaseUrl: connection.projectUrl,
       publishableKey: connection.publishableKey,
       conclusionOpen: project.conclusionPublishedAt !== null,

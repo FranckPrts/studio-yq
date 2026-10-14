@@ -1,4 +1,5 @@
 import type { FontKey } from "@/lib/theme/project-theme";
+import { applyConditionals, parseBlocks, PLACEHOLDER } from "./markup";
 
 /**
  * The participant report email: what the tenant writes, and how it becomes a
@@ -188,9 +189,6 @@ export type RenderedEmail = {
   images: ImageBlock[];
 };
 
-const CONDITIONAL = /\{#(runs|noruns)\}([\s\S]*?)\{\/\1\}/g;
-const PLACEHOLDER = /\{([A-Za-z_][\w]*)\}/g;
-const IMAGE_ONLY = new RegExp(`^\\{(${IMAGE_BLOCKS.join("|")})\\}$`);
 /** Marks a placeholder's spot until its value goes in, after markdown has run. */
 const SENTINEL = /\u0000(\d+)\u0000/g;
 
@@ -200,33 +198,6 @@ function escapeHtml(value: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
-}
-
-function applyConditionals(body: string, played: boolean): string {
-  return body.replace(CONDITIONAL, (_, which: string, inner: string) =>
-    (which === "runs") === played ? inner : "",
-  );
-}
-
-type Block =
-  | { kind: "image"; image: ImageBlock }
-  | { kind: "p" | "quote"; lines: string[] }
-  | { kind: "list"; items: string[] };
-
-function parseBlocks(body: string): Block[] {
-  const blocks: Block[] = [];
-  for (const chunk of body.replace(/\r\n?/g, "\n").split(/\n\s*\n/)) {
-    const lines = chunk.split("\n").map((l) => l.trimEnd()).filter((l) => l.trim());
-    if (lines.length === 0) continue;
-    const image = lines.length === 1 ? IMAGE_ONLY.exec(lines[0].trim()) : null;
-    if (image) blocks.push({ kind: "image", image: image[1] as ImageBlock });
-    else if (lines.every((l) => /^\s*[-*]\s+/.test(l)))
-      blocks.push({ kind: "list", items: lines.map((l) => l.replace(/^\s*[-*]\s+/, "")) });
-    else if (lines.every((l) => /^\s*>/.test(l)))
-      blocks.push({ kind: "quote", lines: lines.map((l) => l.replace(/^\s*>\s?/, "")) });
-    else blocks.push({ kind: "p", lines: lines.map((l) => l.trim()) });
-  }
-  return blocks;
 }
 
 /**
@@ -294,7 +265,7 @@ export function renderReportEmail(
   const fill = (s: string) => s.replace(PLACEHOLDER, (_, key: string) => values[key] ?? "");
 
   const subject = fill(template.subject).replace(/\s+/g, " ").trim();
-  const blocks = parseBlocks(applyConditionals(template.body, played));
+  const blocks = parseBlocks(applyConditionals(template.body, played), { blocks: IMAGE_BLOCKS });
 
   // ---- html ----
   const textCss = `font-family:${style.font};font-size:${style.size};line-height:1.55;color:${style.text};`;
@@ -311,12 +282,13 @@ export function renderReportEmail(
   };
 
   const htmlParts = blocks.map((b) => {
-    if (b.kind === "image") {
-      const img = images[b.image];
+    if (b.kind === "block") {
+      const img = images[b.name];
       if (!img) return "";
-      used.push(b.image);
+      used.push(b.name);
       return `<img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt)}" width="${img.width}" style="display:block;width:${img.width}px;max-width:100%;height:auto;margin:24px 0;border:0;" />`;
     }
+    if (b.kind === "heading") return "";
     if (b.kind === "list") {
       const items = b.items.map((i) => `<li style="${textCss}margin:0 0 4px;">${htmlInline(i)}</li>`).join("");
       return `<ul style="${textCss}margin:0 0 14px;padding-left:22px;">${items}</ul>`;
@@ -346,7 +318,8 @@ ${htmlParts.filter(Boolean).join("\n")}
   // ---- plain text ----
   const textParts = blocks
     .map((b) => {
-      if (b.kind === "image") return "";
+      // Headings are the conclusion's; an email body is parsed without them.
+      if (b.kind === "block" || b.kind === "heading") return "";
       // Markdown first, values after, so a participant's name is never read
       // as markup — the same order as the HTML half.
       if (b.kind === "list") return b.items.map((i) => `- ${fill(inlineText(i))}`).join("\n");

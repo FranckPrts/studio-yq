@@ -14,6 +14,7 @@ const SCREENS: { key: PreviewScreen; label: string }[] = [
   { key: "list", label: "coming back" },
   { key: "results", label: "results" },
   { key: "conclusion", label: "conclusion" },
+  { key: "conclusionEmpty", label: "conclusion, empty" },
   { key: "conclusionPending", label: "conclusion, not yet" },
   { key: "closed", label: "closed" },
   { key: "notReady", label: "not ready" },

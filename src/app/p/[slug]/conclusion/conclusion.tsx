@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { allRuns, type MyRuns } from "@/lib/spoke/results";
 import type { ProjectLexicon, ProjectTheme } from "@/lib/theme/project-theme";
 import type { ProjectCopy } from "@/lib/theme/project-copy";
+import type { ConclusionPage } from "@/lib/report/conclusion-template";
 import { useReturning } from "../use-returning";
 import ConclusionView from "./conclusion-view";
 
@@ -19,6 +20,7 @@ export default function Conclusion({
   theme,
   lexicon,
   copy,
+  conclusion,
   supabaseUrl,
   publishableKey,
 }: {
@@ -27,6 +29,7 @@ export default function Conclusion({
   theme: ProjectTheme;
   lexicon: ProjectLexicon;
   copy: ProjectCopy;
+  conclusion: ConclusionPage;
   supabaseUrl: string;
   publishableKey: string;
 }) {
@@ -72,6 +75,7 @@ export default function Conclusion({
       theme={theme}
       lexicon={lexicon}
       copy={copy}
+      conclusion={conclusion}
       nav={{ slug }}
       scores={runs?.scores ?? null}
       names={runs?.names ?? NO_NAMES}

@@ -39,7 +39,7 @@ export default async function ConclusionPage({
       <Shut
         theme={project.theme}
         title={project.name}
-        message={fillCopy(project.copy.conclusionPending, {
+        message={fillCopy(project.conclusion.pending, {
           noun: project.lexicon.noun,
           nounPlural: project.lexicon.nounPlural,
           project: project.name,
@@ -57,6 +57,7 @@ export default async function ConclusionPage({
         theme={project.theme}
         lexicon={project.lexicon}
         copy={project.copy}
+        conclusion={project.conclusion}
         supabaseUrl={project.supabaseUrl}
         publishableKey={project.publishableKey}
       />

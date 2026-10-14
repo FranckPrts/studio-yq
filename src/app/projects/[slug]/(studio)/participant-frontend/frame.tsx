@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ProjectLexicon, ProjectTheme } from "@/lib/theme/project-theme";
 import type { ProjectCopy } from "@/lib/theme/project-copy";
+import type { ConclusionPage } from "@/lib/report/conclusion-template";
 import type {
   FromPreview,
   PreviewScreen,
@@ -32,6 +33,8 @@ export default function PreviewFrame({
   theme,
   lexicon,
   copy,
+  conclusion,
+  played = true,
   screen,
   device,
   onReady,
@@ -41,6 +44,10 @@ export default function PreviewFrame({
   theme: ProjectTheme;
   lexicon: ProjectLexicon;
   copy: ProjectCopy;
+  /** The conclusion's unsaved draft; left out, the frame shows the saved one. */
+  conclusion?: ConclusionPage;
+  /** Whether the conclusion is read by someone who played, or by a visitor. */
+  played?: boolean;
   screen: PreviewScreen;
   device: Device;
   onReady?: (info: FrameInfo) => void;
@@ -53,9 +60,9 @@ export default function PreviewFrame({
   const [width, setWidth] = useState(0);
 
   // Read by the message handler, which outlives any one render.
-  const latest = useRef({ theme, lexicon, copy, screen, onReady, onScreen });
+  const latest = useRef({ theme, lexicon, copy, conclusion, played, screen, onReady, onScreen });
   useEffect(() => {
-    latest.current = { theme, lexicon, copy, screen, onReady, onScreen };
+    latest.current = { theme, lexicon, copy, conclusion, played, screen, onReady, onScreen };
   });
 
   function send(message: ToPreview) {
@@ -73,9 +80,10 @@ export default function PreviewFrame({
       if (data?.type === "yq-preview:ready") {
         // Also on a reload of the frame: it starts from what is saved, so
         // bring it back to the drafts and the screen being looked at.
-        const { theme, lexicon, copy, screen, onReady } = latest.current;
-        send({ type: "yq-preview:draft", theme, lexicon, copy });
+        const { theme, lexicon, copy, conclusion, played, screen, onReady } = latest.current;
+        send({ type: "yq-preview:draft", theme, lexicon, copy, conclusion });
         send({ type: "yq-preview:show", screen });
+        send({ type: "yq-preview:reader", played });
         setReady(true);
         onReady?.({ hasScript: data.hasScript, hasQuestions: data.hasQuestions });
       } else if (data?.type === "yq-preview:screen") {
@@ -87,8 +95,12 @@ export default function PreviewFrame({
   }, []);
 
   useEffect(() => {
-    if (ready) send({ type: "yq-preview:draft", theme, lexicon, copy });
-  }, [ready, theme, lexicon, copy]);
+    if (ready) send({ type: "yq-preview:draft", theme, lexicon, copy, conclusion });
+  }, [ready, theme, lexicon, copy, conclusion]);
+
+  useEffect(() => {
+    if (ready) send({ type: "yq-preview:reader", played });
+  }, [ready, played]);
 
   useEffect(() => {
     if (ready) send({ type: "yq-preview:show", screen });

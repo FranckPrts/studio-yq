@@ -123,6 +123,12 @@ export default function Sidebar({
           hint: "What each participant receives.",
         },
         {
+          label: "conclusion",
+          href: `${base}/report/conclusion`,
+          match: `${base}/report/conclusion`,
+          hint: "The page everyone can read once it is published.",
+        },
+        {
           label: "send",
           href: `${base}/report/send`,
           match: `${base}/report/send`,
