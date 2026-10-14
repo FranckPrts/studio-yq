@@ -27,8 +27,8 @@ export type PendingInvite = {
 };
 
 const ROLE_HELP: Record<Role, string> = {
-  OWNER: "everything, including members, the database and opening",
-  COLLABORATOR: "style, script and parameters",
+  OWNER: "everything, including members, the database and deleting",
+  COLLABORATOR: "style, script, parameters, opening and the conclusion",
   VIEWER: "can look, cannot change",
 };
 

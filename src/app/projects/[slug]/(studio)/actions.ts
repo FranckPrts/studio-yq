@@ -9,9 +9,9 @@ export type SettingsState = { saved?: boolean; error?: string };
 
 /**
  * Every action re-authorises. The role required differs by what is being
- * changed, mirroring `YQVisual.ts`'s split: a collaborator may edit the content
- * of a project, but the fields that decide who sees it — its name in a URL, and
- * whether participants can reach it at all — stay with the owner.
+ * changed. A collaborator may run the project — open and close it, publish or
+ * hide the conclusion — while renaming, members, and anything that deletes
+ * data or the project itself stay with the owner.
  */
 
 export async function renameProject(
@@ -48,7 +48,7 @@ export async function setOpenForParticipation(
   formData: FormData,
 ): Promise<ParticipationState> {
   const slug = String(formData.get("slug") ?? "");
-  const { projectId } = await requireProjectRole(slug, "OWNER");
+  const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
   const open = formData.get("open") === "true";
 
   if (open) {
@@ -71,8 +71,8 @@ export async function setOpenForParticipation(
 
 /**
  * Publishes or withdraws the conclusion — held back until the event is over,
- * so no one reads how the runs went while theirs are still to come. Owner
- * only, like opening: it decides what participants can reach. Needs no
+ * so no one reads how the runs went while theirs are still to come. Owner or
+ * collaborator, like opening. Needs no
  * readiness check of its own; the conclusion sits behind the project's open
  * state either way.
  */
@@ -81,7 +81,7 @@ export async function setConclusionPublished(
   formData: FormData,
 ): Promise<ParticipationState> {
   const slug = String(formData.get("slug") ?? "");
-  const { projectId } = await requireProjectRole(slug, "OWNER");
+  const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
   const publish = formData.get("publish") === "true";
 
   await db.project.update({

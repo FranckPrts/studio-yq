@@ -82,6 +82,7 @@ export default async function ProjectSettingsPage({
   const script = project.scripts[0];
   const connection = project.connection;
   const isOwner = access.role === "OWNER";
+  const canOperate = isOwner || access.role === "COLLABORATOR";
   const readiness = await projectReadiness(access.projectId);
   const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
 
@@ -110,7 +111,7 @@ export default async function ProjectSettingsPage({
         <ParticipationToggle
           slug={project.slug}
           open={project.openForParticipation}
-          canEdit={isOwner}
+          canEdit={canOperate}
           missing={readiness.missing}
           publicUrl={`${base}/p/${project.slug}`}
         />
@@ -118,7 +119,7 @@ export default async function ProjectSettingsPage({
           slug={project.slug}
           publishedAt={project.conclusionPublishedAt?.toISOString() ?? null}
           open={project.openForParticipation}
-          canEdit={isOwner}
+          canEdit={canOperate}
           conclusionUrl={`${base}/p/${project.slug}/conclusion`}
         />
       </section>
