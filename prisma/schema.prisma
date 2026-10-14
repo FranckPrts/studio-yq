@@ -34,6 +34,11 @@ model User {
   /// ever says what someone may do inside one project.
   isPlatformAdmin Boolean @default(false)
 
+  /// The studio interface this person sees — theirs alone. Two members of one
+  /// project each keep their own. Never reaches a participant page, which is
+  /// drawn in the project's palette whoever is looking.
+  studioTheme StudioTheme @default(DARK)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -142,6 +147,14 @@ enum Role {
   VIEWER
 
   @@map("role")
+}
+
+/// The two studio themes, declared as `[data-theme]` blocks in `globals.css`.
+enum StudioTheme {
+  DARK
+  LIGHT
+
+  @@map("studio_theme")
 }
 
 /// A project is one experience: one Supabase connection, one look, one script.

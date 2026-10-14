@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Mono, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { currentUser } from "@/lib/auth/dal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,11 +30,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Each person's own studio theme; signed out — a participant, the sign-in
+  // page — it is dark. Participant pages set their own `data-theme` from the
+  // project's palette beneath this, so this choice never reaches them.
+  const user = await currentUser();
+  const theme = user?.studioTheme === "LIGHT" ? "light" : "dark";
+
   return (
     <html
       lang="en"
-      data-theme="dark"
+      data-theme={theme}
       className={`${geistSans.variable} ${geistMono.variable} ${dmMono.variable} h-full antialiased`}
     >
       {/*

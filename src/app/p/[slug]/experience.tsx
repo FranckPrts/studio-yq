@@ -31,6 +31,7 @@ import {
 import {
   FONTS,
   themeCssVars,
+  themeScheme,
   type ProjectLexicon,
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
@@ -381,6 +382,7 @@ export default function ParticipantExperience({
     // controls sit in a column on the right, so tuning never scrolls the
     // avatar out of view. Stacked on a phone, where there is no room for both.
     <main
+      data-theme={themeScheme(theme)}
       style={style}
       className="flex min-h-screen flex-col md:h-screen md:flex-row md:overflow-hidden"
     >

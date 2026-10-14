@@ -57,9 +57,21 @@ export type FontKey = keyof typeof FONTS;
 export const DEFAULT_THEME: ProjectTheme = {
   void: "#14100e",
   paper: "#ece5d8",
-  dim: "#7f776b",
+  // Was #7f776b (4.3:1 on void) until 2026-10-14; nudged to clear 4.5:1 for
+  // the 11px hints it carries. Projects that saved the old value keep it.
+  dim: "#857d71",
   font: "dmMono",
 };
+
+/**
+ * The two studio palettes, as data — the `dark` and `light` blocks in
+ * `globals.css`, which are the source of truth. Mirrored here only for code
+ * that needs the values themselves (the primitives gallery, contrast checks).
+ */
+export const STUDIO_PALETTES = {
+  dark: { void: DEFAULT_THEME.void, paper: DEFAULT_THEME.paper, dim: DEFAULT_THEME.dim },
+  light: { void: "#f4f1ea", paper: "#1d1b18", dim: "#716c62" },
+} as const satisfies Record<string, Pick<ProjectTheme, "void" | "paper" | "dim">>;
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -146,6 +158,19 @@ export function themeCssVars(theme: ProjectTheme): Record<string, string> {
     "--color-paper": theme.paper,
     "--color-dim": theme.dim,
   };
+}
+
+/**
+ * Which diagnostic set a project palette needs — set as `data-theme` beside
+ * `themeCssVars()`. Amber and red tuned for a dark ground vanish on a pale one,
+ * so a project whose `void` is light gets the light set, whatever studio theme
+ * the person looking at it has chosen.
+ *
+ * 0.179 is the luminance at which black and white text contrast equally with
+ * the ground: above it, dark text reads better, so the ground counts as light.
+ */
+export function themeScheme(theme: Pick<ProjectTheme, "void">): "dark" | "light" {
+  return HEX.test(theme.void) && luminance(theme.void) > 0.179 ? "light" : "dark";
 }
 
 export type ProjectLexicon = { noun: string; nounPlural: string };

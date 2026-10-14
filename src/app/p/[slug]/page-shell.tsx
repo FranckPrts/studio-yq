@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { FONTS, themeCssVars, type ProjectTheme } from "@/lib/theme/project-theme";
+import { FONTS, themeCssVars, themeScheme, type ProjectTheme } from "@/lib/theme/project-theme";
 
 /**
  * The frame of the pages a participant comes back to read — results and the
@@ -16,6 +16,7 @@ export default function PageShell({
 }) {
   return (
     <main
+      data-theme={themeScheme(theme)}
       style={{
         ...themeCssVars(theme),
         backgroundColor: theme.void,

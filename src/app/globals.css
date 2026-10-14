@@ -22,7 +22,7 @@
 @theme {
   --color-void: #14100e;
   --color-paper: #ece5d8;
-  --color-dim: #7f776b;
+  --color-dim: #857d71;
 }
 
 /*
@@ -47,6 +47,53 @@
   --color-warning-strong: oklch(92.4% 0.12 95.746); /* amber-200 */
   --color-warning-line: oklch(76.9% 0.188 70.08); /* amber-500 */
   --color-success: oklch(76.5% 0.177 163.223); /* emerald-400 */
+}
+
+/*
+ * The studio themes. `<html data-theme>` comes from the signed-in person's own
+ * choice (`User.studioTheme`, read in `layout.tsx`); a participant surface sets
+ * its own from the project's `void` (`themeScheme()`), so the diagnostics suit
+ * the ground they sit on whoever is looking.
+ *
+ * Unlayered, so these outrank the `@theme` defaults above, which Tailwind emits
+ * in its `theme` layer. Dark is declared in full even though it repeats those
+ * defaults: a dark surface nested inside a light page — a project's board,
+ * opened by someone on the light studio — has to get the dark set back.
+ * A project's own palette is set inline beside the attribute, so it still wins
+ * over `void` / `paper` / `dim` here; only the diagnostics come from the block.
+ *
+ * Every text pairing clears 4.5:1 at the opacities the markup uses
+ * (`text-warning/80`, `text-warning-strong/70`, …). `-line` colours draw
+ * borders and tints at 10–60%, decorative beside the text that carries them.
+ */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-void: #14100e;
+  --color-paper: #ece5d8; /* 15.1:1 on void */
+  --color-dim: #857d71; /* 4.7:1 */
+  --color-danger: oklch(70.4% 0.191 22.216); /* red-400 · 6.5:1 */
+  --color-danger-strong: oklch(80.8% 0.114 19.571); /* red-300 · 6.6:1 at 80% */
+  --color-danger-strongest: oklch(88.5% 0.062 18.334); /* red-200 · 13:1 */
+  --color-danger-line: oklch(63.7% 0.237 25.331); /* red-500 */
+  --color-warning: oklch(82.8% 0.189 84.429); /* amber-400 · 7.3:1 at 80% */
+  --color-warning-strong: oklch(92.4% 0.12 95.746); /* amber-200 · 7.8:1 at 70% */
+  --color-warning-line: oklch(76.9% 0.188 70.08); /* amber-500 */
+  --color-success: oklch(76.5% 0.177 163.223); /* emerald-400 · 6.5:1 at 80% */
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-void: #f4f1ea;
+  --color-paper: #1d1b18; /* 15.2:1 on void */
+  --color-dim: #716c62; /* 4.6:1 */
+  --color-danger: oklch(50.5% 0.213 27.518); /* red-700 · 5.7:1 */
+  --color-danger-strong: oklch(44.4% 0.177 26.899); /* red-800 · 5.4:1 at 80% */
+  --color-danger-strongest: oklch(39.6% 0.141 25.723); /* red-900 · 8.9:1 */
+  --color-danger-line: oklch(57.7% 0.245 27.325); /* red-600 */
+  --color-warning: oklch(41.4% 0.112 45.904); /* amber-900 · 5.0:1 at 80% */
+  --color-warning-strong: oklch(27.9% 0.077 45.635); /* amber-950 · 5.5:1 at 70% */
+  --color-warning-line: oklch(55.5% 0.163 48.998); /* amber-700 */
+  --color-success: oklch(37.8% 0.077 168.94); /* emerald-900 · 5.2:1 at 80% */
 }
 
 /*

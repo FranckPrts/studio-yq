@@ -26,8 +26,8 @@ Two constraints that shape every file:
 
 ## Plan — toward a light theme
 
-The default palette is `dark` (renamed from "Nowadays" on 2026-10-14); the next
-is `light`. Phases 1–3 are the path there. Phases 4–5 are housekeeping that does
+The default palette is `dark` (renamed from "Nowadays" on 2026-10-14); `light`
+is the second studio theme. Phases 1–3 are the path there. Phases 4–5 are housekeeping that does
 not block it and can run alongside or after.
 
 ### Phase 1 — Reconcile the record *(done 2026-10-14)*
@@ -77,16 +77,34 @@ not block it and can run alongside or after.
       written with.** A visible change across the admin forms; checked in
       `/dev/primitives` and `/projects`.
 
-### Phase 3 — The light theme
+### Phase 3 — The light theme *(built 2026-10-14)*
 
-- [ ] Decide what "light" covers (see Open decisions).
-- [ ] Pick light values that meet 4.5:1 for text, and the light values of the
-      diagnostic tokens.
-- [ ] Named presets in `project-theme.ts`: `THEMES = { dark, light }`,
-      `DEFAULT_THEME = THEMES.dark`. Offer them on the palette form and in
-      `/dev/primitives` (replacing its ad-hoc `light` preset).
-- [ ] Add the `light` theme to the Studio YQ design system and regenerate its
-      cover.
+- [x] **"Light" is a studio theme, chosen per person.** `User.studioTheme`
+      (`DARK` | `LIGHT`, default `DARK`; migration `…_studio_theme`). Two
+      members of one project each keep their own; it is set from `/account`
+      (two submit buttons, no JavaScript) and applied as `<html data-theme>` by
+      the root layout. Signed-out pages are dark.
+- [x] **Participant surfaces never follow it.** `page-shell`, `shut`,
+      `experience` and the board set their own `data-theme` from the project's
+      `void` (`themeScheme()`, luminance over 0.179 ⇒ light), so a project's
+      diagnostics suit its own ground whoever is looking — a light-void
+      project now gets readable amber and red for the first time.
+- [x] **Values, all ≥ 4.5:1 for text at the opacities the markup uses** (worked
+      out in `globals.css` beside each one). Light: void `#f4f1ea`, paper
+      `#1d1b18` (15.2:1), dim `#716c62` (4.6:1); danger red-700/800/900,
+      warning amber-900/950, success emerald-900; `-line` red-600 / amber-700.
+- [x] **Dark's `dim` fixed:** `#7f776b` (4.3:1) → `#857d71` (4.7:1), in
+      `globals.css` and `DEFAULT_THEME`. Projects that already saved the old
+      value keep it, and see the contrast warning on their palette form.
+- [x] `STUDIO_PALETTES` in `project-theme.ts` mirrors both blocks for code that
+      needs the values; `/dev/primitives` uses it for its `dark` / `light`
+      presets and sets the matching `data-theme` on its project panel.
+- [x] The Studio YQ design system has both themes, the per-theme diagnostic
+      tokens under the code's names, and the dim fix. Its cover is drawn from
+      tokens, so it follows the theme on its own.
+- [ ] **Verify in the browser** once the dev server restarts (it still holds
+      the Prisma client from before the migration): `/account` switch, a light
+      studio page, a participant page while signed in on light.
 
 ### Phase 4 — Missing primitives
 
@@ -98,13 +116,11 @@ The table at the bottom, `AvatarControls.tsx` first.
 
 ### Open decisions
 
-- [ ] **What "light" covers.** A project preset tenants can pick, a light admin
-      (today `layout.tsx` pins `data-theme="dark"`), or both.
+- [x] **What "light" covers.** The studio interface, per person — not a
+      project preset. Decided 2026-10-14.
 - [x] **Diagnostic colours: "literal" → "fixed per theme, never tenant-set".**
       Agreed 2026-10-14; `ProjectTheme` stays three colours plus a font.
-- [ ] **Dark's `dim`.** The default fails the new contrast check at 4.3:1.
-      Nudge it to 4.5:1 in Phase 3, or keep the shipped value and accept the
-      warning on default projects.
+- [x] **Dark's `dim`.** Nudged to `#857d71` (4.7:1). Decided 2026-10-14.
 - [ ] **Radius.** `docs/participant-styling.md` says none; `rounded` appears 29
       times across 11 app files (panels, outline buttons, code blocks; 3 more
       in the `/dev/sketch` harness), plus 4

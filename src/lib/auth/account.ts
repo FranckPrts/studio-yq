@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import type { StudioTheme } from "@/generated/prisma/enums";
 import { hashPassword, passwordProblem, verifyPassword } from "./password";
 import { currentSessionTokenHash } from "./session";
 import {
@@ -69,4 +70,15 @@ export async function changePassword(
   ]);
 
   return { ok: true, signedOut: revoked.count };
+}
+
+/**
+ * Sets a signed-in user's own studio theme. Theirs alone: nothing here reads or
+ * writes a project, so two members of one project each keep their own.
+ */
+export async function setStudioTheme(
+  userId: string,
+  theme: StudioTheme,
+): Promise<void> {
+  await db.user.update({ where: { id: userId }, data: { studioTheme: theme } });
 }

@@ -1,4 +1,4 @@
-import { FONTS, themeCssVars, type ProjectTheme } from "@/lib/theme/project-theme";
+import { FONTS, themeCssVars, themeScheme, type ProjectTheme } from "@/lib/theme/project-theme";
 
 /**
  * What a participant meets when the project is not taking them: shut, or open
@@ -16,6 +16,7 @@ export default function Shut({
 }) {
   return (
     <main
+      data-theme={themeScheme(theme)}
       style={{
         ...themeCssVars(theme),
         backgroundColor: theme.void,

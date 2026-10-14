@@ -1,7 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/dal";
-import { changePassword } from "@/lib/auth/account";
+import { changePassword, setStudioTheme } from "@/lib/auth/account";
 
 export type PasswordState = { error?: string; done?: string };
 
@@ -36,4 +37,19 @@ export async function changeOwnPassword(
           } signed out.`
         : "Password changed.",
   };
+}
+
+/**
+ * The studio theme switch on /account. Same rule as above: it only ever acts on
+ * the signed-in user, and the value is checked here rather than trusted from
+ * the form. Revalidates from the root layout, which is where `data-theme` is
+ * set, so every page the person has open picks the change up.
+ */
+export async function chooseStudioTheme(formData: FormData): Promise<void> {
+  const user = await requireUser("/account");
+  const theme = formData.get("theme");
+  if (theme !== "DARK" && theme !== "LIGHT") return;
+
+  await setStudioTheme(user.id, theme);
+  revalidatePath("/", "layout");
 }

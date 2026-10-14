@@ -11,6 +11,7 @@ import {
 import {
   FONTS,
   themeCssVars,
+  themeScheme,
   type ProjectLexicon,
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
@@ -68,6 +69,7 @@ export default function BoardView({
 
   return (
     <div
+      data-theme={themeScheme(theme)}
       style={{
         ...themeCssVars(theme),
         backgroundColor: theme.void,

@@ -28,6 +28,14 @@ The colour split is meaningful, not decorative. On the slider the track is dim
 (structure) and the handle is paper (the thing being moved); in an option row
 the chosen one is paper and the rest are dim.
 
+## Studio themes
+
+The studio — every page a team member works in — comes in `dark` and `light`.
+Each person picks their own on `/account` (`User.studioTheme`); two people on
+one project each keep theirs. It is applied as `<html data-theme>` and changes
+the three colours and the diagnostics together, from the `[data-theme]` blocks
+in `globals.css`. It never reaches a participant page.
+
 ## What a project controls
 
 A project's theme (`ProjectTheme`, stored whole in `Project.theme`) is exactly:
@@ -51,8 +59,9 @@ component holding a hex stops following the project the moment it ships.
   *something is broken*. They are fixed so that no palette can tune the one
   signal that must stay visible into invisibility. They are tokens fixed per
   theme in `globals.css` — `warning`, `danger`, `success`, each with
-  higher-contrast `-strong` steps and a `-line` for borders — so a light theme
-  can give them darker values without any project being able to touch them.
+  higher-contrast `-strong` steps and a `-line` for borders. A participant
+  page picks the dark or light set from its own `void` (`themeScheme()`), so
+  they stay readable on any palette without a project being able to touch them.
   Write `text-danger`, `border-warning-line/40`; never a Tailwind red or amber.
 - **Hue ramps a visual script supplies.** A slider showing the colours a
   parameter maps to draws the script's own gradient. This is the one other
@@ -92,5 +101,6 @@ component holding a hex stops following the project the moment it ships.
 
 - **Contrast is advised, not enforced.** The palette form warns when `paper` or
   `dim` falls under 4.5:1 on `void` (`contrastIssues()` in
-  `project-theme.ts`) and still saves. The default palette itself sits at
-  about 4.3:1 for dim on void, so it shows the warning too.
+  `project-theme.ts`) and still saves. Both studio themes and the default
+  project palette clear it; projects saved with the old default dim
+  (`#7f776b`, 4.3:1) see the warning.

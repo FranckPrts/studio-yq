@@ -27,26 +27,23 @@ import {
 import {
   DEFAULT_THEME,
   FONTS,
+  STUDIO_PALETTES,
   themeCssVars,
+  themeScheme,
   type FontKey,
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
 
 /**
- * Palettes chosen to break things rather than to look good. `light` inverts the
- * ground, so a primitive that assumed a dark background shows it at once;
+ * Palettes chosen to break things rather than to look good. `dark` and `light`
+ * are the two studio themes; `light` inverts the ground, so a primitive that
+ * assumed a dark background shows it at once;
  * `low contrast` puts `dim` close to `paper`, so a state told apart only by
  * colour stops being told apart.
  */
 const PRESETS: Record<string, { label: string; theme: Omit<ProjectTheme, "font"> }> = {
-  dark: {
-    label: "dark",
-    theme: { void: DEFAULT_THEME.void, paper: DEFAULT_THEME.paper, dim: DEFAULT_THEME.dim },
-  },
-  light: {
-    label: "light",
-    theme: { void: "#f4f1ea", paper: "#1d1b18", dim: "#8a8478" },
-  },
+  dark: { label: "dark", theme: STUDIO_PALETTES.dark },
+  light: { label: "light", theme: STUDIO_PALETTES.light },
   ocean: {
     label: "ocean",
     theme: { void: "#0b1d2a", paper: "#d9f0ff", dim: "#5f7f99" },
@@ -159,6 +156,7 @@ export default function PrimitivesGallery() {
         <Panel
           title="project"
           note={`${FONTS[theme.font].label} · ${preset ? PRESETS[preset].label : "custom"}`}
+          scheme={themeScheme(theme)}
           style={projectStyle}
         >
           <Specimens />
@@ -177,17 +175,21 @@ function Panel({
   title,
   note,
   className,
+  scheme,
   style,
   children,
 }: {
   title: string;
   note: string;
   className?: string;
+  /** The diagnostic set for this panel's palette; omitted, it follows the studio theme. */
+  scheme?: "dark" | "light";
   style?: CSSProperties;
   children: ReactNode;
 }) {
   return (
     <section
+      data-theme={scheme}
       className={cx("flex min-w-0 flex-col gap-8 border border-paper/20 bg-void p-5 text-paper", className)}
       style={style}
     >
