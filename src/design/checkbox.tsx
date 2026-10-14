@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { choiceClass } from "./button";
-import { cx, FOCUS_RING, SIZE, type Size } from "./tokens";
+import { cx, PEER_FOCUS_RING, SIZE, type Size } from "./tokens";
 
 /**
  * Checkboxes, drawn as `[ ]` and `[x]`.
@@ -50,12 +50,12 @@ export function Checkbox({
       )}
     >
       <input type="checkbox" disabled={disabled} className="peer sr-only" {...rest} />
-      <span aria-hidden className={cx("inline-block", GLYPH, "peer-checked:hidden", FOCUS_RING)}>
+      <span aria-hidden className={cx("inline-block", GLYPH, "peer-checked:hidden", PEER_FOCUS_RING)}>
         [ ]
       </span>
       <span
         aria-hidden
-        className={cx("hidden", GLYPH, "text-paper peer-checked:inline-block", FOCUS_RING)}
+        className={cx("hidden", GLYPH, "text-paper peer-checked:inline-block", PEER_FOCUS_RING)}
       >
         [x]
       </span>

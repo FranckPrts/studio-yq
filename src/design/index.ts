@@ -7,8 +7,9 @@
  * Two rules hold this together, both from `docs/participant-styling.md`:
  *
  * 1. **No colour values.** Everything resolves to `--color-void`,
- *    `--color-paper` or `--color-dim`, which each project overrides. The only
- *    literals are diagnostic amber and red, and hue ramps the script supplies.
+ *    `--color-paper` or `--color-dim`, which each project overrides, or to the
+ *    diagnostic `--color-warning` / `--color-danger` / `--color-success`, fixed
+ *    per theme. The only literals are hue ramps the script supplies.
  * 2. **No `"use client"` in this folder.** Every primitive is a plain element,
  *    so it renders from a Server Component as happily as from a Client one —
  *    just like the `<button>` or `<select>` it replaces. A caller passing
@@ -19,7 +20,7 @@
  * the tag and deleting its class string.
  */
 
-export { cx, FOCUS_RING, FIELD, FIELD_SELECT, TONE, TONE_BORDER, SIZE } from "./tokens";
+export { cx, FOCUS_RING, PEER_FOCUS_RING, FIELD, FIELD_SELECT, TONE, TONE_BORDER, SIZE } from "./tokens";
 export type { Tone, Size } from "./tokens";
 
 export { Button, ButtonLink, buttonClass, choiceClass } from "./button";

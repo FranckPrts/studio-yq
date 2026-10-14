@@ -91,7 +91,7 @@ export default async function SendPage({
         </h2>
         <div
           className={`flex flex-col gap-3 rounded border p-4 text-xs leading-relaxed ${
-            status.notice.current ? "border-paper/10" : "border-amber-500/40"
+            status.notice.current ? "border-paper/10" : "border-warning-line/40"
           }`}
         >
           {REPORT_NOTICE.map((p) => (
@@ -101,7 +101,7 @@ export default async function SendPage({
           ))}
           {status.notice.current ? (
             <div className="flex flex-wrap items-baseline justify-between gap-3 border-t border-paper/10 pt-3">
-              <p className="text-emerald-400/90">
+              <p className="text-success/90">
                 Agreed by {status.notice.by?.displayName || status.notice.by?.email || "a former member"}{" "}
                 on {when(status.notice.at!)} (notice v{status.notice.version}).
               </p>
@@ -119,7 +119,7 @@ export default async function SendPage({
               <input type="hidden" name="slug" value={slug} />
               <input type="hidden" name="version" value={REPORT_NOTICE_VERSION} />
               {status.notice.version && (
-                <p className="mb-2 text-amber-400/90">
+                <p className="mb-2 text-warning/90">
                   The notice changed since this project agreed to v{status.notice.version} — it needs agreeing again.
                 </p>
               )}
@@ -131,7 +131,7 @@ export default async function SendPage({
               </p>
             </form>
           ) : (
-            <p className="border-t border-paper/10 pt-3 text-amber-400/90">
+            <p className="border-t border-paper/10 pt-3 text-warning/90">
               Not agreed yet. Only an owner of the project can agree.
             </p>
           )}
@@ -143,11 +143,11 @@ export default async function SendPage({
         <h2 className="text-xs tracking-widest text-dim uppercase">2 · sending account</h2>
         <div className="flex flex-col gap-2 text-xs leading-relaxed">
           {gmailError && (
-            <p role="alert" className="text-red-400">
+            <p role="alert" className="text-danger">
               Connecting Gmail failed: {gmailError}
             </p>
           )}
-          {justConnected && status.gmail && <p className="text-emerald-400/90">Gmail connected.</p>}
+          {justConnected && status.gmail && <p className="text-success/90">Gmail connected.</p>}
           {status.gmail ? (
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <p>
@@ -176,7 +176,7 @@ export default async function SendPage({
               )}
             </div>
           ) : !gmailConfigured() ? (
-            <p className="text-amber-400/90">
+            <p className="text-warning/90">
               Gmail sending isn&rsquo;t set up on this server yet — it needs the{" "}
               <code>GOOGLE_OAUTH_*</code> settings in <code>.env.example</code>.
             </p>
@@ -195,7 +195,7 @@ export default async function SendPage({
               </span>
             </p>
           ) : (
-            <p className="text-amber-400/90">No account connected. Only an owner can connect one.</p>
+            <p className="text-warning/90">No account connected. Only an owner can connect one.</p>
           )}
         </div>
       </section>
@@ -217,9 +217,9 @@ export default async function SendPage({
         {!canSend ? (
           <p className="text-xs text-dim">You have read-only access to this project.</p>
         ) : !ready ? (
-          <p className="text-xs text-amber-400/90">Sending opens once 1 and 2 are done.</p>
+          <p className="text-xs text-warning/90">Sending opens once 1 and 2 are done.</p>
         ) : !script || !database ? (
-          <p className="text-xs text-amber-400/90">
+          <p className="text-xs text-warning/90">
             Sending needs the project&rsquo;s script and database set up.
           </p>
         ) : (
@@ -260,7 +260,7 @@ export default async function SendPage({
                   {KIND_LABEL[r.kind]}{" "}
                   <span className="text-dim">
                     · {r.sent} of {r.total} sent
-                    {r.failed > 0 && <span className="text-red-400"> · {r.failed} failed</span>}
+                    {r.failed > 0 && <span className="text-danger"> · {r.failed} failed</span>}
                     {r.state !== "finished" && ` · ${r.state}`}
                   </span>
                 </span>

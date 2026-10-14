@@ -520,7 +520,7 @@ export default function ParticipantExperience({
               onChange={set}
             />
             {error && (
-              <p role="alert" className="text-xs text-red-400">
+              <p role="alert" className="text-xs text-danger">
                 {error}
               </p>
             )}

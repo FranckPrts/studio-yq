@@ -133,17 +133,17 @@ export default function ScriptSection({
           </p>
 
           {state.error && (
-            <p role="alert" className="text-xs text-red-400">
+            <p role="alert" className="text-xs text-danger">
               {state.error}
             </p>
           )}
 
           {state.problems && (
-            <div className="flex flex-col gap-1 rounded border border-red-500/40 p-3">
-              <p className="text-xs text-red-400">
+            <div className="flex flex-col gap-1 rounded border border-danger-line/40 p-3">
+              <p className="text-xs text-danger">
                 The declaration is not valid, so nothing was uploaded:
               </p>
-              <ul className="text-[11px] leading-relaxed text-red-300/80">
+              <ul className="text-[11px] leading-relaxed text-danger-strong/80">
                 {state.problems.map((p) => (
                   <li key={p}>{p}</li>
                 ))}
@@ -159,11 +159,11 @@ export default function ScriptSection({
           )}
 
           {state.warnings && (
-            <div className="flex flex-col gap-1 rounded border border-amber-500/40 p-3">
-              <p className="text-xs text-amber-400">
+            <div className="flex flex-col gap-1 rounded border border-warning-line/40 p-3">
+              <p className="text-xs text-warning">
                 Uploaded, but worth a look:
               </p>
-              <ul className="text-[11px] leading-relaxed text-amber-200/70">
+              <ul className="text-[11px] leading-relaxed text-warning-strong/70">
                 {state.warnings.map((w) => (
                   <li key={w}>{w}</li>
                 ))}

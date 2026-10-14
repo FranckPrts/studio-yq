@@ -10,7 +10,7 @@
  *
  * The rules these encode are written down in `docs/participant-styling.md`:
  * three colour roles, underlined text buttons, flat square controls, no radius
- * or shadow, and literal colours only for diagnostics.
+ * or shadow, and fixed (never tenant-set) colours only for diagnostics.
  */
 
 /**
@@ -32,6 +32,14 @@ export const FOCUS_RING =
   "focus-visible:outline focus-visible:outline-1 focus-visible:outline-paper focus-visible:outline-offset-2";
 
 /**
+ * The same ring, drawn on a visible stand-in when the focusable element is a
+ * visually hidden `peer` — the `[ ]` glyph beside a checkbox's real input. The
+ * glyph never takes focus itself, so `FOCUS_RING` on it would never show.
+ */
+export const PEER_FOCUS_RING =
+  "peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-paper peer-focus-visible:outline-offset-2";
+
+/**
  * A text field: the `.term-input` base from `globals.css` plus the hairline it
  * is always paired with. Not a primitive of its own yet — `Select` needs it,
  * and extracting the field component is on the to-do.
@@ -49,9 +57,10 @@ export const FIELD_SELECT = cx(FIELD, "bg-void");
  * How loud a piece of status is.
  *
  * `neutral` and `strong` are the two palette roles for text. `warning` and
- * `danger` are deliberately literal — they are the diagnostic amber and red
- * that `docs/participant-styling.md` reserves for "something needs attention"
- * and "something is broken", and tenants do not get to restyle them, because
+ * `danger` are the diagnostic amber and red that `docs/participant-styling.md`
+ * reserves for "something needs attention" and "something is broken". They are
+ * tokens fixed per theme in `globals.css` (`--color-warning`, `--color-danger`
+ * and their `-line` borders) and tenants do not get to restyle them, because
  * they are the one signal that must not be tuned into invisibility.
  */
 export type Tone = "neutral" | "strong" | "warning" | "danger";
@@ -59,16 +68,16 @@ export type Tone = "neutral" | "strong" | "warning" | "danger";
 export const TONE: Record<Tone, string> = {
   neutral: "text-dim",
   strong: "text-paper",
-  warning: "text-amber-400/80",
-  danger: "text-red-400",
+  warning: "text-warning/80",
+  danger: "text-danger",
 };
 
 /** The same four tones as a border, for outlined badges and bordered panels. */
 export const TONE_BORDER: Record<Tone, string> = {
   neutral: "border-paper/20",
   strong: "border-paper/40",
-  warning: "border-amber-500/40",
-  danger: "border-red-500/40",
+  warning: "border-warning-line/40",
+  danger: "border-danger-line/40",
 };
 
 /**

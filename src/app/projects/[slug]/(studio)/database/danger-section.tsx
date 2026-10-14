@@ -65,7 +65,7 @@ function Destructive({
             type="button"
             disabled={!!disabledReason}
             onClick={() => setArmed(true)}
-            className="shrink-0 text-xs text-dim underline-offset-4 hover:text-red-400 hover:underline disabled:no-underline disabled:opacity-40"
+            className="shrink-0 text-xs text-dim underline-offset-4 hover:text-danger hover:underline disabled:no-underline disabled:opacity-40"
           >
             {disabledReason ?? "…"}
           </button>
@@ -85,14 +85,14 @@ function Destructive({
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
               autoComplete="off"
-              className="term-input max-w-xs border-b border-red-500/40"
+              className="term-input max-w-xs border-b border-danger-line/40"
             />
           </label>
           <div className="flex items-center gap-4">
             <button
               type="submit"
               disabled={pending || typed !== slug}
-              className="text-sm text-red-400 underline underline-offset-4 disabled:text-dim disabled:no-underline"
+              className="text-sm text-danger underline underline-offset-4 disabled:text-dim disabled:no-underline"
             >
               {pending ? "working…" : confirmLabel}
             </button>
@@ -111,7 +111,7 @@ function Destructive({
       )}
 
       {state.error && (
-        <p role="alert" className="text-xs text-red-400">
+        <p role="alert" className="text-xs text-danger">
           {state.error}
         </p>
       )}
@@ -143,7 +143,7 @@ export default function DangerSection({
         <h2 className="text-xs text-dim">what is in there now</h2>
 
         {!live.reachable ? (
-          <p className="text-xs text-amber-400/80">
+          <p className="text-xs text-warning/80">
             {live.error ?? "Could not read the database."}
           </p>
         ) : !live.installed ? (
@@ -203,7 +203,7 @@ export default function DangerSection({
         {/* Our `provisionedAt` records what we did, not what is true — a tenant
             can drop a table in the Supabase dashboard and we would never hear. */}
         {live.drifted && (
-          <p className="text-xs text-amber-400/80">
+          <p className="text-xs text-warning/80">
             This project is marked as provisioned, but the tables are not in the
             database. Provision again before opening it.
           </p>
@@ -214,7 +214,7 @@ export default function DangerSection({
         <section className="flex flex-col gap-4">
           <h2 className="text-xs text-dim">destructive</h2>
           {isOpen && (
-            <p className="text-[11px] text-amber-400/80">
+            <p className="text-[11px] text-warning/80">
               The project is open to participants. Close it to enable these.
             </p>
           )}

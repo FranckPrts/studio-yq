@@ -84,7 +84,7 @@ export default function ConclusionToggle({
       </p>
 
       {state.error && (
-        <p role="alert" className="text-[11px] text-red-400">
+        <p role="alert" className="text-[11px] text-danger">
           {state.error}
         </p>
       )}

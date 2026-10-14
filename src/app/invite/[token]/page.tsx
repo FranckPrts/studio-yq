@@ -79,7 +79,7 @@ export default async function InvitePage({
           // Said up front rather than discovered by clicking: the server would
           // refuse anyway, and the fix is to switch accounts, not to retry.
           <div className="flex flex-col gap-3">
-            <p className="text-xs text-amber-400/90">
+            <p className="text-xs text-warning/90">
               This invitation is for <strong>{invitation.email}</strong>, but
               you are signed in as <strong>{user.email}</strong>.
             </p>

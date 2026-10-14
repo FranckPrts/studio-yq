@@ -6,7 +6,7 @@ import { renameProject, type SettingsState } from "./actions";
 function Saved({ state }: { state: SettingsState }) {
   if (state.error) {
     return (
-      <p role="alert" className="text-xs text-red-400">
+      <p role="alert" className="text-xs text-danger">
         {state.error}
       </p>
     );

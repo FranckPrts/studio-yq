@@ -108,7 +108,7 @@ function EmailCard({
       </label>
 
       {!available && (
-        <p className="text-[11px] leading-relaxed text-amber-400/80">
+        <p className="text-[11px] leading-relaxed text-warning/80">
           Addresses are stored in a table that needs database schema v
           {CONTACTS_SCHEMA_VERSION}. Re-run the schema on the{" "}
           <Link
@@ -367,7 +367,7 @@ export default function ParameterBuilder({
             <button
               type="button"
               onClick={() => remove(index)}
-              className="hover:text-red-400"
+              className="hover:text-danger"
               aria-label="remove"
             >
               ✕
@@ -569,7 +569,7 @@ export default function ParameterBuilder({
                     />
                     <button
                       type="button"
-                      className="text-xs text-dim hover:text-red-400"
+                      className="text-xs text-dim hover:text-danger"
                       onClick={() =>
                         update(index, {
                           options: param.options.filter((_, j) => j !== oi),
@@ -813,12 +813,12 @@ export default function ParameterBuilder({
         })}
 
         {problems.length > 0 && (
-          <div className="flex flex-col gap-1 rounded border border-red-500/40 p-3">
-            <p className="text-xs text-red-400">
+          <div className="flex flex-col gap-1 rounded border border-danger-line/40 p-3">
+            <p className="text-xs text-danger">
               {problems.length} problem{problems.length > 1 ? "s" : ""} — saving
               is blocked until these are fixed:
             </p>
-            <ul className="text-[11px] leading-relaxed text-red-300/80">
+            <ul className="text-[11px] leading-relaxed text-danger-strong/80">
               {problems.map((p) => (
                 <li key={p}>{p}</li>
               ))}
@@ -827,9 +827,9 @@ export default function ParameterBuilder({
         )}
 
         {state.problems && (
-          <div className="flex flex-col gap-1 rounded border border-red-500/40 p-3">
-            <p className="text-xs text-red-400">The server rejected this:</p>
-            <ul className="text-[11px] leading-relaxed text-red-300/80">
+          <div className="flex flex-col gap-1 rounded border border-danger-line/40 p-3">
+            <p className="text-xs text-danger">The server rejected this:</p>
+            <ul className="text-[11px] leading-relaxed text-danger-strong/80">
               {state.problems.map((p) => (
                 <li key={p}>{p}</li>
               ))}
@@ -837,14 +837,14 @@ export default function ParameterBuilder({
           </div>
         )}
         {state.error && (
-          <p role="alert" className="text-xs text-red-400">
+          <p role="alert" className="text-xs text-danger">
             {state.error}
           </p>
         )}
         {state.warnings && (
-          <div className="flex flex-col gap-1 rounded border border-amber-500/40 p-3">
-            <p className="text-xs text-amber-400">Saved, but worth a look:</p>
-            <ul className="text-[11px] leading-relaxed text-amber-200/70">
+          <div className="flex flex-col gap-1 rounded border border-warning-line/40 p-3">
+            <p className="text-xs text-warning">Saved, but worth a look:</p>
+            <ul className="text-[11px] leading-relaxed text-warning-strong/70">
               {state.warnings.map((w) => (
                 <li key={w}>{w}</li>
               ))}
@@ -936,7 +936,7 @@ export default function ParameterBuilder({
                 placeholder='{"parameters": [ … ]}  or  [ … ]'
                 className="w-full rounded border border-paper/20 bg-transparent p-2 font-mono text-[11px] text-paper"
               />
-              {jsonError && <p className="text-red-400">{jsonError}</p>}
+              {jsonError && <p className="text-danger">{jsonError}</p>}
               <button
                 type="button"
                 onClick={applyJson}

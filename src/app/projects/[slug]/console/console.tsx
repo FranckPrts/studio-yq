@@ -163,7 +163,7 @@ function ScoreRow({
           and cannot be undone.
         </p>
         {error && (
-          <p role="alert" className="text-amber-400/90">
+          <p role="alert" className="text-warning/90">
             {error}
           </p>
         )}
@@ -181,7 +181,7 @@ function ScoreRow({
             type="button"
             disabled={pending}
             onClick={remove}
-            className="text-amber-400 underline-offset-4 hover:underline disabled:opacity-50"
+            className="text-warning underline-offset-4 hover:underline disabled:opacity-50"
           >
             {pending ? "deleting…" : "delete for good"}
           </button>
@@ -250,7 +250,7 @@ function ScoreRow({
             </label>
           </div>
           {error && (
-            <p role="alert" className="text-amber-400/90">
+            <p role="alert" className="text-warning/90">
               {error}
             </p>
           )}
@@ -259,7 +259,7 @@ function ScoreRow({
               type="button"
               disabled={pending}
               onClick={() => show("confirm")}
-              className="text-dim underline-offset-4 hover:text-amber-400 hover:underline"
+              className="text-dim underline-offset-4 hover:text-warning hover:underline"
             >
               delete…
             </button>
@@ -327,7 +327,7 @@ function ScoreRow({
             <button
               type="button"
               onClick={() => show("confirm")}
-              className="text-dim underline-offset-4 hover:text-amber-400 hover:underline"
+              className="text-dim underline-offset-4 hover:text-warning hover:underline"
             >
               delete
             </button>
@@ -509,9 +509,9 @@ export default function OpsConsole({
               <span
                 className={
                   live === "live"
-                    ? "text-emerald-400"
+                    ? "text-success"
                     : live === "offline"
-                      ? "text-red-400"
+                      ? "text-danger"
                       : ""
                 }
               >
@@ -576,7 +576,7 @@ export default function OpsConsole({
           </div>
 
           {error && (
-            <p role="alert" className="text-xs text-amber-400/90">
+            <p role="alert" className="text-xs text-warning/90">
               {error}
             </p>
           )}
@@ -623,7 +623,7 @@ export default function OpsConsole({
                       >
                         <span className="block truncate text-sm">
                           {a.name || "(unnamed)"}
-                          {a.is_staged && <span className="text-emerald-400"> · on stage</span>}
+                          {a.is_staged && <span className="text-success"> · on stage</span>}
                         </span>
                         <span className="text-[11px] text-dim">
                           {ago(a.created_at)}

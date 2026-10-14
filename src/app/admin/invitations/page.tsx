@@ -97,7 +97,7 @@ export default async function InvitationsPage() {
                       <input type="hidden" name="id" value={i.id} />
                       <button
                         type="submit"
-                        className="text-dim underline-offset-4 hover:text-red-400 hover:underline"
+                        className="text-dim underline-offset-4 hover:text-danger hover:underline"
                       >
                         revoke
                       </button>

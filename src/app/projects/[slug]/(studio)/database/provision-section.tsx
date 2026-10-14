@@ -126,7 +126,7 @@ export default function ProvisionSection({
       </p>
 
       {state.error && (
-        <p role="alert" className="text-xs text-amber-400">
+        <p role="alert" className="text-xs text-warning">
           {state.error}
         </p>
       )}
@@ -154,8 +154,8 @@ export default function ProvisionSection({
       {/* The one external unknown in this design is whether DDL is permitted at
           all, so the fallback is a first-class path rather than an apology. */}
       {state.fallbackSql && (
-        <div className="flex flex-col gap-2 rounded border border-amber-500/40 p-3">
-          <p className="text-[11px] leading-relaxed text-amber-200/80">
+        <div className="flex flex-col gap-2 rounded border border-warning-line/40 p-3">
+          <p className="text-[11px] leading-relaxed text-warning-strong/80">
             Run this in your Supabase project&rsquo;s SQL editor. It does exactly
             what the button would have done — then come back and the status here
             will catch up on the next successful run.
@@ -187,7 +187,7 @@ export default function ProvisionSection({
             {limitPending ? "saving…" : "raise limit"}
           </button>
           {limitState.error && (
-            <span className="text-xs text-red-400">{limitState.error}</span>
+            <span className="text-xs text-danger">{limitState.error}</span>
           )}
           {limitState.done?.rateLimit != null && (
             <span className="text-xs text-dim">

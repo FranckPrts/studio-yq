@@ -36,7 +36,7 @@ export default function SignInForm({ next }: { next: string }) {
       </label>
 
       {state.error && (
-        <p role="alert" className="text-xs text-red-400">
+        <p role="alert" className="text-xs text-danger">
           {state.error}
         </p>
       )}

@@ -114,11 +114,11 @@ export default function EmailEditor({
               </button>
             )}
             {state.error ? (
-              <p role="alert" className="text-xs text-red-400">
+              <p role="alert" className="text-xs text-danger">
                 {state.error}
               </p>
             ) : dirty ? (
-              <p className="text-xs text-amber-400/80">unsaved changes</p>
+              <p className="text-xs text-warning/80">unsaved changes</p>
             ) : state.saved ? (
               <p className="text-xs text-dim">saved</p>
             ) : (

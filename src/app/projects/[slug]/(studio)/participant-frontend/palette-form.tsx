@@ -2,7 +2,13 @@
 
 import { useActionState, useState } from "react";
 import { saveAppearance, type AppearanceState } from "./actions";
-import { FONTS, type FontKey, type ProjectTheme } from "@/lib/theme/project-theme";
+import {
+  contrastIssues,
+  FONTS,
+  MIN_TEXT_CONTRAST,
+  type FontKey,
+  type ProjectTheme,
+} from "@/lib/theme/project-theme";
 import { useUnsavedChanges } from "../use-unsaved-changes";
 
 export type Palette = Pick<ProjectTheme, "void" | "paper" | "dim">;
@@ -44,6 +50,7 @@ export default function PaletteForm({
 
   const dirty =
     ROLES.some((role) => draft[role] !== saved[role]) || draftFont !== saved.font;
+  const lowContrast = contrastIssues(draft);
   useUnsavedChanges(dirty);
 
   function set(role: (typeof ROLES)[number], value: string) {
@@ -79,6 +86,17 @@ export default function PaletteForm({
           {swatch("paper", "text", "names, values, prompts")}
           {swatch("dim", "secondary", "labels and help")}
         </div>
+        {lowContrast.length > 0 && (
+          <ul role="status" className="text-[11px] leading-relaxed text-warning/90">
+            {lowContrast.map(({ role, ratio }) => (
+              <li key={role}>
+                {role === "paper" ? "text" : "secondary"} on background is{" "}
+                {ratio.toFixed(1)}:1 — hard to read below {MIN_TEXT_CONTRAST}:1.
+                It still saves.
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="text-[11px] leading-relaxed text-dim">
           Three colours, because that is all the participant page is drawn in.
           Warnings and errors keep their own amber and red, so they stay
@@ -115,11 +133,11 @@ export default function PaletteForm({
           {pending ? "saving…" : "save colours & font"}
         </button>
         {state.error ? (
-          <p role="alert" className="text-xs text-red-400">
+          <p role="alert" className="text-xs text-danger">
             {state.error}
           </p>
         ) : dirty ? (
-          <p className="text-xs text-amber-400/80">unsaved changes</p>
+          <p className="text-xs text-warning/80">unsaved changes</p>
         ) : (
           state.saved && <p className="text-xs text-dim">saved</p>
         )}

@@ -169,7 +169,9 @@ export default function AvatarCanvas({
     <script src="${P5_CDN}" crossorigin="anonymous"></script>
     ${scripts}
     <style>
-      html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #14100e; }
+      /* Transparent so the iframe's own bg-void shows through: the frame is
+         sandboxed and cannot read the page's palette variables. */
+      html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: transparent; }
       canvas { display: block; }
     </style>
   </head>

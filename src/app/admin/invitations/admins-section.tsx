@@ -12,7 +12,7 @@ type Admin = { id: string; label: string; isYou: boolean };
 function Feedback({ state }: { state: AdminState }) {
   if (state.error)
     return (
-      <p role="alert" className="text-xs text-red-400">
+      <p role="alert" className="text-xs text-danger">
         {state.error}
       </p>
     );
@@ -50,7 +50,7 @@ export default function AdminsSection({ admins }: { admins: Admin[] }) {
                 <button
                   type="submit"
                   disabled={revoking}
-                  className="text-dim underline-offset-4 hover:text-red-400 hover:underline"
+                  className="text-dim underline-offset-4 hover:text-danger hover:underline"
                 >
                   remove admin
                 </button>

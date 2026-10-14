@@ -194,14 +194,14 @@ export default function Sidebar({
                         {item.openState && (
                           <span
                             aria-hidden
-                            className="size-1.5 animate-beacon rounded-full bg-emerald-400 motion-reduce:animate-none"
+                            className="size-1.5 animate-beacon rounded-full bg-success motion-reduce:animate-none"
                           />
                         )}
                         {item.openState ? "open" : "closed"}
                       </span>
                     )}
                     {item.ready === false && (
-                      <span className="shrink-0 text-[10px] text-amber-400/80">
+                      <span className="shrink-0 text-[10px] text-warning/80">
                         not ready
                       </span>
                     )}

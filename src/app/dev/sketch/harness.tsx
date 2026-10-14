@@ -80,9 +80,9 @@ export default function SketchHarness({ project, projects }: HarnessProps) {
         </header>
 
         {project.declarationErrors.length > 0 && (
-          <section className="flex flex-col gap-1 rounded border border-red-500/40 p-3">
-            <h2 className="text-xs text-red-400">stored declaration is invalid</h2>
-            <ul className="text-[11px] leading-relaxed text-red-300/80">
+          <section className="flex flex-col gap-1 rounded border border-danger-line/40 p-3">
+            <h2 className="text-xs text-danger">stored declaration is invalid</h2>
+            <ul className="text-[11px] leading-relaxed text-danger-strong/80">
               {project.declarationErrors.map((e) => (
                 <li key={e}>{e}</li>
               ))}

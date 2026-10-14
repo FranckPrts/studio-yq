@@ -219,14 +219,14 @@ export default function SendConsole({
   }
 
   if (loadError) {
-    return <p role="alert" className="text-xs text-red-400">Couldn&rsquo;t read the room: {loadError}</p>;
+    return <p role="alert" className="text-xs text-danger">Couldn&rsquo;t read the room: {loadError}</p>;
   }
 
   return (
     <div className="flex flex-col gap-8">
       <CapturingNotice queue={queue} script={script} ground={theme.void} />
       {!picturesReady && !queue.current && <p className="text-xs text-dim">Reading the room…</p>}
-      {audienceError && <p role="alert" className="text-xs text-red-400">{audienceError}</p>}
+      {audienceError && <p role="alert" className="text-xs text-danger">{audienceError}</p>}
 
       {progress && (
         <RunProgress
@@ -382,7 +382,7 @@ function SendTo({
         {recipients.map((r) => (
           <span
             key={r.type === "team" ? `t${r.userId}` : `p${r.owner}`}
-            className={`flex items-center gap-1.5 rounded border px-2 py-0.5 ${r.type === "team" ? "border-paper/20" : "border-amber-500/50 text-amber-200"}`}
+            className={`flex items-center gap-1.5 rounded border px-2 py-0.5 ${r.type === "team" ? "border-paper/20" : "border-warning-line/50 text-warning-strong"}`}
           >
             <span className="text-[10px] text-dim">{r.type === "team" ? "team" : "participant"}</span>
             {nameOf(r)}
@@ -447,7 +447,7 @@ function SendTo({
       </div>
 
       {mixed && (
-        <p className="text-amber-400/90">
+        <p className="text-warning/90">
           Team copies and participants&rsquo; own emails are sent separately — remove one kind.
         </p>
       )}
@@ -474,12 +474,12 @@ function SendTo({
       )}
 
       {participantsChosen.length > 0 && !mixed && !testedAt && (
-        <p className="text-amber-400/90">
+        <p className="text-warning/90">
           Send the team a test of the current saved text first — participants&rsquo; emails wait for one.
         </p>
       )}
 
-      {error && <p role="alert" className="text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-danger">{error}</p>}
 
       {plan && !confirming && (
         <button
@@ -493,7 +493,7 @@ function SendTo({
       )}
 
       {plan && confirming && (
-        <div className={`flex flex-col gap-2 rounded border p-3 ${plan.label === "participants" ? "border-amber-500/50" : "border-paper/20"}`}>
+        <div className={`flex flex-col gap-2 rounded border p-3 ${plan.label === "participants" ? "border-warning-line/50" : "border-paper/20"}`}>
           <p>
             {plan.label === "participants"
               ? `${plan.count} real ${plan.count === 1 ? "participant" : "participants"} will receive their own report: ${participantsChosen.map(nameOf).join(", ")}.`
@@ -502,7 +502,7 @@ function SendTo({
                 : `${subject?.names.join(" · ")}'s report to ${teamChosen.map(nameOf).join(", ")}.`}
           </p>
           {plan.label === "participants" && (
-            <label className="flex items-center gap-2 text-amber-200">
+            <label className="flex items-center gap-2 text-warning-strong">
               <input type="checkbox" checked={realPeople} onChange={(e) => setRealPeople(e.target.checked)} />
               These are real people, and this can&rsquo;t be unsent.
             </label>
@@ -609,9 +609,9 @@ function Everyone({
   }, [countdown]);
 
   return (
-    <div className="flex flex-col gap-4 rounded border border-red-500/40 p-4 text-xs">
+    <div className="flex flex-col gap-4 rounded border border-danger-line/40 p-4 text-xs">
       <div className="flex flex-col gap-1">
-        <h3 className="text-sm text-red-300">send to everyone</h3>
+        <h3 className="text-sm text-danger-strong">send to everyone</h3>
         <p className="text-dim">
           Every participant with an email address gets their own report. It can&rsquo;t be unsent.
         </p>
@@ -619,7 +619,7 @@ function Everyone({
 
       <ul className="flex flex-col gap-1">
         {checks.map((c) => (
-          <li key={c.text} className={c.ok ? "text-emerald-400/90" : "text-amber-400/90"}>
+          <li key={c.text} className={c.ok ? "text-success/90" : "text-warning/90"}>
             {c.ok ? "✓" : "○"} {c.text}
           </li>
         ))}
@@ -675,7 +675,7 @@ function Everyone({
         I&rsquo;ve read the preview of at least one participant&rsquo;s email, and the test that reached the team.
       </label>
 
-      {error && <p role="alert" className="text-red-400">{error}</p>}
+      {error && <p role="alert" className="text-danger">{error}</p>}
 
       {countdown === null ? (
         <button
@@ -685,13 +685,13 @@ function Everyone({
             setError(null);
             setCountdown(COUNTDOWN);
           }}
-          className="self-start rounded border border-red-500/60 px-3 py-1.5 text-sm text-red-200 hover:bg-red-500/10 disabled:border-paper/10 disabled:text-dim disabled:hover:bg-transparent"
+          className="self-start rounded border border-danger-line/60 px-3 py-1.5 text-sm text-danger-strongest hover:bg-danger-line/10 disabled:border-paper/10 disabled:text-dim disabled:hover:bg-transparent"
         >
           send to everyone ({count})
         </button>
       ) : (
         <div className="flex items-center gap-4">
-          <span className="text-sm text-red-200">
+          <span className="text-sm text-danger-strongest">
             Sending to {count} participants in {countdown}s…
           </span>
           <button
@@ -725,13 +725,13 @@ function RunProgress({
       <div className="flex items-baseline justify-between gap-4">
         <span className="text-sm">
           {progress.label}: {progress.sent} of {progress.total} sent
-          {progress.failed.length > 0 && <span className="text-red-400"> · {progress.failed.length} failed</span>}
+          {progress.failed.length > 0 && <span className="text-danger"> · {progress.failed.length} failed</span>}
         </span>
         {progress.state === "running" ? (
           <button
             type="button"
             onClick={onStop}
-            className="rounded border border-red-500/60 px-3 py-1 text-red-200 hover:bg-red-500/10"
+            className="rounded border border-danger-line/60 px-3 py-1 text-danger-strongest hover:bg-danger-line/10"
           >
             stop
           </button>
@@ -745,12 +745,12 @@ function RunProgress({
         <div className="h-1 bg-paper/70" style={{ width: `${pct}%` }} />
       </div>
       {progress.current && <p className="text-dim">sending: {progress.current}</p>}
-      {progress.state === "stopped" && <p className="text-amber-400/90">Stopped. Nothing more will go out from this send.</p>}
-      {progress.state === "refused" && <p className="text-red-400">Stopped: {progress.message}</p>}
-      {progress.state === "finished" && <p className="text-emerald-400/90">Finished.</p>}
+      {progress.state === "stopped" && <p className="text-warning/90">Stopped. Nothing more will go out from this send.</p>}
+      {progress.state === "refused" && <p className="text-danger">Stopped: {progress.message}</p>}
+      {progress.state === "finished" && <p className="text-success/90">Finished.</p>}
       {progress.message && progress.state !== "refused" && <p className="text-dim">{progress.message}</p>}
       {progress.failed.length > 0 && (
-        <ul className="flex flex-col gap-0.5 text-red-300/80">
+        <ul className="flex flex-col gap-0.5 text-danger-strong/80">
           {progress.failed.map((f, i) => (
             <li key={i}>
               {f.name}: {f.error}

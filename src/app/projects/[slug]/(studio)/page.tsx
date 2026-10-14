@@ -34,7 +34,7 @@ function Bucket({
     >
       <div className="flex items-baseline justify-between gap-4">
         <span className="text-sm text-paper">{title}</span>
-        <span className={`shrink-0 text-xs ${ready ? "text-dim" : "text-amber-400/80"}`}>
+        <span className={`shrink-0 text-xs ${ready ? "text-dim" : "text-warning/80"}`}>
           {state}
         </span>
       </div>

@@ -39,8 +39,8 @@ import {
  * colour stops being told apart.
  */
 const PRESETS: Record<string, { label: string; theme: Omit<ProjectTheme, "font"> }> = {
-  nowadays: {
-    label: "nowadays",
+  dark: {
+    label: "dark",
     theme: { void: DEFAULT_THEME.void, paper: DEFAULT_THEME.paper, dim: DEFAULT_THEME.dim },
   },
   light: {

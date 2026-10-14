@@ -155,7 +155,7 @@ function LivePreview({
 
   if (loadError) {
     return (
-      <p role="alert" className="text-xs text-red-400">
+      <p role="alert" className="text-xs text-danger">
         Couldn&rsquo;t read the room: {loadError}
       </p>
     );

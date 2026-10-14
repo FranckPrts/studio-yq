@@ -86,7 +86,7 @@ function MemberRow({
                 <button
                   type="submit"
                   disabled={removePending}
-                  className="text-red-400 underline underline-offset-4"
+                  className="text-danger underline underline-offset-4"
                 >
                   {member.isYou ? "leave" : "remove"}
                 </button>
@@ -102,7 +102,7 @@ function MemberRow({
               <button
                 type="button"
                 onClick={() => setConfirming(true)}
-                className="text-dim underline-offset-4 hover:text-red-400 hover:underline"
+                className="text-dim underline-offset-4 hover:text-danger hover:underline"
               >
                 {member.isYou ? "leave" : "remove"}
               </button>
@@ -113,7 +113,7 @@ function MemberRow({
         )}
       </div>
       {error && (
-        <p role="alert" className="text-[11px] text-amber-400/90">
+        <p role="alert" className="text-[11px] text-warning/90">
           {error}
         </p>
       )}
@@ -163,7 +163,7 @@ export default function MembersSection({
                   <input type="hidden" name="id" value={p.id} />
                   <button
                     type="submit"
-                    className="underline-offset-4 hover:text-red-400 hover:underline"
+                    className="underline-offset-4 hover:text-danger hover:underline"
                   >
                     revoke
                   </button>
@@ -212,7 +212,7 @@ export default function MembersSection({
           <p className="text-[11px] text-dim">{ROLE_HELP[role]}.</p>
 
           {state.error && (
-            <p role="alert" className="text-xs text-red-400">
+            <p role="alert" className="text-xs text-danger">
               {state.error}
             </p>
           )}

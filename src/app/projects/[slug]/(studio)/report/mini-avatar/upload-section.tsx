@@ -127,7 +127,7 @@ export default function MiniUploadSection({
           </div>
 
           {state.error && (
-            <p role="alert" className="text-xs text-red-400">
+            <p role="alert" className="text-xs text-danger">
               {state.error}
             </p>
           )}
@@ -137,9 +137,9 @@ export default function MiniUploadSection({
           )}
 
           {state.warnings && (
-            <div className="flex flex-col gap-1 rounded border border-amber-500/40 p-3">
-              <p className="text-xs text-amber-400">Uploaded, but worth a look:</p>
-              <ul className="text-[11px] leading-relaxed text-amber-200/70">
+            <div className="flex flex-col gap-1 rounded border border-warning-line/40 p-3">
+              <p className="text-xs text-warning">Uploaded, but worth a look:</p>
+              <ul className="text-[11px] leading-relaxed text-warning-strong/70">
                 {state.warnings.map((w) => (
                   <li key={w}>{w}</li>
                 ))}
@@ -198,7 +198,7 @@ export default function MiniUploadSection({
                     <button
                       type="button"
                       onClick={() => setConfirmDelete(v.version)}
-                      className="underline-offset-4 hover:text-red-300 hover:underline"
+                      className="underline-offset-4 hover:text-danger-strong hover:underline"
                     >
                       delete
                     </button>
@@ -209,18 +209,18 @@ export default function MiniUploadSection({
                   <form
                     action={deleteMiniScript}
                     onSubmit={() => setConfirmDelete(null)}
-                    className="flex flex-wrap items-baseline gap-4 rounded border border-red-500/40 p-2"
+                    className="flex flex-wrap items-baseline gap-4 rounded border border-danger-line/40 p-2"
                   >
                     <input type="hidden" name="slug" value={slug} />
                     <input type="hidden" name="version" value={v.version} />
-                    <span className="text-red-200">
+                    <span className="text-danger-strongest">
                       Delete v{v.version} for good?
                       {i === 0 &&
                         ` Reports will be drawn with ${describe(versions[1])} instead.`}
                     </span>
                     <button
                       type="submit"
-                      className="text-red-200 underline underline-offset-4"
+                      className="text-danger-strongest underline underline-offset-4"
                     >
                       delete
                     </button>

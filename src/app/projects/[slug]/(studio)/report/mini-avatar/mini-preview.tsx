@@ -150,7 +150,7 @@ export default function MiniPreview({
         </p>
       )}
       {loadError && (
-        <p role="alert" className="text-xs text-red-400">
+        <p role="alert" className="text-xs text-danger">
           Couldn&rsquo;t read the {noun} list: {loadError}
         </p>
       )}
@@ -188,7 +188,7 @@ export default function MiniPreview({
                     // eslint-disable-next-line @next/next/no-img-element -- a data URL, nothing to optimise
                     <img src={r.image} alt={s.name} className="h-full w-full object-contain" />
                   ) : (
-                    <span className="p-2 text-center text-[10px] leading-snug text-red-400">
+                    <span className="p-2 text-center text-[10px] leading-snug text-danger">
                       {r.error}
                     </span>
                   )}

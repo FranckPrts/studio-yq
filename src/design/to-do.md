@@ -7,7 +7,9 @@ The rules this system implements are not invented here — they are written down
 in [`docs/participant-styling.md`](../../docs/participant-styling.md): three
 colour roles, underlined text buttons, flat square controls, no radius or
 shadow, literal colours only for diagnostics. When a primitive and that document
-disagree, the document wins and the primitive is the bug.
+disagree, the document wins and the primitive is the bug. The same rules, with
+tokens and live components, are published as the Studio YQ design system
+(https://claude.ai/artifact/RkbSQbGqe9WPti5hNADsbq).
 
 Two constraints that shape every file:
 
@@ -22,6 +24,96 @@ Two constraints that shape every file:
 
 ---
 
+## Plan — toward a light theme
+
+The default palette is `dark` (renamed from "Nowadays" on 2026-10-14); the next
+is `light`. Phases 1–3 are the path there. Phases 4–5 are housekeeping that does
+not block it and can run alongside or after.
+
+### Phase 1 — Reconcile the record *(done 2026-10-14)*
+
+- [x] Rewrite this file against the code: stale items closed or corrected,
+      call sites recounted.
+- [x] Write `docs/participant-styling.md`. Eight files cited it as the source
+      of the rules, but it had never been committed. Written down from those
+      citations; no new policy.
+
+### Phase 2 — Groundwork the light theme needs *(done 2026-10-14)*
+
+- [x] **Diagnostic colours are tokens.** Decided: *fixed per theme, never
+      tenant-set* (no schema change). `globals.css` declares, by role and
+      contrast tier rather than shade: `danger` (was red-400), `danger-strong`
+      (red-300), `danger-strongest` (red-200), `danger-line` (red-500, borders
+      and tinted fills), `warning` (amber-400), `warning-strong` (amber-200),
+      `warning-line` (amber-500), `success` (emerald-400). Values are Tailwind's
+      own, so dark is unchanged. All 133 literal uses swapped (34 files,
+      opacity modifiers kept: `text-warning/80`, `border-danger-line/40`);
+      `TONE` / `TONE_BORDER` follow. A light theme remaps the eight variables.
+- [x] **Canvas backdrop follows the palette.** The sandboxed frame's document is
+      now transparent, so the iframe's own `bg-void` shows through — the frame
+      cannot read the page's variables, so nothing is passed in.
+- [x] **Contrast check.** `contrast()`, `contrastIssues()` and
+      `MIN_TEXT_CONTRAST` (4.5) in `project-theme.ts`; the palette form lists
+      any text role under 4.5:1 on void, advisory — it still saves. **The
+      default dark palette trips it** (dim on void 4.3:1), so a project on the
+      defaults shows the warning until Phase 3 settles dark's `dim`.
+- [x] **daisyUI removed** — the plugin, the dependency and the dead
+      `.range-hue`. It had to go now, not later: its `[data-theme="dark"]`
+      block declares its own `--color-success` / `--color-warning`, which would
+      have outranked the new tokens. What its base supplied is replaced in
+      `globals.css` from our palette: `color-scheme: dark`, the root ground and
+      text colour, the scrollbar colour. Pages with no `bg-void` of their own
+      (home, parameters, preview-frame, `/dev/primitives`) now sit on void
+      instead of daisyUI's blue-grey `base-100`. `data-theme="dark"` on
+      `<html>` stays, as the hook Phase 3 themes from.
+- [x] **Focus bugs fixed.** `Checkbox` / `Radio` glyphs use the new
+      `PEER_FOCUS_RING` (`peer-focus-visible:`), drawn from the hidden input.
+      `.term-input` moved into `@layer components`, so the `Select` ring shows.
+- [x] **Found on the way: every field's hairline was invisible.** Unlayered,
+      `.term-input`'s `border: 0` / `width` / `padding` / `background`
+      outranked every utility at the call site — the `border-b border-paper/20`
+      on 44 of 46 fields, `bg-void` on selects, `w-40`, `w-32`, `p-3`. The same
+      layer move fixes all of it, so **fields now show the underline they were
+      written with.** A visible change across the admin forms; checked in
+      `/dev/primitives` and `/projects`.
+
+### Phase 3 — The light theme
+
+- [ ] Decide what "light" covers (see Open decisions).
+- [ ] Pick light values that meet 4.5:1 for text, and the light values of the
+      diagnostic tokens.
+- [ ] Named presets in `project-theme.ts`: `THEMES = { dark, light }`,
+      `DEFAULT_THEME = THEMES.dark`. Offer them on the palette form and in
+      `/dev/primitives` (replacing its ad-hoc `light` preset).
+- [ ] Add the `light` theme to the Studio YQ design system and regenerate its
+      cover.
+
+### Phase 4 — Missing primitives
+
+Backlog below. `field.tsx` first; decide radius before `panel.tsx`.
+
+### Phase 5 — Adoption
+
+The table at the bottom, `AvatarControls.tsx` first.
+
+### Open decisions
+
+- [ ] **What "light" covers.** A project preset tenants can pick, a light admin
+      (today `layout.tsx` pins `data-theme="dark"`), or both.
+- [x] **Diagnostic colours: "literal" → "fixed per theme, never tenant-set".**
+      Agreed 2026-10-14; `ProjectTheme` stays three colours plus a font.
+- [ ] **Dark's `dim`.** The default fails the new contrast check at 4.3:1.
+      Nudge it to 4.5:1 in Phase 3, or keep the shipped value and accept the
+      warning on default projects.
+- [ ] **Radius.** `docs/participant-styling.md` says none; `rounded` appears 29
+      times across 11 app files (panels, outline buttons, code blocks; 3 more
+      in the `/dev/sketch` harness), plus 4
+      `rounded-full` (the beacon dot, the console's avatar swatch — dots,
+      arguably exempt). Either the document gains an admin exception or the
+      panels go square. `Badge` already sides with the document.
+
+---
+
 ## Built
 
 ### Foundations
@@ -29,6 +121,10 @@ Two constraints that shape every file:
 - [x] **`tokens.ts`** — `cx()`, `FOCUS_RING`, `FIELD` / `FIELD_SELECT`, the four
       tones (`neutral` / `strong` / `warning` / `danger`) as text and border
       classes, and the three sizes actually in use (`xs` = 11px, `sm`, `base`).
+- [x] **`src/lib/theme.ts` retired.** The hardcoded `VOID_COLOR` /
+      `PAPER_COLOR` / `DIM_COLOR` are gone; the palette lives in
+      `src/lib/theme/project-theme.ts` (`ProjectTheme`, `DEFAULT_THEME`,
+      `themeCssVars()`).
 
 ### Primitives
 
@@ -55,52 +151,47 @@ Two constraints that shape every file:
       (square hairline box).
 - [x] **`index.ts`** — one import path, `@/design`.
 
-Typechecks and lints clean. **Nothing in the app imports them yet** — that is
-the next phase, deliberately not started.
+### Harness
+
+- [x] **`/dev/primitives`** — every variant of every primitive, once in the
+      admin context and once under a project palette and typeface switchable on
+      the page (presets `dark`, `light`, `ocean`, `low contrast`).
+
+Typechecks and lints clean. **Adoption has barely started** — the only import
+of `@/design` outside the harness is `cx` in `(studio)/sidebar.tsx`.
 
 ---
 
-## Not built yet
+## Backlog
 
 ### Foundations
 
-- [ ] **Decide whether `warning` and `danger` join the theme contract.** Today
-      they are literal amber and red, reserved for diagnostics. `ProjectTheme`
-      has exactly three colours plus a font key, so adding a semantic accent is
-      a schema change, not a CSS change. Current answer: keep them literal.
-- [ ] **Resolve the radius contradiction.** `docs/participant-styling.md` says
-      no radius; `rounded` appears on 18 admin elements, plus 2 `rounded-full`
-      on the console's avatar swatch (a dot, arguably exempt). Either the
-      document gains an exception for admin panels, or the
-      panels lose the class. The new `Badge` sides with the document and is
-      square.
-- [ ] **Retire `src/lib/theme.ts`.** It still exports `VOID_COLOR`,
-      `PAPER_COLOR` and `DIM_COLOR` as hardcoded hex — the pre-tenant palette.
-      Anything reading it is frozen on Nowadays brown. Check each caller, then
-      delete.
-- [ ] **No contrast check.** A tenant can pick `dim` and `void` too close to
-      read. Already logged as a known gap in `docs/participant-styling.md`; a
-      warning on the palette form is the fix.
-- [ ] **Motion tokens.** Nothing animates today beyond `transition-opacity`. Not
-      needed until something does.
-- [ ] **Icons.** There are none in the codebase. Not needed yet; if they arrive
-      they must be currentColor so they follow the palette.
+- [ ] **Motion tokens.** Nothing animates beyond `transition-opacity` (2 sites)
+      and the `beacon` pulse. Not needed until something does.
+- [ ] **Icons.** None in the codebase (the one `<svg>`, in
+      `board/score-histogram.tsx`, is a chart). If they arrive they must be
+      `currentColor` so they follow the palette.
 
 ### Primitives
 
-- [ ] **`field.tsx`** — the text input. The most-repeated string in the app
-      (`term-input border-b border-paper/20`, ~12 sites) plus the
-      label + hint + error wrapper that `builder.tsx`, `form.tsx` and
-      `text-form.tsx` each re-declare locally. `FIELD` in `tokens.ts` is the
+- [ ] **`field.tsx`** — the text input. The most-repeated string in the app:
+      `term-input` appears 46 times across 21 files, nearly always with
+      `border-b border-paper/20`, plus the label + hint + error wrapper that
+      several forms re-declare locally. `FIELD` in `tokens.ts` is the
       placeholder. **Highest-value next primitive.**
-- [ ] **`textarea.tsx`** — one site today (`builder.tsx`, the JSON box).
-- [ ] **`file-input.tsx`** — two sites in `visual/section.tsx`, with the
-      `file:` pseudo-class styling duplicated between them.
-- [ ] **`color-input.tsx`** — the swatch in `participant-frontend/form.tsx`.
-      Central, since it *is* the tenant theming UI.
-- [ ] **`rule.tsx`** — `.term-rule` exists in `globals.css` and is currently
-      used by nothing, having gone with the deleted `terminal.tsx`. Either give
-      it a component or drop the CSS.
+- [ ] **`textarea.tsx`** — 5 sites: `visual/builder.tsx` ×2,
+      `report/email/email-editor.tsx`, `participant-frontend/text-form.tsx`,
+      `console/console.tsx`.
+- [ ] **`file-input.tsx`** — 4 sites: `visual/section.tsx` ×2,
+      `report/mini-avatar/{upload-section,mini-preview}.tsx`, with the `file:`
+      pseudo-class styling duplicated between them.
+- [ ] **`color-input.tsx`** — the swatch in
+      `participant-frontend/palette-form.tsx`. Central, since it *is* the tenant
+      theming UI.
+- [ ] **`rule.tsx`** — `.term-rule` is used in 10 places, always as
+      `<div aria-hidden className="term-rule text-dim/40" />` (board, board-row,
+      experience, results, conclusion). A one-line component removes the
+      repetition.
 - [ ] **`spinner.tsx`** — no spinner exists; loading is the word `saving…`.
       Possibly correct as-is.
 
@@ -108,13 +199,17 @@ the next phase, deliberately not started.
 
 None built. In rough order of how often the pattern repeats:
 
-- [ ] **`panel.tsx`** — `rounded border border-paper/20 p-3`, ~8 sites, plus
-      `danger` (`border-red-500/40`) and `warning` (`border-amber-500/40`)
-      variants that appear 6 more times.
-- [ ] **`alert.tsx`** — the `role="alert"` error paragraph, repeated in
-      every form (`text-xs text-red-400`), plus the saved/info variants.
+- [ ] **`alert.tsx`** — the `role="alert"` paragraph, 32 sites
+      (`text-xs text-red-400` and its saved/info variants).
+- [ ] **`panel.tsx`** — `rounded border …` boxes, 24 sites: neutral
+      (`border-paper/20 p-3`), `danger` (`border-red-500/40`) and `warning`
+      (`border-amber-500/40`). Waits on the radius decision.
+- [ ] **`code-block.tsx`** — `bg-paper/5`, 7 sites.
+- [ ] **`form-actions.tsx`** — the submit-plus-saved-state footer repeated across
+      the admin forms.
 - [ ] **`page-header.tsx`** — `nav.tsx` is already most of this.
-- [ ] **`section-nav.tsx`** — the five project sections; `nav.tsx` owns it.
+- [ ] **`section-nav.tsx`** — the project sections; `(studio)/sidebar.tsx` owns
+      it now.
 - [ ] **`bucket-row.tsx`** — the readiness row on the project overview.
 - [ ] **`list-row.tsx`** / **`member-row.tsx`** — projects list, invitations,
       members, parameters.
@@ -122,48 +217,45 @@ None built. In rough order of how often the pattern repeats:
 - [ ] **`modal.tsx`** — no modal exists; destructive actions use inline confirm
       panels instead, which may be the better pattern. Decide before building.
 - [ ] **`stepper.tsx`** — the participant `questions → tune → done` flow.
-- [ ] **`code-block.tsx`** — `rounded bg-paper/5 p-3 text-[10px]`, 4 sites.
-- [ ] **`form-actions.tsx`** — the submit-plus-saved-state footer, repeated
-      verbatim in five forms.
-
-### Harness
-
-- [ ] **A blank page to see and poke the primitives.** Agreed as the immediate
-      next step. `src/app/dev/sketch/` is the precedent for a dev-only route;
-      it should render every variant of every primitive in both an admin context
-      and under a non-default project palette, since a primitive that only looks
-      right in Nowadays brown is not finished.
 
 ---
 
 ## Adoption — not started
 
-Call-site counts as of 2026-10-01, so the size of each swap is known before it
-starts. Totals: **52 buttons, 10 selects, 4 checkboxes, 1 slider, 1 switch.**
-No native radio exists anywhere — `Radio` / `RadioGroup` are new capability, not
-a replacement.
+Call-site counts as of 2026-10-14 (`<button>`, `<select>`, checkbox inputs,
+range inputs, `role="switch"`), so the size of each swap is known before it
+starts. Totals: **107 buttons, 10 selects, 9 checkboxes, 1 slider, 1 switch.**
+No native radio exists anywhere — `Radio` / `RadioGroup` are new capability,
+not a replacement. Up from 52 buttons / 4 checkboxes on 2026-10-01, mostly the
+report section.
+
+Paths under `src/app/`; `(studio)` is `projects/[slug]/(studio)/`.
 
 | Area | Files | Call sites |
 |---|---|---|
-| Parameters builder | `projects/[slug]/parameters/builder.tsx` | 9 buttons, 4 selects, 3 checkboxes |
-| Members | `projects/[slug]/members-section.tsx` | 5 buttons, 2 selects |
-| Live console | `projects/[slug]/console/console.tsx` | 5 buttons |
-| Participant runtime | `p/[slug]/experience.tsx` | 5 buttons |
-| Avatar controls | `components/AvatarControls.tsx` | 3 buttons, 1 slider, 1 switch |
-| Database | `database/{danger,provision,section}.tsx` | 8 buttons, 1 select |
-| Invitations | `admin/invitations/{page,form,admins-section}.tsx` | 4 buttons, 2 selects |
-| Invite / signin | `invite/[token]/*`, `signin/form.tsx` | 4 buttons |
-| Style & language | `participant-frontend/{palette-form,text-form,preview-pane}.tsx` | 4 buttons, 1 select, 1 checkbox |
-| Visual | `projects/[slug]/visual/section.tsx` | 2 buttons |
-| Overview | `projects/[slug]/{page,settings-form,participation-toggle}.tsx` | 2 buttons |
+| Visual builder | `(studio)/visual/builder.tsx` | 9 buttons, 4 selects, 5 checkboxes |
+| Visual upload | `(studio)/visual/section.tsx` | 2 buttons |
+| Report · send | `(studio)/report/send/{page,send-console}.tsx` | 13 buttons, 3 checkboxes |
+| Report · email | `(studio)/report/email/{email-editor,email-preview}.tsx` | 12 buttons |
+| Report · mini-avatar | `(studio)/report/mini-avatar/{upload-section,mini-preview}.tsx` | 9 buttons |
+| Report · map | `(studio)/report/{map/map-view,use-report-room}.tsx` | 3 buttons |
+| Members | `(studio)/members-section.tsx` | 5 buttons, 2 selects |
+| Database | `(studio)/database/{danger-section,provision-section,section}.tsx` | 8 buttons, 1 select |
+| Style & language | `(studio)/participant-frontend/{palette-form,text-form,preview-pane}.tsx` | 5 buttons, 1 select, 1 checkbox |
+| Overview | `(studio)/{settings-form,participation-toggle,conclusion-toggle}.tsx` | 4 buttons |
+| Live console | `projects/[slug]/console/console.tsx` | 13 buttons |
+| Board | `projects/[slug]/board/board.tsx` | 1 button |
 | Projects list | `projects/page.tsx` | 1 button |
-| Board | `projects/[slug]/board/board.tsx` | — (no controls) |
+| Participant runtime | `p/[slug]/{experience,nav}.tsx` | 10 buttons |
+| Avatar controls | `src/components/AvatarControls.tsx` | 3 buttons, 1 slider, 1 switch |
+| Invitations | `admin/invitations/{page,form,admins-section}.tsx` | 4 buttons, 2 selects |
+| Invite / sign-in / account | `invite/[token]/{page,form,join-form}.tsx`, `signin/form.tsx`, `account/form.tsx` | 5 buttons |
 
-Suggested order, once the test page exists: **`AvatarControls.tsx` first.** It is
-the one file that exercises the slider, the switch, the option group and the
-multiselect at once, it is covered by the preview on the participant-frontend
-page, and it is the file the styling document is strictest about — so it is the
-honest test of whether these primitives are actually drop-in.
+Suggested order: **`AvatarControls.tsx` first.** It is the one file that
+exercises the slider, the switch, the option group and the multiselect at once,
+it is covered by the preview on the participant-frontend page, and it is the
+file the styling document is strictest about — so it is the honest test of
+whether these primitives are actually drop-in.
 
 ### Known swap hazards
 
@@ -174,10 +266,7 @@ honest test of whether these primitives are actually drop-in.
 - **`Checkbox` changes the rendering.** Existing checkboxes are unstyled browser
   defaults; the new one is `[ ]` / `[x]` text. That is a deliberate visual
   change, not a regression — the current control ignores the palette entirely.
-- **`Switch` with `name` posts a hidden input.** `participation-toggle.tsx` uses
-  the opposite pattern (a hidden input holding the *inverse* value plus a submit
-  button). Do not blindly swap it; it is a form post, not a controlled switch.
-- **`daisyUI` is still a dependency.** `@plugin "daisyui"` sits in
-  `globals.css:2` and the unused `.range-hue` rule at line 39 is the only thing
-  referencing its variables. Once the primitives are adopted, both can go — but
-  check `.range-hue` really has no callers first.
+- **`Switch` with `name` posts a hidden input.** `participation-toggle.tsx` and
+  `conclusion-toggle.tsx` use the opposite pattern — a hidden input
+  holding the *inverse* value plus a submit button. Do not blindly swap it; it
+  is a form post, not a controlled switch.

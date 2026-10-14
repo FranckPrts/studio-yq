@@ -80,7 +80,7 @@ export default function ConnectionSection({
             <input type="hidden" name="slug" value={slug} />
             <button
               type="submit"
-              className="shrink-0 text-xs text-dim underline-offset-4 hover:text-red-400 hover:underline"
+              className="shrink-0 text-xs text-dim underline-offset-4 hover:text-danger hover:underline"
             >
               disconnect
             </button>
@@ -90,7 +90,7 @@ export default function ConnectionSection({
 
       {view.broken && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs text-red-400">
+          <p className="text-xs text-danger">
             This connection needs renewing — its stored credentials can no
             longer be read.
           </p>
@@ -117,7 +117,7 @@ export default function ConnectionSection({
       )}
 
       {view.listError && (
-        <p className="text-xs text-red-400">{view.listError}</p>
+        <p className="text-xs text-danger">{view.listError}</p>
       )}
 
       {canEdit && view.available && view.available.length > 0 && (
@@ -143,7 +143,7 @@ export default function ConnectionSection({
           </label>
 
           {state.error && (
-            <p role="alert" className="text-xs text-red-400">
+            <p role="alert" className="text-xs text-danger">
               {state.error}
             </p>
           )}

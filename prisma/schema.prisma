@@ -164,7 +164,7 @@ model Project {
   conclusionPublishedAt DateTime?
 
   /// Palette and typography — "a more elaborate dark-mode switch", defaulting
-  /// to the Nowadays palette. Shape lives in the app, not in a table, because
+  /// to the dark palette. Shape lives in the app, not in a table, because
   /// it is read whole and never queried by field.
   theme Json?
 

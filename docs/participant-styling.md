@@ -1,0 +1,96 @@
+# Participant styling
+
+How studio-yq looks, what a project can change, and what it cannot. The
+primitives in `src/design/` implement these rules; when a primitive and this
+document disagree, this document wins and the primitive is the bug.
+
+Written down on 2026-10-14 from the rules the code already cited this file for
+(`src/design/*.tsx`, `src/lib/theme/project-theme.ts`). Nothing here is new
+policy — open questions are marked as such.
+
+The same rules, with tokens and live components, are in the Studio YQ design
+system: https://claude.ai/artifact/RkbSQbGqe9WPti5hNADsbq.
+
+## Three colour roles
+
+Every surface is painted from three colours, and nothing else:
+
+| Role | Variable | For |
+| --- | --- | --- |
+| **void** | `--color-void` | The ground. Page background; a `<select>`'s own background, so the OS-painted option list stays readable. |
+| **paper** | `--color-paper` | Body text, and whatever the person is acting on: the forward button, the chosen option, a checked `[x]`, the slider handle, the focus ring. |
+| **dim** | `--color-dim` | Structure and quiet text: hints, labels, separators, unchosen options, the slider track. |
+
+Fainter steps are opacities of these (`border-paper/20` for the hairline,
+`text-dim/40` for a locked option, `bg-paper/5` for code), never new colours.
+
+The colour split is meaningful, not decorative. On the slider the track is dim
+(structure) and the handle is paper (the thing being moved); in an option row
+the chosen one is paper and the rest are dim.
+
+## What a project controls
+
+A project's theme (`ProjectTheme`, stored whole in `Project.theme`) is exactly:
+
+- the three colours above, and
+- a typeface key from `FONTS` — a list we host, so licensing and loading stay
+  our problem rather than the tenant's.
+
+They are set as CSS variables on the participant page by `themeCssVars()`,
+server-rendered so the palette never flickers in. `globals.css` declares the
+palette **without** `inline` for this reason: Tailwind utilities compile to
+`var(--color-…)`, so a project's values reach everything styled with
+`bg-void`, `text-paper` or `text-dim`.
+
+**Consequence for code:** never write a palette colour as a literal. A
+component holding a hex stops following the project the moment it ships.
+
+## What a project does not control
+
+- **Diagnostic colours.** Amber means *something needs attention*; red means
+  *something is broken*. They are fixed so that no palette can tune the one
+  signal that must stay visible into invisibility. They are tokens fixed per
+  theme in `globals.css` — `warning`, `danger`, `success`, each with
+  higher-contrast `-strong` steps and a `-line` for borders — so a light theme
+  can give them darker values without any project being able to touch them.
+  Write `text-danger`, `border-warning-line/40`; never a Tailwind red or amber.
+- **Hue ramps a visual script supplies.** A slider showing the colours a
+  parameter maps to draws the script's own gradient. This is the one other
+  place a literal colour is expected.
+- **Interface words.** `on` / `off`, `[ ]` / `[x]`, `( )` / `(o)`, `|` and `:`
+  are ours, not copy. Participant-facing copy — questions, the noun ("star"),
+  `saving…`-style status — belongs to the project.
+
+## The terminal look
+
+- **Buttons are underlined text.** No filled or boxed button. The forward
+  action is paper and underlined; a way out (cancel, sign out) is dim until
+  hovered; a destructive action is dim and reddens only on hover.
+- **Controls are text.** A toggle is the word `on` or `off`, underlined when
+  on — never a sliding pill. A checkbox is a typed `[ ]` / `[x]`, a radio
+  `( )` / `(o)`, each a fixed `3ch` wide so toggling never shifts the label. An
+  option row is a run of words with the chosen one underlined.
+- **Flat and square.** No border radius, no shadow. The slider is a solid bar
+  with a square handle. Separation comes from a `border-paper/20` hairline or
+  from space, never from elevation. *Open: 29 admin elements still use
+  `rounded` — see the to-do.*
+- **The rule.** The `------` line under a terminal text field and between
+  control rows is `.term-rule`: a gradient of 10px dashes and 7px gaps, 2px
+  tall, so it reads like typed hyphens.
+- **One focus treatment.** A 1px paper outline held 2px off the control, on
+  `:focus-visible` only — the same on a slider handle, a button or a checkbox.
+- **Three sizes.** 11px for hints, labels and badges; 14px for buttons,
+  options and selects; 16px for body. 10px mono for code. No larger scale.
+- **Faces.** Admin is Geist (Geist Mono for code). The participant flow
+  defaults to DM Mono and follows the project's typeface key.
+- **Motion.** Almost none: `transition-opacity`, and the slow 3s `beacon`
+  pulse on the "open" dot, off under `prefers-reduced-motion`.
+- **Icons.** None. If any arrive they must be `currentColor` SVGs, so they
+  follow the palette.
+
+## Known gaps
+
+- **Contrast is advised, not enforced.** The palette form warns when `paper` or
+  `dim` falls under 4.5:1 on `void` (`contrastIssues()` in
+  `project-theme.ts`) and still saves. The default palette itself sits at
+  about 4.3:1 for dim on void, so it shows the warning too.

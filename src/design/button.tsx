@@ -48,7 +48,7 @@ const VARIANT: Record<ButtonVariant, string> = {
   action: "text-paper underline underline-offset-4 disabled:text-dim",
   plain: "underline underline-offset-4 disabled:no-underline",
   quiet: "text-dim underline-offset-4 hover:text-paper hover:underline disabled:no-underline disabled:text-dim/50",
-  danger: "text-dim underline-offset-4 hover:text-red-400 hover:underline disabled:no-underline disabled:text-dim/50",
+  danger: "text-dim underline-offset-4 hover:text-danger hover:underline disabled:no-underline disabled:text-dim/50",
   choice: "underline-offset-4",
 };
 

@@ -73,12 +73,12 @@ export default function ParticipationToggle({
           >
             {publicUrl}
           </button>
-          <span aria-live="polite" className="ml-2 text-emerald-400/80">
+          <span aria-live="polite" className="ml-2 text-success/80">
             {copied ? "copied ✓" : ""}
           </span>
         </p>
       ) : missing.length > 0 ? (
-        <p className="text-[11px] leading-relaxed text-amber-400/80">
+        <p className="text-[11px] leading-relaxed text-warning/80">
           Cannot open yet — still needs {missing.join(", and ")}.
         </p>
       ) : (
@@ -89,7 +89,7 @@ export default function ParticipationToggle({
       )}
 
       {state.error && (
-        <p role="alert" className="text-[11px] text-red-400">
+        <p role="alert" className="text-[11px] text-danger">
           {state.error}
         </p>
       )}

@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "daisyui";
 
 @theme inline {
   --font-sans: var(--font-geist-sans);
@@ -14,7 +13,7 @@
  * `inline` compiles each utility to a fixed value — `.text-dim{color:#7f776b}`
  * — so a project's palette, set as CSS variables on the participant page, never
  * reached anything styled with a utility class: separators, inactive options,
- * the canvas backdrop all stayed Nowadays brown whatever the tenant chose.
+ * the canvas backdrop all stayed the default dark palette whatever the tenant chose.
  * Without `inline`, utilities compile to `color: var(--color-dim)`, the values
  * below become the defaults on :root, and a project's variables override them
  * wherever they are set. Our own pages set nothing, so they look exactly as
@@ -24,6 +23,30 @@
   --color-void: #14100e;
   --color-paper: #ece5d8;
   --color-dim: #7f776b;
+}
+
+/*
+ * Diagnostic colours — amber for "needs attention", red for "broken", green for
+ * "worked". Fixed per theme and never set by a project, so no palette can tune
+ * the one signal that must stay visible into invisibility
+ * (`docs/participant-styling.md`).
+ *
+ * Named by role and contrast tier rather than by shade, so a light theme can
+ * remap them: `-strong` / `-strongest` are the higher-contrast steps against
+ * the ground (lighter on dark, darker on light), `-line` is for borders and
+ * tinted fills and is always used at an opacity. The values are Tailwind's own
+ * red / amber / emerald, so the dark theme looks exactly as it did with literal
+ * utilities.
+ */
+@theme {
+  --color-danger: oklch(70.4% 0.191 22.216); /* red-400 */
+  --color-danger-strong: oklch(80.8% 0.114 19.571); /* red-300 */
+  --color-danger-strongest: oklch(88.5% 0.062 18.334); /* red-200 */
+  --color-danger-line: oklch(63.7% 0.237 25.331); /* red-500 */
+  --color-warning: oklch(82.8% 0.189 84.429); /* amber-400 */
+  --color-warning-strong: oklch(92.4% 0.12 95.746); /* amber-200 */
+  --color-warning-line: oklch(76.9% 0.188 70.08); /* amber-500 */
+  --color-success: oklch(76.5% 0.177 163.223); /* emerald-400 */
 }
 
 /*
@@ -44,30 +67,27 @@
   }
 }
 
+/*
+ * The page itself. What daisyUI's base used to supply, from our palette rather
+ * than its own blue-grey: the ground behind any page that does not paint one,
+ * the default text colour, native controls and scrollbars drawn dark.
+ */
+@layer base {
+  :root {
+    color-scheme: dark;
+    background-color: var(--color-void);
+    color: var(--color-paper);
+    scrollbar-color: color-mix(in oklch, currentColor 35%, transparent) transparent;
+  }
+}
+
 body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-/*
- * Hue slider. daisyUI paints the range track with `background-color`, which
- * can't take a gradient — so blank the track and its progress fill, and put
- * the ramp on the input itself, sized to sit exactly where the track was.
- * Callers set --hue-track (the ramp) and --hue-thumb (the current color).
- */
-.range-hue {
-  --range-bg: transparent;
-  --range-fill: 0;
-  --range-thumb: var(--hue-thumb, white);
-  color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
-  background-image: var(--hue-track);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 50%;
-}
-
 /* ---------------------------------------------------------------------------
- * Terminal chrome — participant flow only. Deliberately un-daisyUI: flat bars,
- * square corners, no radius, no shadow.
+ * Terminal chrome — participant flow only. Flat bars, square corners, no
+ * radius, no shadow.
  * ------------------------------------------------------------------------ */
 
 /*
@@ -85,18 +105,26 @@ body {
   height: 2px;
 }
 
-.term-input {
-  width: 100%;
-  padding: 0 0 0.5rem;
-  border: 0;
-  outline: none;
-  background: transparent;
-  color: var(--color-paper);
-  caret-color: var(--color-paper);
-}
+/*
+ * The text field's base. In `components`, below `utilities`, so what a call site
+ * adds wins: `border-b border-paper/20` (the hairline nearly every field asks
+ * for), `bg-void` on a select, a `w-40`, the focus ring. Unlayered, this block
+ * outranked every utility and silently erased all of them.
+ */
+@layer components {
+  .term-input {
+    width: 100%;
+    padding: 0 0 0.5rem;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--color-paper);
+    caret-color: var(--color-paper);
+  }
 
-.term-input::placeholder {
-  color: var(--color-dim);
+  .term-input::placeholder {
+    color: var(--color-dim);
+  }
 }
 
 /*

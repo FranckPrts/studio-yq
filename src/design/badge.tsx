@@ -6,7 +6,7 @@ import { cx, SIZE, TONE, TONE_BORDER, type Size, type Tone } from "./tokens";
  * a member's role.
  *
  * Mostly it is coloured text with no container at all, which is what the pages
- * already do (`ready ? "text-dim" : "text-amber-400/80"`). That is the default
+ * already do (`ready ? "text-dim" : "text-warning/80"`). That is the default
  * here. `outlined` adds a hairline box for the cases where the badge sits in a
  * run of other text and needs an edge to be read as a label — square, because
  * the terminal look has no radius.

@@ -58,7 +58,7 @@ export default function PasswordForm({ email }: { email: string }) {
       </label>
 
       {state.error && (
-        <p role="alert" className="text-xs text-red-400">
+        <p role="alert" className="text-xs text-danger">
           {state.error}
         </p>
       )}
