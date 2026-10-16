@@ -69,7 +69,7 @@ export default async function ProjectsPage() {
                   href={`/projects/${project.slug}`}
                   className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
                 >
-                  settings
+                  open project
                 </Link>
                 <Link
                   href={`/projects/${project.slug}/participant-frontend/preview`}

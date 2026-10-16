@@ -12,6 +12,7 @@ import {
   type Parameter,
 } from "@/lib/params/types";
 import { normalizeAvatar, type Avatar } from "@/lib/spoke/avatars";
+import { downloadCsv, fetchAllScores, scoresCsv } from "@/lib/spoke/export-scores";
 import type { ProjectLexicon } from "@/lib/theme/project-theme";
 import {
   deleteScoreAction,
@@ -364,6 +365,8 @@ export default function OpsConsole({
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
   const [pending, startTransition] = useTransition();
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const clientRef = useRef<SupabaseClient | null>(null);
 
   const hues = useMemo(
@@ -485,6 +488,23 @@ export default function OpsConsole({
       const result = await stageAction(form);
       if (result.error) setError(result.error);
     });
+  }
+
+  // Every session, not just the fifty on screen.
+  async function exportScores() {
+    const client = clientRef.current;
+    if (!client) return;
+    setExporting(true);
+    setExportError(null);
+    try {
+      const rows = await fetchAllScores(client);
+      const day = new Date().toISOString().slice(0, 10);
+      downloadCsv(scoresCsv(rows, nameOf), `${slug}-session-scores-${day}.csv`);
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : "The export failed.");
+    } finally {
+      setExporting(false);
+    }
   }
 
   function clearStage() {
@@ -652,9 +672,25 @@ export default function OpsConsole({
             <div className="flex items-baseline justify-between gap-4">
               <h2 className="text-xs text-dim">latest scores</h2>
               {canOperate && scores.length > 0 && (
-                <span className="text-[11px] text-dim">click one to add its strategy</span>
+                <span className="flex items-baseline gap-4 text-[11px] text-dim">
+                  click one to add its strategy
+                  <button
+                    type="button"
+                    disabled={exporting}
+                    onClick={exportScores}
+                    title="Download every session score as a CSV"
+                    className="shrink-0 underline-offset-4 hover:text-paper hover:underline disabled:opacity-50"
+                  >
+                    {exporting ? "exporting…" : "export csv"}
+                  </button>
+                </span>
               )}
             </div>
+            {exportError && (
+              <p role="alert" className="text-xs text-warning/90">
+                {exportError}
+              </p>
+            )}
             {scores.length === 0 ? (
               <p className="text-xs text-dim">
                 None yet. The scene writes one when each run ends.
