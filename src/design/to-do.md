@@ -92,7 +92,8 @@ not block it and can run alongside or after.
 - [x] **Values, all ≥ 4.5:1 for text at the opacities the markup uses** (worked
       out in `globals.css` beside each one). Light: void `#f4f1ea`, paper
       `#1d1b18` (15.2:1), dim `#716c62` (4.6:1); danger red-700/800/900,
-      warning amber-900/950, success emerald-900; `-line` red-600 / amber-700.
+      warning amber-900/950, success emerald-700 (4.8:1; `text-success` is
+      always used at full opacity so it can be this bright); `-line` red-600 / amber-700.
 - [x] **Dark's `dim` fixed:** `#7f776b` (4.3:1) → `#857d71` (4.7:1), in
       `globals.css` and `DEFAULT_THEME`. Projects that already saved the old
       value keep it, and see the contrast warning on their palette form.

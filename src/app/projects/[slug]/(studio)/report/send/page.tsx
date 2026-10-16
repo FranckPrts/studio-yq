@@ -101,7 +101,7 @@ export default async function SendPage({
           ))}
           {status.notice.current ? (
             <div className="flex flex-wrap items-baseline justify-between gap-3 border-t border-paper/10 pt-3">
-              <p className="text-success/90">
+              <p className="text-success">
                 Agreed by {status.notice.by?.displayName || status.notice.by?.email || "a former member"}{" "}
                 on {when(status.notice.at!)} (notice v{status.notice.version}).
               </p>
@@ -147,7 +147,7 @@ export default async function SendPage({
               Connecting Gmail failed: {gmailError}
             </p>
           )}
-          {justConnected && status.gmail && <p className="text-success/90">Gmail connected.</p>}
+          {justConnected && status.gmail && <p className="text-success">Gmail connected.</p>}
           {status.gmail ? (
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <p>

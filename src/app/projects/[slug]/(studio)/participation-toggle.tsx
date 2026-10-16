@@ -73,7 +73,7 @@ export default function ParticipationToggle({
           >
             {publicUrl}
           </button>
-          <span aria-live="polite" className="ml-2 text-success/80">
+          <span aria-live="polite" className="ml-2 text-success">
             {copied ? "copied ✓" : ""}
           </span>
         </p>

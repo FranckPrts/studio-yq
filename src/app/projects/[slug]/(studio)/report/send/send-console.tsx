@@ -619,7 +619,7 @@ function Everyone({
 
       <ul className="flex flex-col gap-1">
         {checks.map((c) => (
-          <li key={c.text} className={c.ok ? "text-success/90" : "text-warning/90"}>
+          <li key={c.text} className={c.ok ? "text-success" : "text-warning/90"}>
             {c.ok ? "✓" : "○"} {c.text}
           </li>
         ))}
@@ -747,7 +747,7 @@ function RunProgress({
       {progress.current && <p className="text-dim">sending: {progress.current}</p>}
       {progress.state === "stopped" && <p className="text-warning/90">Stopped. Nothing more will go out from this send.</p>}
       {progress.state === "refused" && <p className="text-danger">Stopped: {progress.message}</p>}
-      {progress.state === "finished" && <p className="text-success/90">Finished.</p>}
+      {progress.state === "finished" && <p className="text-success">Finished.</p>}
       {progress.message && progress.state !== "refused" && <p className="text-dim">{progress.message}</p>}
       {progress.failed.length > 0 && (
         <ul className="flex flex-col gap-0.5 text-danger-strong/80">
