@@ -6,6 +6,7 @@ import {
   revokeAdminAction,
   type AdminState,
 } from "./actions";
+import { buttonClass } from "@/design";
 
 type Admin = { id: string; label: string; isYou: boolean };
 
@@ -71,13 +72,13 @@ export default function AdminsSection({ admins }: { admins: Admin[] }) {
             type="email"
             required
             placeholder="their account email"
-            className="term-input border-b border-paper/20 text-sm"
+            className="term-input rounded bg-surface px-2 py-1.5 text-sm"
           />
         </label>
         <button
           type="submit"
           disabled={granting}
-          className="text-sm text-paper underline underline-offset-4 disabled:text-dim"
+          className={buttonClass("boxed")}
         >
           {granting ? "…" : "grant"}
         </button>

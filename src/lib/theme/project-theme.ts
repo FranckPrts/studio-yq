@@ -57,9 +57,10 @@ export type FontKey = keyof typeof FONTS;
 export const DEFAULT_THEME: ProjectTheme = {
   void: "#14100e",
   paper: "#ece5d8",
-  // Was #7f776b (4.3:1 on void) until 2026-10-14; nudged to clear 4.5:1 for
-  // the 11px hints it carries. Projects that saved the old value keep it.
-  dim: "#857d71",
+  // #7f776b until 2026-10-14 (4.3:1), then #857d71; now strong enough to clear
+  // 4.5:1 on a `surface` as well as on void (5.1:1), since hints sit in panels.
+  // Projects that saved an earlier value keep it.
+  dim: "#8b8377",
   font: "dmMono",
 };
 
@@ -70,7 +71,7 @@ export const DEFAULT_THEME: ProjectTheme = {
  */
 export const STUDIO_PALETTES = {
   dark: { void: DEFAULT_THEME.void, paper: DEFAULT_THEME.paper, dim: DEFAULT_THEME.dim },
-  light: { void: "#f4f1ea", paper: "#1d1b18", dim: "#716c62" },
+  light: { void: "#f4f1ea", paper: "#1d1b18", dim: "#68635a" },
 } as const satisfies Record<string, Pick<ProjectTheme, "void" | "paper" | "dim">>;
 
 const HEX = /^#[0-9a-f]{6}$/i;

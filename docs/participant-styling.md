@@ -21,8 +21,9 @@ Every surface is painted from three colours, and nothing else:
 | **paper** | `--color-paper` | Body text, and whatever the person is acting on: the forward button, the chosen option, a checked `[x]`, the slider handle, the focus ring. |
 | **dim** | `--color-dim` | Structure and quiet text: hints, labels, separators, unchosen options, the slider track. |
 
-Fainter steps are opacities of these (`border-paper/20` for the hairline,
-`text-dim/40` for a locked option, `bg-paper/5` for code), never new colours.
+Fainter steps are opacities or mixes of these (`bg-surface` for a box,
+`text-dim/40` for a locked option, `border-paper/10` for a row divider), never
+new colours.
 
 The colour split is meaningful, not decorative. On the slider the track is dim
 (structure) and the handle is paper (the thing being moved); in an option row
@@ -79,10 +80,21 @@ component holding a hex stops following the project the moment it ships.
   on — never a sliding pill. A checkbox is a typed `[ ]` / `[x]`, a radio
   `( )` / `(o)`, each a fixed `3ch` wide so toggling never shifts the label. An
   option row is a run of words with the chosen one underlined.
-- **Flat and square.** No border radius, no shadow. The slider is a solid bar
-  with a square handle. Separation comes from a `border-paper/20` hairline or
-  from space, never from elevation. *Open: 29 admin elements still use
-  `rounded` — see the to-do.*
+- **Surfaces, not borders; 4px corners everywhere.** A box — panel, field,
+  chip, boxed button, badge, code block, tile — is set apart by a tint of the
+  ground, never drawn round with a line, and has the 4px `rounded` corner.
+  `bg-surface` (paper at 6% over void) for neutral boxes, `bg-surface-hover`
+  (10%) for hover and popovers, `bg-warning-surface` / `bg-danger-surface`
+  for status boxes. All are opaque mixes of the palette, so they follow the
+  theme and a project's colours. Only dots (`rounded-full`) are round. No
+  shadow. Row dividers between list items stay as `border-paper/10` lines —
+  they separate, they do not enclose. (Decided 2026-10-17.)
+- **Colour does the emphasis.** The one strong call on a page — `cancel` while
+  a send counts down — is inverted: `bg-paper text-void` (15:1). A destructive
+  boxed button sits on `bg-danger-surface` in `text-danger-strongest`. Inside a
+  status box, text keeps to that box's tones and `paper`; `dim` does not
+  reliably clear 4.5:1 there. Success has no surface: green text on a green
+  tint fails in light.
 - **The rule.** The `------` line under a terminal text field and between
   control rows is `.term-rule`: a gradient of 10px dashes and 7px gaps, 2px
   tall, so it reads like typed hyphens.

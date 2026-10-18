@@ -171,7 +171,7 @@ export default function MapView({
         width={MAP_WIDTH}
         height={MAP_HEIGHT}
         onClick={onCanvasClick}
-        className="h-auto w-full cursor-pointer border border-paper/10"
+        className="h-auto w-full cursor-pointer rounded bg-surface"
         style={{ background: theme.void, aspectRatio: `${MAP_ASPECT}` }}
       />
 

@@ -80,7 +80,7 @@ export default function SketchHarness({ project, projects }: HarnessProps) {
         </header>
 
         {project.declarationErrors.length > 0 && (
-          <section className="flex flex-col gap-1 rounded border border-danger-line/40 p-3">
+          <section className="flex flex-col gap-1 rounded bg-danger-surface p-3">
             <h2 className="text-xs text-danger">stored declaration is invalid</h2>
             <ul className="text-[11px] leading-relaxed text-danger-strong/80">
               {project.declarationErrors.map((e) => (
@@ -100,7 +100,7 @@ export default function SketchHarness({ project, projects }: HarnessProps) {
 
         <section className="flex flex-col gap-2">
           <h2 className="text-xs text-dim">params posted to the sketch</h2>
-          <pre className="overflow-x-auto rounded bg-paper/5 p-3 text-[11px] leading-relaxed text-dim">
+          <pre className="overflow-x-auto rounded bg-surface p-3 text-[11px] leading-relaxed text-dim">
             {JSON.stringify(sketchParams, null, 2)}
           </pre>
         </section>
@@ -119,7 +119,7 @@ export default function SketchHarness({ project, projects }: HarnessProps) {
             channel is dead. Break something in <code>draw</code> to check it.
           </p>
           {logs.length > 0 && (
-            <pre className="max-h-48 overflow-auto rounded bg-paper/5 p-3 text-[11px] leading-relaxed text-paper/70">
+            <pre className="max-h-48 overflow-auto rounded bg-surface p-3 text-[11px] leading-relaxed text-paper/70">
               {logs.map((log) => `${log.type}: ${log.message}`).join("\n")}
             </pre>
           )}

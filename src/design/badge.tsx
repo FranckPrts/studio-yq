@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { cx, SIZE, TONE, TONE_BORDER, type Size, type Tone } from "./tokens";
+import { cx, SIZE, TONE, TONE_SURFACE, type Size, type Tone } from "./tokens";
 
 /**
  * A badge — a short piece of state: `open`, `not provisioned`, `v2 available`,
@@ -7,15 +7,15 @@ import { cx, SIZE, TONE, TONE_BORDER, type Size, type Tone } from "./tokens";
  *
  * Mostly it is coloured text with no container at all, which is what the pages
  * already do (`ready ? "text-dim" : "text-warning/80"`). That is the default
- * here. `outlined` adds a hairline box for the cases where the badge sits in a
- * run of other text and needs an edge to be read as a label — square, because
- * the terminal look has no radius.
+ * here. `tinted` sets it on its tone's surface, with the 4px corner, for the
+ * cases where the badge sits in a run of other text and needs a shape to be
+ * read as a label. A tint, not an outline: boxes are surfaces, not lines.
  *
  * No `"use client"`: badges are inert, so they render from a Server Component,
  * which is where most of this state is already known.
  */
 
-export type BadgeVariant = "bare" | "outlined";
+export type BadgeVariant = "bare" | "tinted";
 
 export type BadgeProps = ComponentProps<"span"> & {
   tone?: Tone;
@@ -33,7 +33,7 @@ export function badgeClass(
     "shrink-0",
     SIZE[size],
     TONE[tone],
-    variant === "outlined" && cx("border px-1.5 py-0.5", TONE_BORDER[tone]),
+    variant === "tinted" && cx("rounded px-1.5 py-0.5", TONE_SURFACE[tone]),
     className,
   );
 }

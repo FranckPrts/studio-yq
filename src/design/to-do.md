@@ -77,7 +77,7 @@ not block it and can run alongside or after.
       written with.** A visible change across the admin forms; checked in
       `/dev/primitives` and `/projects`.
 
-### Phase 3 — The light theme *(built 2026-10-14)*
+### Phase 3 — The light theme *(done 2026-10-16)*
 
 - [x] **"Light" is a studio theme, chosen per person.** `User.studioTheme`
       (`DARK` | `LIGHT`, default `DARK`; migration `…_studio_theme`). Two
@@ -103,13 +103,12 @@ not block it and can run alongside or after.
 - [x] The Studio YQ design system has both themes, the per-theme diagnostic
       tokens under the code's names, and the dim fix. Its cover is drawn from
       tokens, so it follows the theme on its own.
-- [ ] **Verify in the browser** once the dev server restarts (it still holds
-      the Prisma client from before the migration): `/account` switch, a light
-      studio page, a participant page while signed in on light.
+- [x] Verified in the browser, committed and deployed (2026-10-16).
 
 ### Phase 4 — Missing primitives
 
-Backlog below. `field.tsx` first; decide radius before `panel.tsx`.
+Backlog below. `field.tsx` first; `panel.tsx` is now `rounded p-3` on a
+`TONE_SURFACE`.
 
 ### Phase 5 — Adoption
 
@@ -119,15 +118,23 @@ The table at the bottom, `AvatarControls.tsx` first.
 
 - [x] **What "light" covers.** The studio interface, per person — not a
       project preset. Decided 2026-10-14.
+- [x] **Default studio theme.** New users start on `dark`; light is opt-in
+      from `/account`. Decided 2026-10-17.
 - [x] **Diagnostic colours: "literal" → "fixed per theme, never tenant-set".**
       Agreed 2026-10-14; `ProjectTheme` stays three colours plus a font.
 - [x] **Dark's `dim`.** Nudged to `#857d71` (4.7:1). Decided 2026-10-14.
-- [ ] **Radius.** `docs/participant-styling.md` says none; `rounded` appears 29
-      times across 11 app files (panels, outline buttons, code blocks; 3 more
-      in the `/dev/sketch` harness), plus 4
-      `rounded-full` (the beacon dot, the console's avatar swatch — dots,
-      arguably exempt). Either the document gains an admin exception or the
-      panels go square. `Badge` already sides with the document.
+- [x] **Radius → 4px everywhere; borders → surfaces.** Decided 2026-10-17:
+      no square boxes and no box borders. Every box is `rounded` on a tint —
+      `surface` / `surface-hover` / `warning-surface` / `danger-surface`,
+      opaque `color-mix`es of the palette in `globals.css`, re-derived on every
+      `[data-theme]` so project palettes get their own. Applied across the app
+      (43 files): 46 fields, 19 panels, boxed buttons, chips, code blocks,
+      tiles, preview frames, dropdowns, file inputs, the sidebar pill, the
+      slider (track and handle). `Badge`'s `outlined` became `tinted`;
+      `TONE_BORDER` became `TONE_SURFACE`; `FIELD_SELECT` no longer needs
+      `bg-void`. Row dividers stay. `dim` strengthened again so hints clear
+      4.5:1 on a surface: dark `#8b8377`, light `#68635a`. The one strong
+      call (`cancel` during a send countdown) is inverted paper-on-void.
 
 ---
 
@@ -151,6 +158,23 @@ The table at the bottom, `AvatarControls.tsx` first.
       colour — the participant flow sets it inline from the theme), `quiet`,
       `danger`, `choice`. `pending` disables on its own so call sites stop
       writing `disabled={pending || …}`.
+      **`boxed` added 2026-10-18** with `tone` `default` / `strong` / `danger`
+      (surface, 4px corner, 32px tall, `w-fit`; `pending` also sets
+      `aria-busy`). Rule, from the Button card in the design system: a form's
+      submit is `boxed`; the one main action on a page is `boxed` `strong`; a
+      destructive press after a confirm is `boxed` `danger` (not inside a
+      danger panel); secondary actions and list-row actions stay text.
+      **Adopted the same day** via `buttonClass("boxed", …)` on every studio
+      submit and forward action — 20 form submits, `connect Supabase`,
+      `connect a Gmail account`, `I agree…`, `add`, `send N emails…`,
+      `send now` (strong), the drop-table confirm and `send to everyone`
+      (danger), the countdown `cancel` (strong). Tenant and admin pages share
+      them; the participant flow does not yet (a later change).
+      **Compact size** (`size="xs"`: 24px, 12px text) for navigation and
+      per-row actions, on every page header: the landing page (`invites`,
+      `account & settings`, `sign out`, each project's `open project` /
+      `preview`), the `projects` links on `/account` and `/admin/invitations`,
+      the console's back link, and `PageHeader`'s actions (`live preview →`).
 - [x] **`select.tsx`** — `Select` (native `<select>`), `selectClass()`,
       `optionsFrom()` for the `as const` lookups in `src/lib`.
 - [x] **`checkbox.tsx`** — `Checkbox` (`[ ]` / `[x]`), `MultiOptionGroup` (the

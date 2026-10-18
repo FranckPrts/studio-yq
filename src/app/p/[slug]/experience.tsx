@@ -455,7 +455,7 @@ export default function ParticipantExperience({
               <label key={q.name} className="flex flex-col gap-2">
                 <span className="text-sm">{q.label}</span>
                 <input
-                  className="term-input border-b"
+                  className="term-input rounded bg-surface px-2 py-1.5"
                   style={{ borderColor: `${theme.dim}55` }}
                   value={String(values[q.name] ?? "")}
                   placeholder={
@@ -479,7 +479,7 @@ export default function ParticipantExperience({
                   type="email"
                   name="email"
                   autoComplete="email"
-                  className="term-input border-b"
+                  className="term-input rounded bg-surface px-2 py-1.5"
                   style={{ borderColor: `${theme.dim}55` }}
                   value={emailValue}
                   placeholder={email.placeholder}

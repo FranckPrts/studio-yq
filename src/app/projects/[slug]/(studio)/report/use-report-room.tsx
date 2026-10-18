@@ -126,11 +126,11 @@ export function PersonSearch({
           if (e.key === "Escape") setQuery("");
         }}
         placeholder={`find a participant by ${noun} name`}
-        className="term-input border-b border-paper/20"
+        className="term-input rounded bg-surface px-2 py-1.5"
         aria-label="Find a participant"
       />
       {matches.length > 0 && (
-        <ul className="absolute top-full z-10 mt-1 w-full border border-paper/15 bg-void">
+        <ul className="absolute top-full z-10 mt-1 w-full rounded bg-surface-hover">
           {matches.map((p) => (
             <li key={p.owner}>
               <button

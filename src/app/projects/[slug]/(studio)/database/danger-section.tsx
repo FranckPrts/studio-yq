@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { wipeData, wipeSchema, type DestructiveState } from "./actions";
+import { buttonClass } from "@/design";
 
 export type LiveState = {
   reachable: boolean;
@@ -85,14 +86,14 @@ function Destructive({
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
               autoComplete="off"
-              className="term-input max-w-xs border-b border-danger-line/40"
+              className="term-input max-w-xs rounded bg-danger-surface px-2 py-1.5"
             />
           </label>
           <div className="flex items-center gap-4">
             <button
               type="submit"
               disabled={pending || typed !== slug}
-              className="text-sm text-danger underline underline-offset-4 disabled:text-dim disabled:no-underline"
+              className={buttonClass("boxed", "sm", undefined, "danger")}
             >
               {pending ? "working…" : confirmLabel}
             </button>

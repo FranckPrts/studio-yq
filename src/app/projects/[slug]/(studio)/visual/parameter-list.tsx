@@ -19,7 +19,7 @@ export default function ParameterList({
         const members = parameters.filter(group.holds);
         const withEmail = group.key === "questions" && !!email;
         return (
-          <section key={group.key} className="flex flex-col gap-3 border border-paper/15 p-4">
+          <section key={group.key} className="flex flex-col gap-3 rounded bg-surface p-4">
             <header className="flex flex-col gap-1">
               <div className="flex items-baseline justify-between gap-4">
                 <h3 className="text-sm text-paper">{group.title}</h3>

@@ -5,6 +5,7 @@ import {
   setConclusionPublished,
   type ParticipationState,
 } from "./actions";
+import { buttonClass } from "@/design";
 
 /**
  * The conclusion's own switch, under participation: hidden while the event
@@ -60,7 +61,7 @@ export default function ConclusionToggle({
             <button
               type="submit"
               disabled={pending}
-              className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+              className={buttonClass("boxed")}
             >
               {pending ? "…" : published ? "hide" : "publish"}
             </button>

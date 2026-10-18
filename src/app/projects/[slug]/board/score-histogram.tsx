@@ -224,7 +224,7 @@ export default function ScoreHistogram({
 
       {tooltip && (
         <div
-          className="pointer-events-none absolute z-10 whitespace-nowrap border border-paper/40 bg-void px-2 py-1 tabular-nums text-paper"
+          className="pointer-events-none absolute z-10 whitespace-nowrap rounded bg-surface-hover px-2 py-1 tabular-nums text-paper"
           style={{
             left: tooltip.x,
             top: tooltip.y,

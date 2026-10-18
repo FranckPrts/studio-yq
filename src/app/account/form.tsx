@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { changeOwnPassword, type PasswordState } from "./actions";
+import { buttonClass } from "@/design";
 
 export default function PasswordForm({ email }: { email: string }) {
   const [state, action, pending] = useActionState<PasswordState, FormData>(
@@ -29,7 +30,7 @@ export default function PasswordForm({ email }: { email: string }) {
           type="password"
           autoComplete="current-password"
           required
-          className="term-input border-b border-paper/20"
+          className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
 
@@ -41,7 +42,7 @@ export default function PasswordForm({ email }: { email: string }) {
           autoComplete="new-password"
           required
           minLength={12}
-          className="term-input border-b border-paper/20"
+          className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
 
@@ -53,7 +54,7 @@ export default function PasswordForm({ email }: { email: string }) {
           autoComplete="new-password"
           required
           minLength={12}
-          className="term-input border-b border-paper/20"
+          className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
 
@@ -71,7 +72,7 @@ export default function PasswordForm({ email }: { email: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+        className={buttonClass("boxed", "sm", "mt-2")}
       >
         {pending ? "changing…" : "change password"}
       </button>

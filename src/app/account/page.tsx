@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/dal";
-import { choiceClass } from "@/design";
+import { choiceClass, buttonClass } from "@/design";
 import { chooseStudioTheme } from "./actions";
 import PasswordForm from "./form";
 
@@ -12,7 +12,7 @@ export default async function AccountPage() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 bg-void p-8 text-paper">
-      <header className="flex items-baseline justify-between gap-4">
+      <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-sm">Account</h1>
           <p className="text-xs text-dim">
@@ -22,7 +22,7 @@ export default async function AccountPage() {
         </div>
         <Link
           href="/projects"
-          className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+          className={buttonClass("boxed", "xs")}
         >
           projects
         </Link>

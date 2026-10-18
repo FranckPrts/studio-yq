@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { signIn, type SignInState } from "./actions";
+import { buttonClass } from "@/design";
 
 export default function SignInForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState<SignInState, FormData>(
@@ -20,7 +21,7 @@ export default function SignInForm({ next }: { next: string }) {
           type="email"
           autoComplete="username"
           required
-          className="term-input border-b border-paper/20"
+          className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
 
@@ -31,7 +32,7 @@ export default function SignInForm({ next }: { next: string }) {
           type="password"
           autoComplete="current-password"
           required
-          className="term-input border-b border-paper/20"
+          className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
 
@@ -44,7 +45,7 @@ export default function SignInForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+        className={buttonClass("boxed", "sm", "mt-2")}
       >
         {pending ? "signing in…" : "sign in"}
       </button>

@@ -9,7 +9,7 @@ import { cx, PEER_FOCUS_RING, SIZE, type Size } from "./tokens";
  * kept for forms and assistive tech and visually hidden, while the mark beside
  * it is text that follows the project palette. Round brackets rather than
  * square, so the two controls stay distinguishable at a glance without either
- * growing a border radius the terminal look does not allow.
+ * looking like the other.
  */
 
 const GLYPH = "w-[3ch] shrink-0 text-center";

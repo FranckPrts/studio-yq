@@ -5,6 +5,7 @@ import { revokeInviteAction } from "./actions";
 import InviteForm from "./form";
 import AdminsSection from "./admins-section";
 import { listAdmins } from "@/lib/auth/admins";
+import { buttonClass } from "@/design";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export default async function InvitationsPage() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 bg-void p-8 text-paper">
-      <header className="flex items-baseline justify-between">
+      <header className="flex items-center justify-between">
         <div>
           <h1 className="text-sm">People</h1>
           <p className="text-xs text-dim">
@@ -49,7 +50,7 @@ export default async function InvitationsPage() {
         </div>
         <Link
           href="/projects"
-          className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+          className={buttonClass("boxed", "xs")}
         >
           projects
         </Link>

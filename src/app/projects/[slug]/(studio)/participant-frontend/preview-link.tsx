@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { buttonClass } from "@/design";
 
 /** Previews live on their own tab now; the editing pages point there. */
 export default function PreviewLink({ slug }: { slug: string }) {
   return (
     <Link
       href={`/projects/${slug}/participant-frontend/preview`}
-      className="text-dim underline-offset-4 hover:text-paper hover:underline"
+      className={buttonClass("boxed", "xs")}
     >
       live preview →
     </Link>

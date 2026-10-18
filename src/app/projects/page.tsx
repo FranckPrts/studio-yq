@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser, visibleProjects } from "@/lib/auth/dal";
 import { signOut } from "@/app/signin/actions";
+import { buttonClass } from "@/design";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export default async function ProjectsPage() {
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 bg-void p-8 text-paper">
-      <header className="flex items-baseline justify-between gap-4">
+      <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-sm">Projects</h1>
           <p className="text-xs text-dim">
@@ -18,25 +19,25 @@ export default async function ProjectsPage() {
             {user.isPlatformAdmin && " · administrator"}
           </p>
         </div>
-        <div className="flex items-baseline gap-4">
+        <div className="flex items-center gap-2">
           {user.isPlatformAdmin && (
             <Link
               href="/admin/invitations"
-              className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+              className={buttonClass("boxed", "xs")}
             >
-              invitations
+              invites
             </Link>
           )}
           <Link
             href="/account"
-            className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+            className={buttonClass("boxed", "xs")}
           >
-            account
+            account & settings
           </Link>
           <form action={signOut}>
             <button
               type="submit"
-              className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+              className={buttonClass("boxed", "xs")}
             >
               sign out
             </button>
@@ -53,7 +54,7 @@ export default async function ProjectsPage() {
           {projects.map((project) => (
             <li
               key={project.slug}
-              className="flex items-baseline justify-between gap-4 border-b border-paper/10 pb-3"
+              className="flex items-center justify-between gap-4 border-b border-paper/10 pb-3"
             >
               <div>
                 <p className="text-sm">{project.name}</p>
@@ -64,16 +65,16 @@ export default async function ProjectsPage() {
                   · {project.openForParticipation ? "open" : "closed"}
                 </p>
               </div>
-              <div className="flex shrink-0 gap-4">
+              <div className="flex shrink-0 gap-2">
                 <Link
                   href={`/projects/${project.slug}`}
-                  className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+                  className={buttonClass("boxed", "xs")}
                 >
                   open project
                 </Link>
                 <Link
                   href={`/projects/${project.slug}/participant-frontend/preview`}
-                  className="text-xs text-dim underline-offset-4 hover:text-paper hover:underline"
+                  className={buttonClass("boxed", "xs")}
                 >
                   preview
                 </Link>

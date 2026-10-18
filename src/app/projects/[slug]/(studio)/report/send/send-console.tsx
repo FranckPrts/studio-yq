@@ -18,6 +18,7 @@ import {
   type ReportScriptInfo,
 } from "../use-report-room";
 import { finishRunAction, loadAudience, startRun, stopRunAction } from "./actions";
+import { buttonClass } from "@/design";
 
 type TeamMember = { userId: string; name: string; email: string; role: "OWNER" | "COLLABORATOR" | "VIEWER" };
 type Recipient = { type: "team"; userId: string } | { type: "participant"; owner: string };
@@ -375,14 +376,14 @@ function SendTo({
       : people.find((p) => p.owner === r.owner)?.names.join(" · ") ?? "participant";
 
   return (
-    <div className="flex flex-col gap-4 rounded border border-paper/10 p-4 text-xs">
+    <div className="flex flex-col gap-4 rounded bg-surface p-4 text-xs">
       <h3 className="text-sm">send to</h3>
 
       <div className="flex flex-wrap items-center gap-2">
         {recipients.map((r) => (
           <span
             key={r.type === "team" ? `t${r.userId}` : `p${r.owner}`}
-            className={`flex items-center gap-1.5 rounded border px-2 py-0.5 ${r.type === "team" ? "border-paper/20" : "border-warning-line/50 text-warning-strong"}`}
+            className={`flex items-center gap-1.5 rounded px-2 py-0.5 ${r.type === "team" ? "bg-surface" : "bg-warning-surface text-warning-strong"}`}
           >
             <span className="text-[10px] text-dim">{r.type === "team" ? "team" : "participant"}</span>
             {nameOf(r)}
@@ -414,19 +415,19 @@ function SendTo({
                 add(results[0].recipient);
               }
             }}
-            className="term-input border-b border-paper/20"
+            className="term-input rounded bg-surface px-2 py-1.5"
           />
         </label>
         <button
           type="button"
           disabled={!results[0]}
           onClick={() => results[0] && add(results[0].recipient)}
-          className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+          className={buttonClass("boxed")}
         >
           add
         </button>
         {results.length > 0 && (
-          <ul className="absolute top-full left-0 z-10 mt-1 w-full border border-paper/15 bg-void">
+          <ul className="absolute top-full left-0 z-10 mt-1 w-full rounded bg-surface-hover">
             {results.map((r) => (
               <li key={r.recipient.type === "team" ? `t${r.recipient.userId}` : `p${r.recipient.owner}`}>
                 <button
@@ -486,14 +487,14 @@ function SendTo({
           type="button"
           disabled={busy}
           onClick={() => setConfirming(true)}
-          className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+          className={buttonClass("boxed")}
         >
           send {plan.count} {plan.count === 1 ? "email" : "emails"}…
         </button>
       )}
 
       {plan && confirming && (
-        <div className={`flex flex-col gap-2 rounded border p-3 ${plan.label === "participants" ? "border-warning-line/50" : "border-paper/20"}`}>
+        <div className={`flex flex-col gap-2 rounded p-3 ${plan.label === "participants" ? "bg-warning-surface" : "bg-surface"}`}>
           <p>
             {plan.label === "participants"
               ? `${plan.count} real ${plan.count === 1 ? "participant" : "participants"} will receive their own report: ${participantsChosen.map(nameOf).join(", ")}.`
@@ -512,7 +513,7 @@ function SendTo({
               type="button"
               disabled={busy || (plan.label === "participants" && !realPeople)}
               onClick={send}
-              className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+              className={buttonClass("boxed", "sm", undefined, "strong")}
             >
               send now
             </button>
@@ -609,7 +610,7 @@ function Everyone({
   }, [countdown]);
 
   return (
-    <div className="flex flex-col gap-4 rounded border border-danger-line/40 p-4 text-xs">
+    <div className="flex flex-col gap-4 rounded bg-danger-surface p-4 text-xs">
       <div className="flex flex-col gap-1">
         <h3 className="text-sm text-danger-strong">send to everyone</h3>
         <p className="text-dim">
@@ -649,7 +650,7 @@ function Everyone({
             autoComplete="off"
             spellCheck={false}
             onPaste={(e) => e.preventDefault()}
-            className="term-input border-b border-paper/20"
+            className="term-input rounded bg-surface px-2 py-1.5"
           />
         </label>
         <label className="flex flex-col gap-1">
@@ -660,7 +661,7 @@ function Everyone({
             onChange={(e) => setTypedCount(e.target.value.replace(/\D/g, ""))}
             inputMode="numeric"
             autoComplete="off"
-            className="term-input border-b border-paper/20"
+            className="term-input rounded bg-surface px-2 py-1.5"
           />
         </label>
       </div>
@@ -685,7 +686,7 @@ function Everyone({
             setError(null);
             setCountdown(COUNTDOWN);
           }}
-          className="self-start rounded border border-danger-line/60 px-3 py-1.5 text-sm text-danger-strongest hover:bg-danger-line/10 disabled:border-paper/10 disabled:text-dim disabled:hover:bg-transparent"
+          className={buttonClass("boxed", "sm", undefined, "danger")}
         >
           send to everyone ({count})
         </button>
@@ -698,7 +699,7 @@ function Everyone({
             type="button"
             autoFocus
             onClick={() => setCountdown(null)}
-            className="rounded border border-paper/40 px-3 py-1.5 text-sm text-paper hover:bg-paper/10"
+            className={buttonClass("boxed", "sm", undefined, "strong")}
           >
             cancel
           </button>
@@ -721,7 +722,7 @@ function RunProgress({
 }) {
   const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
   return (
-    <div className="flex flex-col gap-2 rounded border border-paper/20 p-4 text-xs">
+    <div className="flex flex-col gap-2 rounded bg-surface p-4 text-xs">
       <div className="flex items-baseline justify-between gap-4">
         <span className="text-sm">
           {progress.label}: {progress.sent} of {progress.total} sent
@@ -731,7 +732,7 @@ function RunProgress({
           <button
             type="button"
             onClick={onStop}
-            className="rounded border border-danger-line/60 px-3 py-1 text-danger-strongest hover:bg-danger-line/10"
+            className={buttonClass("boxed", "sm", undefined, "danger")}
           >
             stop
           </button>

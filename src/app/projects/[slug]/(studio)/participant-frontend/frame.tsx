@@ -122,7 +122,7 @@ export default function PreviewFrame({
   return (
     <div ref={boxRef} className="w-full">
       <div
-        className="overflow-hidden border border-paper/10"
+        className="overflow-hidden rounded bg-surface"
         style={{
           width: size.width * scale,
           height: size.height * scale,

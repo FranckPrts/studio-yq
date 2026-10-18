@@ -6,6 +6,7 @@ import {
   uploadScript,
   type UploadState,
 } from "./actions";
+import { buttonClass } from "@/design";
 
 export type ScriptVersion = {
   version: number;
@@ -97,7 +98,7 @@ export default function ScriptSection({
                 name="sketch"
                 accept=".js,text/javascript"
                 required
-                className="text-xs text-dim file:mr-3 file:border file:border-paper/20 file:bg-transparent file:px-2 file:py-1 file:text-xs file:text-paper"
+                className="text-xs text-dim file:mr-3 file:rounded file:border-0 file:bg-surface hover:file:bg-surface-hover file:px-2 file:py-1 file:text-xs file:text-paper"
               />
             </label>
 
@@ -112,7 +113,7 @@ export default function ScriptSection({
                 type="file"
                 name="declaration"
                 accept=".json,application/json"
-                className="text-xs text-dim file:mr-3 file:border file:border-paper/20 file:bg-transparent file:px-2 file:py-1 file:text-xs file:text-paper"
+                className="text-xs text-dim file:mr-3 file:rounded file:border-0 file:bg-surface hover:file:bg-surface-hover file:px-2 file:py-1 file:text-xs file:text-paper"
               />
             </label>
           </div>
@@ -122,7 +123,7 @@ export default function ScriptSection({
             <input
               name="label"
               placeholder="defaults to the file name"
-              className="term-input border-b border-paper/20"
+              className="term-input rounded bg-surface px-2 py-1.5"
             />
           </label>
 
@@ -139,7 +140,7 @@ export default function ScriptSection({
           )}
 
           {state.problems && (
-            <div className="flex flex-col gap-1 rounded border border-danger-line/40 p-3">
+            <div className="flex flex-col gap-1 rounded bg-danger-surface p-3">
               <p className="text-xs text-danger">
                 The declaration is not valid, so nothing was uploaded:
               </p>
@@ -159,7 +160,7 @@ export default function ScriptSection({
           )}
 
           {state.warnings && (
-            <div className="flex flex-col gap-1 rounded border border-warning-line/40 p-3">
+            <div className="flex flex-col gap-1 rounded bg-warning-surface p-3">
               <p className="text-xs text-warning">
                 Uploaded, but worth a look:
               </p>
@@ -174,7 +175,7 @@ export default function ScriptSection({
           <button
             type="submit"
             disabled={pending}
-            className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+            className={buttonClass("boxed")}
           >
             {pending ? "uploading…" : "upload version"}
           </button>

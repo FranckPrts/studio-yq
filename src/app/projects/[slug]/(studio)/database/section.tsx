@@ -6,6 +6,7 @@ import {
   disconnectSupabase,
   type ConnectionState,
 } from "./actions";
+import { buttonClass } from "@/design";
 
 export type ConnectionView = {
   connected: boolean;
@@ -49,7 +50,7 @@ export default function ConnectionSection({
         {canEdit && (
           <a
             href={`/api/connect/supabase/start?project=${slug}`}
-            className="self-start text-sm text-paper underline underline-offset-4"
+            className={buttonClass("boxed")}
           >
             connect Supabase
           </a>
@@ -104,7 +105,7 @@ export default function ConnectionSection({
           {canEdit ? (
             <a
               href={`/api/connect/supabase/start?project=${slug}`}
-              className="self-start text-sm text-paper underline underline-offset-4"
+              className={buttonClass("boxed")}
             >
               reconnect Supabase
             </a>
@@ -130,7 +131,7 @@ export default function ConnectionSection({
             <select
               name="ref"
               defaultValue={view.projectRef ?? ""}
-              className="term-input border-b border-paper/20 bg-void"
+              className="term-input rounded bg-surface px-2 py-1.5"
             >
               <option value="">— choose —</option>
               {view.available.map((p) => (
@@ -152,7 +153,7 @@ export default function ConnectionSection({
           <button
             type="submit"
             disabled={pending}
-            className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+            className={buttonClass("boxed")}
           >
             {pending ? "resolving keys…" : "use this project"}
           </button>

@@ -86,7 +86,7 @@ export default function TemplateField({
   }
 
   const chip =
-    "rounded border border-paper/15 px-1.5 py-0.5 font-mono text-[11px] text-paper/80 hover:border-paper/40 hover:text-paper disabled:opacity-40";
+    "rounded bg-surface px-1.5 py-0.5 font-mono text-[11px] text-paper/80 hover:bg-surface-hover hover:text-paper disabled:opacity-40";
 
   return (
     <>
@@ -111,7 +111,7 @@ export default function TemplateField({
           value={value}
           disabled={!canEdit}
           onChange={(e) => onChange(e.target.value)}
-          className="term-input resize-y border border-paper/15 p-3 font-mono text-[13px] leading-relaxed"
+          className="term-input resize-y rounded bg-surface p-3 font-mono text-[13px] leading-relaxed"
         />
       </label>
 

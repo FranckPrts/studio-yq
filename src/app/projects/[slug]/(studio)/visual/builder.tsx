@@ -22,6 +22,7 @@ import {
 import { saveParameters, type SaveState } from "./parameter-actions";
 import { useUnsavedChanges } from "../use-unsaved-changes";
 import { GROUPS, type Group } from "./groups";
+import { buttonClass } from "@/design";
 
 /**
  * The parameter builder — YouQuantified's repeating `{name, suggested}` row,
@@ -64,9 +65,9 @@ function Field({
 }
 
 const input =
-  "term-input border-b border-paper/20 text-sm";
+  "term-input rounded bg-surface px-2 py-1.5 text-sm";
 const select =
-  "term-input border-b border-paper/20 bg-void text-sm";
+  "term-input rounded bg-surface px-2 py-1.5 text-sm";
 
 /**
  * The one question that is not a parameter. It sits on the questions screen
@@ -764,7 +765,7 @@ export default function ParameterBuilder({
           return (
             <section
               key={group.key}
-              className="flex flex-col gap-4 border border-paper/15 p-4"
+              className="flex flex-col gap-4 rounded bg-surface p-4"
             >
               <header className="flex flex-col gap-1">
                 <div className="flex items-baseline justify-between gap-4">
@@ -813,7 +814,7 @@ export default function ParameterBuilder({
         })}
 
         {problems.length > 0 && (
-          <div className="flex flex-col gap-1 rounded border border-danger-line/40 p-3">
+          <div className="flex flex-col gap-1 rounded bg-danger-surface p-3">
             <p className="text-xs text-danger">
               {problems.length} problem{problems.length > 1 ? "s" : ""} — saving
               is blocked until these are fixed:
@@ -827,7 +828,7 @@ export default function ParameterBuilder({
         )}
 
         {state.problems && (
-          <div className="flex flex-col gap-1 rounded border border-danger-line/40 p-3">
+          <div className="flex flex-col gap-1 rounded bg-danger-surface p-3">
             <p className="text-xs text-danger">The server rejected this:</p>
             <ul className="text-[11px] leading-relaxed text-danger-strong/80">
               {state.problems.map((p) => (
@@ -842,7 +843,7 @@ export default function ParameterBuilder({
           </p>
         )}
         {state.warnings && (
-          <div className="flex flex-col gap-1 rounded border border-warning-line/40 p-3">
+          <div className="flex flex-col gap-1 rounded bg-warning-surface p-3">
             <p className="text-xs text-warning">Saved, but worth a look:</p>
             <ul className="text-[11px] leading-relaxed text-warning-strong/70">
               {state.warnings.map((w) => (
@@ -874,7 +875,7 @@ export default function ParameterBuilder({
           <button
             type="submit"
             disabled={pending || problems.length > 0 || !dirty}
-            className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+            className={buttonClass("boxed")}
           >
             {pending
               ? "saving…"
@@ -898,7 +899,7 @@ export default function ParameterBuilder({
           <h2 className="text-xs text-dim">
             preview · what the participant gets
           </h2>
-          <div className="rounded border border-paper/10 p-4">
+          <div className="rounded bg-surface p-4">
             {problems.length > 0 ? (
               <p className="text-[11px] text-dim">
                 Fix the problems to see the preview.
@@ -923,7 +924,7 @@ export default function ParameterBuilder({
 
         <section className="flex flex-col gap-2">
           <h2 className="text-xs text-dim">json</h2>
-          <pre className="max-h-64 overflow-auto rounded bg-paper/5 p-3 text-[10px] leading-relaxed text-dim">
+          <pre className="max-h-64 overflow-auto rounded bg-surface p-3 text-[10px] leading-relaxed text-dim">
             {JSON.stringify(draft, null, 2)}
           </pre>
           <details className="text-xs text-dim">
@@ -934,7 +935,7 @@ export default function ParameterBuilder({
                 onChange={(e) => setJson(e.target.value)}
                 rows={6}
                 placeholder='{"parameters": [ … ]}  or  [ … ]'
-                className="w-full rounded border border-paper/20 bg-transparent p-2 font-mono text-[11px] text-paper"
+                className="w-full rounded bg-surface p-2 font-mono text-[11px] text-paper"
               />
               {jsonError && <p className="text-danger">{jsonError}</p>}
               <button

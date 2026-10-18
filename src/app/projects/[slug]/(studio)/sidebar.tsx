@@ -191,10 +191,10 @@ export default function Sidebar({
                     {item.openState !== undefined && (
                       <span
                         className={cx(
-                          "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-px text-[10px]",
+                          "inline-flex shrink-0 items-center gap-1.5 rounded px-2 py-px text-[10px]",
                           item.openState
-                            ? "border-paper/20 text-paper/80"
-                            : "border-paper/10 text-dim",
+                            ? "bg-surface-hover text-paper"
+                            : "bg-surface text-dim",
                         )}
                       >
                         {item.openState && (

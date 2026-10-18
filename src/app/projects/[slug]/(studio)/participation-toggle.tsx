@@ -5,6 +5,7 @@ import {
   setOpenForParticipation,
   type ParticipationState,
 } from "./actions";
+import { buttonClass } from "@/design";
 
 export default function ParticipationToggle({
   slug,
@@ -54,7 +55,7 @@ export default function ParticipationToggle({
             <button
               type="submit"
               disabled={pending || (!open && missing.length > 0)}
-              className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+              className={buttonClass("boxed")}
             >
               {pending ? "…" : open ? "close" : "open"}
             </button>

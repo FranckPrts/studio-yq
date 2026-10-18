@@ -10,6 +10,7 @@ import {
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
 import { useUnsavedChanges } from "../use-unsaved-changes";
+import { buttonClass } from "@/design";
 
 export type Palette = Pick<ProjectTheme, "void" | "paper" | "dim">;
 
@@ -68,7 +69,7 @@ export default function PaletteForm({
           name={key}
           value={draft[key]}
           onChange={(e) => set(key, e.target.value)}
-          className="h-7 w-10 cursor-pointer border border-paper/20 bg-transparent"
+          className="h-7 w-10 cursor-pointer rounded bg-surface p-0.5"
         />
         <code className="text-[11px] text-dim">{draft[key]}</code>
       </div>
@@ -110,7 +111,7 @@ export default function PaletteForm({
           name="font"
           value={draftFont}
           onChange={(e) => setDraftFont(e.target.value as FontKey)}
-          className="term-input max-w-xs border-b border-paper/20 bg-void"
+          className="term-input max-w-xs rounded bg-surface px-2 py-1.5"
         >
           {Object.entries(FONTS).map(([key, f]) => (
             <option key={key} value={key}>
@@ -128,7 +129,7 @@ export default function PaletteForm({
         <button
           type="submit"
           disabled={pending || !dirty}
-          className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+          className={buttonClass("boxed")}
         >
           {pending ? "saving…" : "save colours & font"}
         </button>

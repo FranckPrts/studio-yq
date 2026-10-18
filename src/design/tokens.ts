@@ -9,8 +9,9 @@
  * markup already repeats by hand in a few dozen places.
  *
  * The rules these encode are written down in `docs/participant-styling.md`:
- * three colour roles, underlined text buttons, flat square controls, no radius
- * or shadow, and fixed (never tenant-set) colours only for diagnostics.
+ * three colour roles, underlined text buttons, boxes set apart by a surface tint
+ * rather than a border, 4px corners everywhere, no shadow, and fixed (never
+ * tenant-set) colours only for diagnostics.
  */
 
 /**
@@ -40,18 +41,19 @@ export const PEER_FOCUS_RING =
   "peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-paper peer-focus-visible:outline-offset-2";
 
 /**
- * A text field: the `.term-input` base from `globals.css` plus the hairline it
- * is always paired with. Not a primitive of its own yet — `Select` needs it,
- * and extracting the field component is on the to-do.
+ * A text field: the `.term-input` base from `globals.css` on a `surface`, with
+ * the 4px corner. It used to be an underline; boxes are tints now, not lines.
+ * Not a primitive of its own yet — `Select` needs it, and extracting the field
+ * component is on the to-do.
  */
-export const FIELD = "term-input border-b border-paper/20";
+export const FIELD = "term-input rounded bg-surface px-2 py-1.5";
 
 /**
- * A `<select>` needs `bg-void` on top of `FIELD`: the dropdown list is painted
- * by the OS from the element's own background, and a transparent one renders
- * the options unreadable rather than inheriting the page.
+ * A `<select>` is `FIELD` as is. The OS paints the open list from the element's
+ * own background, so it must be opaque — `surface` is (mixed with void, not
+ * with transparent), which is why there is no separate `bg-void` any more.
  */
-export const FIELD_SELECT = cx(FIELD, "bg-void");
+export const FIELD_SELECT = FIELD;
 
 /**
  * How loud a piece of status is.
@@ -72,12 +74,16 @@ export const TONE: Record<Tone, string> = {
   danger: "text-danger",
 };
 
-/** The same four tones as a border, for outlined badges and bordered panels. */
-export const TONE_BORDER: Record<Tone, string> = {
-  neutral: "border-paper/20",
-  strong: "border-paper/40",
-  warning: "border-warning-line/40",
-  danger: "border-danger-line/40",
+/**
+ * The same four tones as a surface, for tinted badges and panels. Inside a
+ * `warning` or `danger` surface, text keeps to that tone and `paper` — `dim`
+ * does not reliably clear 4.5:1 on them.
+ */
+export const TONE_SURFACE: Record<Tone, string> = {
+  neutral: "bg-surface",
+  strong: "bg-surface-hover",
+  warning: "bg-warning-surface",
+  danger: "bg-danger-surface",
 };
 
 /**

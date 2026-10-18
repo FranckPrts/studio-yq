@@ -136,7 +136,7 @@ export function CaptureStage({
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden border border-paper/10 ${className}`}
+      className={`relative shrink-0 overflow-hidden rounded bg-surface ${className}`}
       style={{ background: ground, width: displayPx, height: displayPx }}
     >
       {current && (

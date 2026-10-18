@@ -4,6 +4,7 @@ import { currentUser } from "@/lib/auth/dal";
 import { signOut } from "@/app/signin/actions";
 import AcceptForm from "./form";
 import JoinForm from "./join-form";
+import { buttonClass } from "@/design";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +87,7 @@ export default async function InvitePage({
             <form action={signOut}>
               <button
                 type="submit"
-                className="text-sm text-paper underline underline-offset-4"
+                className={buttonClass("boxed")}
               >
                 sign out and use the right account
               </button>

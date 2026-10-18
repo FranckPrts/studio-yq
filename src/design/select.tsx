@@ -8,8 +8,9 @@ import { cx, FIELD_SELECT, FOCUS_RING, SIZE, type Size } from "./tokens";
  * navigation, type-ahead, the touch wheel on iOS and the fact that a `<select>`
  * posts its value in a plain form submission with no JavaScript, which is how
  * every admin form here talks to its server action. The one thing the native
- * element needs help with is `bg-void`: the OS paints the open list from the
- * element's own background, so a transparent one is unreadable.
+ * element needs help with is an opaque background: the OS paints the open list
+ * from the element's own, so a transparent one is unreadable. `FIELD`'s
+ * `surface` is opaque by construction.
  *
  * The *other* kind of "select" in this app — a row of text buttons, one
  * underlined — is `OptionGroup` in `./radio`. It is a radio group semantically,

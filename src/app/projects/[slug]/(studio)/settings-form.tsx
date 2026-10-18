@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { renameProject, type SettingsState } from "./actions";
+import { buttonClass } from "@/design";
 
 function Saved({ state }: { state: SettingsState }) {
   if (state.error) {
@@ -38,7 +39,7 @@ export function RenameForm({
           name="name"
           defaultValue={name}
           disabled={!canRename}
-          className="term-input border-b border-paper/20 disabled:text-dim"
+          className="term-input rounded bg-surface px-2 py-1.5 disabled:text-dim"
         />
       </label>
       <p className="text-[11px] text-dim">
@@ -51,7 +52,7 @@ export function RenameForm({
           <button
             type="submit"
             disabled={pending}
-            className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+            className={buttonClass("boxed")}
           >
             {pending ? "saving…" : "save name"}
           </button>

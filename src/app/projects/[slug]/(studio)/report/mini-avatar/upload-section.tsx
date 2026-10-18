@@ -8,6 +8,7 @@ import {
   revertToMainScript,
   type MiniUploadState,
 } from "./actions";
+import { buttonClass } from "@/design";
 
 export type MiniVersion = {
   version: number;
@@ -18,7 +19,7 @@ export type MiniVersion = {
 };
 
 const FILE_INPUT =
-  "text-xs text-dim file:mr-3 file:border file:border-paper/20 file:bg-transparent file:px-2 file:py-1 file:text-xs file:text-paper";
+  "text-xs text-dim file:mr-3 file:rounded file:border-0 file:bg-surface hover:file:bg-surface-hover file:px-2 file:py-1 file:text-xs file:text-paper";
 
 export default function MiniUploadSection({
   slug,
@@ -70,7 +71,7 @@ export default function MiniUploadSection({
               <input type="hidden" name="slug" value={slug} />
               <button
                 type="submit"
-                className="rounded border border-paper/20 px-2 py-0.5 text-paper/90 hover:border-paper/50 hover:text-paper"
+                className="rounded bg-surface px-2 py-0.5 text-paper/90 hover:bg-surface-hover hover:text-paper"
               >
                 reset to the main avatar
               </button>
@@ -121,7 +122,7 @@ export default function MiniUploadSection({
               <input
                 name="label"
                 placeholder="defaults to the file name"
-                className="term-input border-b border-paper/20"
+                className="term-input rounded bg-surface px-2 py-1.5"
               />
             </label>
           </div>
@@ -137,7 +138,7 @@ export default function MiniUploadSection({
           )}
 
           {state.warnings && (
-            <div className="flex flex-col gap-1 rounded border border-warning-line/40 p-3">
+            <div className="flex flex-col gap-1 rounded bg-warning-surface p-3">
               <p className="text-xs text-warning">Uploaded, but worth a look:</p>
               <ul className="text-[11px] leading-relaxed text-warning-strong/70">
                 {state.warnings.map((w) => (
@@ -150,7 +151,7 @@ export default function MiniUploadSection({
           <button
             type="submit"
             disabled={pending}
-            className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+            className={buttonClass("boxed")}
           >
             {pending ? "uploading…" : "upload version"}
           </button>
@@ -209,7 +210,7 @@ export default function MiniUploadSection({
                   <form
                     action={deleteMiniScript}
                     onSubmit={() => setConfirmDelete(null)}
-                    className="flex flex-wrap items-baseline gap-4 rounded border border-danger-line/40 p-2"
+                    className="flex flex-wrap items-baseline gap-4 rounded bg-danger-surface p-2"
                   >
                     <input type="hidden" name="slug" value={slug} />
                     <input type="hidden" name="version" value={v.version} />

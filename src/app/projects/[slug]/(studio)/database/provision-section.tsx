@@ -6,6 +6,7 @@ import {
   setAnonRateLimit,
   type ProvisionState,
 } from "./actions";
+import { buttonClass } from "@/design";
 
 export type ProvisionView = {
   ready: boolean;
@@ -38,7 +39,7 @@ function Copyable({ label, text }: { label: string; text: string }) {
           {copied ? "copied" : "copy"}
         </button>
       </div>
-      <pre className="max-h-72 overflow-auto rounded bg-paper/5 p-3 text-[10px] leading-relaxed text-paper/70">
+      <pre className="max-h-72 overflow-auto rounded bg-surface p-3 text-[10px] leading-relaxed text-paper/70">
         {text}
       </pre>
     </div>
@@ -105,7 +106,7 @@ export default function ProvisionSection({
             <button
               type="submit"
               disabled={pending}
-              className="text-sm text-paper underline underline-offset-4 disabled:text-dim"
+              className={buttonClass("boxed")}
             >
               {pending
                 ? "running…"
@@ -132,7 +133,7 @@ export default function ProvisionSection({
       )}
 
       {state.done && (
-        <div className="flex flex-col gap-2 rounded border border-paper/20 p-3">
+        <div className="flex flex-col gap-2 rounded bg-surface p-3">
           <p className="text-xs text-paper/80">
             Schema v{state.done.schemaVersion} applied.
           </p>
@@ -154,7 +155,7 @@ export default function ProvisionSection({
       {/* The one external unknown in this design is whether DDL is permitted at
           all, so the fallback is a first-class path rather than an apology. */}
       {state.fallbackSql && (
-        <div className="flex flex-col gap-2 rounded border border-warning-line/40 p-3">
+        <div className="flex flex-col gap-2 rounded bg-warning-surface p-3">
           <p className="text-[11px] leading-relaxed text-warning-strong/80">
             Run this in your Supabase project&rsquo;s SQL editor. It does exactly
             what the button would have done — then come back and the status here
@@ -176,7 +177,7 @@ export default function ProvisionSection({
               type="number"
               min={1}
               defaultValue={30}
-              className="term-input w-32 border-b border-paper/20"
+              className="term-input w-32 rounded bg-surface px-2 py-1.5"
             />
           </label>
           <button

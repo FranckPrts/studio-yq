@@ -17,6 +17,7 @@ import PreviewFrame, { DEVICES, type Device } from "../../participant-frontend/f
 import { useUnsavedChanges } from "../../use-unsaved-changes";
 import TemplateField, { CONDITIONAL_CHIPS, FORMATTING } from "../template-field";
 import { saveConclusionPage, type ConclusionSaveState } from "./actions";
+import { buttonClass } from "@/design";
 
 const FIELDS: (keyof ConclusionPage)[] = ["body", "empty", "pending"];
 
@@ -90,7 +91,7 @@ export default function ConclusionEditor({
               <button
                 type="submit"
                 disabled={pending || !dirty}
-                className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+                className={buttonClass("boxed")}
               >
                 {pending ? "saving…" : "save conclusion"}
               </button>
@@ -171,7 +172,7 @@ export default function ConclusionEditor({
                 set({ empty: e.target.value });
                 setScreen("conclusionEmpty");
               }}
-              className="term-input resize-y border-b border-paper/20 text-sm"
+              className="term-input resize-y rounded bg-surface px-2 py-1.5 text-sm"
             />
           </label>
 
@@ -187,7 +188,7 @@ export default function ConclusionEditor({
                 set({ pending: e.target.value });
                 setScreen("conclusionPending");
               }}
-              className="term-input resize-y border-b border-paper/20 text-sm"
+              className="term-input resize-y rounded bg-surface px-2 py-1.5 text-sm"
             />
           </label>
           <p className="-mt-3 text-[11px] leading-relaxed text-dim">

@@ -22,7 +22,7 @@
 @theme {
   --color-void: #14100e;
   --color-paper: #ece5d8;
-  --color-dim: #857d71;
+  --color-dim: #8b8377;
 }
 
 /*
@@ -70,7 +70,7 @@
   color-scheme: dark;
   --color-void: #14100e;
   --color-paper: #ece5d8; /* 15.1:1 on void */
-  --color-dim: #857d71; /* 4.7:1 */
+  --color-dim: #8b8377; /* 5.1:1 on void, 4.6:1 on surface */
   --color-danger: oklch(70.4% 0.191 22.216); /* red-400 · 6.5:1 */
   --color-danger-strong: oklch(80.8% 0.114 19.571); /* red-300 · 6.6:1 at 80% */
   --color-danger-strongest: oklch(88.5% 0.062 18.334); /* red-200 · 13:1 */
@@ -85,7 +85,7 @@
   color-scheme: light;
   --color-void: #f4f1ea;
   --color-paper: #1d1b18; /* 15.2:1 on void */
-  --color-dim: #716c62; /* 4.6:1 */
+  --color-dim: #68635a; /* 5.3:1 on void, 4.6:1 on surface */
   --color-danger: oklch(50.5% 0.213 27.518); /* red-700 · 5.7:1 */
   --color-danger-strong: oklch(44.4% 0.177 26.899); /* red-800 · 5.4:1 at 80% */
   --color-danger-strongest: oklch(39.6% 0.141 25.723); /* red-900 · 8.9:1 */
@@ -94,6 +94,38 @@
   --color-warning-strong: oklch(27.9% 0.077 45.635); /* amber-950 · 5.5:1 at 70% */
   --color-warning-line: oklch(55.5% 0.163 48.998); /* amber-700 */
   --color-success: oklch(50.8% 0.118 165.612); /* emerald-700 · 4.8:1 — always used at full opacity */
+}
+
+/*
+ * Surfaces — what replaced borders. A box is set apart by a tint of the ground,
+ * not drawn round with a line, and every box has the 4px `rounded` corner.
+ *
+ * Mixed from the palette rather than written as values, so they follow the
+ * theme and a project's own colours alike. Declared on `[data-theme]` as well as
+ * in `@theme`: a custom property holding `var()` is resolved where it is
+ * declared, so the participant surfaces — which set their palette inline beside
+ * their own `data-theme` — have to re-derive them there, or they would inherit
+ * the studio's.
+ *
+ * Opaque on purpose (`color-mix` with `void`, not with transparent), so text
+ * contrast on a surface is one fixed number: `paper` 13:1+, `dim` 4.6:1 in both
+ * themes; on the status surfaces, their own text tones 4.7:1+. `dim` does not
+ * clear 4.5:1 on `warning-surface` / `danger-surface` in every case, so a status
+ * box speaks in its own tones and `paper`, never `dim`. Success has no surface:
+ * green text on a green tint fails in light.
+ */
+@theme {
+  --color-surface: color-mix(in oklab, var(--color-paper) 6%, var(--color-void));
+  --color-surface-hover: color-mix(in oklab, var(--color-paper) 10%, var(--color-void));
+  --color-warning-surface: color-mix(in oklab, var(--color-warning-line) 8%, var(--color-void));
+  --color-danger-surface: color-mix(in oklab, var(--color-danger-line) 8%, var(--color-void));
+}
+
+[data-theme] {
+  --color-surface: color-mix(in oklab, var(--color-paper) 6%, var(--color-void));
+  --color-surface-hover: color-mix(in oklab, var(--color-paper) 10%, var(--color-void));
+  --color-warning-surface: color-mix(in oklab, var(--color-warning-line) 8%, var(--color-void));
+  --color-danger-surface: color-mix(in oklab, var(--color-danger-line) 8%, var(--color-void));
 }
 
 /*
@@ -133,8 +165,8 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * Terminal chrome — participant flow only. Flat bars, square corners, no
- * radius, no shadow.
+ * Terminal chrome — participant flow only. Flat bars, 4px corners like every
+ * other box, no shadow.
  * ------------------------------------------------------------------------ */
 
 /*
@@ -175,7 +207,7 @@ body {
 }
 
 /*
- * Flat slider: a solid bar with a square handle, in the palette. --term-track carries
+ * Flat slider: a solid bar with a 4px-rounded handle, in the palette. --term-track carries
  * either the plain fill or, for the color rows, the full hue ramp.
  */
 .term-range {
@@ -189,6 +221,7 @@ body {
 
 .term-range::-webkit-slider-runnable-track {
   height: 0.75rem;
+  border-radius: 0.25rem;
   background: var(--term-track, var(--color-dim));
 }
 
@@ -199,13 +232,14 @@ body {
   height: 1.25rem;
   margin-top: -0.25rem;
   border: 2px solid var(--color-void);
-  border-radius: 0;
+  border-radius: 0.25rem;
   /* the handle is what the participant is moving — their colour, not structure */
   background: var(--color-paper);
 }
 
 .term-range::-moz-range-track {
   height: 0.75rem;
+  border-radius: 0.25rem;
   background: var(--term-track, var(--color-dim));
 }
 
@@ -213,7 +247,7 @@ body {
   width: 1.25rem;
   height: 1.25rem;
   border: 2px solid var(--color-void);
-  border-radius: 0;
+  border-radius: 0.25rem;
   /* the handle is what the participant is moving — their colour, not structure */
   background: var(--color-paper);
 }

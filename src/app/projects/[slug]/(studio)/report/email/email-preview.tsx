@@ -274,10 +274,10 @@ function Shown({
           srcDoc={rendered.html}
           // Nothing in the email runs scripts; the preview should not either.
           sandbox=""
-          className="h-[75vh] w-full border border-paper/10 bg-white"
+          className="h-[75vh] w-full rounded bg-white"
         />
       ) : (
-        <pre className="h-[75vh] overflow-auto border border-paper/10 p-4 text-xs leading-relaxed whitespace-pre-wrap">
+        <pre className="h-[75vh] overflow-auto rounded bg-surface p-4 text-xs leading-relaxed whitespace-pre-wrap">
           {rendered.text}
         </pre>
       )}

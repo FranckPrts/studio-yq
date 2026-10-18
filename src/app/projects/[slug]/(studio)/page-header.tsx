@@ -11,16 +11,16 @@ export default function PageHeader({
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
-  /** Right-aligned actions beside the title. */
+  /** Right-aligned actions beside the title — compact boxed buttons (`buttonClass("boxed", "xs")`). */
   children?: ReactNode;
 }) {
   return (
-    <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b border-paper/10 pb-3">
+    <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-paper/10 pb-3">
       <div className="min-w-0">
         <h1 className="text-sm">{title}</h1>
         {subtitle && <p className="text-xs text-dim">{subtitle}</p>}
       </div>
-      {children && <div className="flex shrink-0 gap-4 text-xs">{children}</div>}
+      {children && <div className="flex shrink-0 items-center gap-2">{children}</div>}
     </header>
   );
 }

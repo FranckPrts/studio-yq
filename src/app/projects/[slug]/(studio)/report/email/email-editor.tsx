@@ -18,6 +18,7 @@ import type { ReportScriptInfo } from "../use-report-room";
 import { saveReportEmail, type EmailSaveState } from "./actions";
 import EmailPreview from "./email-preview";
 import TemplateField, { CONDITIONAL_CHIPS, FORMATTING } from "../template-field";
+import { buttonClass } from "@/design";
 
 const FIELDS: (keyof ReportEmail)[] = ["subject", "senderName", "replyTo", "look", "body"];
 
@@ -87,7 +88,7 @@ export default function EmailEditor({
               <button
                 type="submit"
                 disabled={pending || !dirty}
-                className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+                className={buttonClass("boxed")}
               >
                 {pending ? "saving…" : "save email"}
               </button>
@@ -112,7 +113,7 @@ export default function EmailEditor({
               value={draft.subject}
               maxLength={REPORT_EMAIL_LIMITS.subject}
               onChange={(e) => set({ subject: e.target.value })}
-              className="term-input border-b border-paper/20 text-sm"
+              className="term-input rounded bg-surface px-2 py-1.5 text-sm"
             />
           </label>
 
@@ -125,7 +126,7 @@ export default function EmailEditor({
                 maxLength={REPORT_EMAIL_LIMITS.senderName}
                 placeholder={projectName}
                 onChange={(e) => set({ senderName: e.target.value })}
-                className="term-input border-b border-paper/20 text-sm"
+                className="term-input rounded bg-surface px-2 py-1.5 text-sm"
               />
             </label>
             <label className="flex flex-col gap-1">
@@ -137,7 +138,7 @@ export default function EmailEditor({
                 maxLength={REPORT_EMAIL_LIMITS.replyTo}
                 placeholder="the sending account"
                 onChange={(e) => set({ replyTo: e.target.value })}
-                className="term-input border-b border-paper/20 text-sm"
+                className="term-input rounded bg-surface px-2 py-1.5 text-sm"
               />
             </label>
           </div>

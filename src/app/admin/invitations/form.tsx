@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createInviteAction, type InviteState } from "./actions";
+import { buttonClass } from "@/design";
 
 export default function InviteForm({
   projects,
@@ -25,7 +26,7 @@ export default function InviteForm({
               name="email"
               type="email"
               placeholder="anyone, if left blank"
-              className="term-input border-b border-paper/20"
+              className="term-input rounded bg-surface px-2 py-1.5"
             />
           </label>
 
@@ -34,7 +35,7 @@ export default function InviteForm({
             <select
               name="projectSlug"
               defaultValue=""
-              className="term-input border-b border-paper/20 bg-void"
+              className="term-input rounded bg-surface px-2 py-1.5"
             >
               <option value="">— no project —</option>
               {projects.map((p) => (
@@ -50,7 +51,7 @@ export default function InviteForm({
             <select
               name="role"
               defaultValue="COLLABORATOR"
-              className="term-input border-b border-paper/20 bg-void"
+              className="term-input rounded bg-surface px-2 py-1.5"
             >
               <option value="OWNER">owner</option>
               <option value="COLLABORATOR">collaborator</option>
@@ -66,7 +67,7 @@ export default function InviteForm({
               min={1}
               max={90}
               defaultValue={14}
-              className="term-input border-b border-paper/20"
+              className="term-input rounded bg-surface px-2 py-1.5"
             />
           </label>
         </div>
@@ -81,14 +82,14 @@ export default function InviteForm({
         <button
           type="submit"
           disabled={pending}
-          className="self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+          className={buttonClass("boxed")}
         >
           {pending ? "generating…" : "generate link"}
         </button>
       </form>
 
       {state.url && (
-        <div className="flex flex-col gap-2 rounded border border-paper/20 p-3">
+        <div className="flex flex-col gap-2 rounded bg-surface p-3">
           <p className="text-xs text-dim">
             Copy this now — only its hash is stored, so it cannot be shown again.
           </p>

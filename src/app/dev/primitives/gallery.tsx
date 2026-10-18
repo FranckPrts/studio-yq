@@ -57,7 +57,7 @@ const PRESETS: Record<string, { label: string; theme: Omit<ProjectTheme, "font">
 const VARIANTS: ButtonVariant[] = ["action", "plain", "quiet", "danger", "choice"];
 const SIZES: Size[] = ["xs", "sm", "base"];
 const TONES: Tone[] = ["neutral", "strong", "warning", "danger"];
-const BADGE_VARIANTS: BadgeVariant[] = ["bare", "outlined"];
+const BADGE_VARIANTS: BadgeVariant[] = ["bare", "tinted"];
 
 const SHAPES = [
   { value: "circle", label: "circle" },
@@ -130,7 +130,7 @@ export default function PrimitivesGallery() {
                   type="color"
                   value={theme[role]}
                   onChange={(e) => setColour(role, e.target.value)}
-                  className="h-5 w-8 cursor-pointer border border-paper/20 bg-transparent"
+                  className="h-5 w-8 cursor-pointer rounded bg-surface p-0.5"
                 />
                 <span className="font-mono text-[11px]">{theme[role]}</span>
               </label>
@@ -190,7 +190,7 @@ function Panel({
   return (
     <section
       data-theme={scheme}
-      className={cx("flex min-w-0 flex-col gap-8 border border-paper/20 bg-void p-5 text-paper", className)}
+      className={cx("flex min-w-0 flex-col gap-8 rounded bg-void p-5 text-paper", className)}
       style={style}
     >
       <header className="flex items-baseline justify-between gap-4 border-b border-paper/10 pb-3">
@@ -321,11 +321,11 @@ function Specimens() {
             ))}
           </Row>
         ))}
-        <Row code={'size="sm" variant="outlined"'}>
-          <Badge size="sm" variant="outlined">
+        <Row code={'size="sm" variant="tinted"'}>
+          <Badge size="sm" variant="tinted">
             v2 available
           </Badge>
-          <Badge size="sm" tone="strong" variant="outlined">
+          <Badge size="sm" tone="strong" variant="tinted">
             open
           </Badge>
         </Row>
@@ -335,7 +335,7 @@ function Specimens() {
         </Row>
         <Row code="in a run of text">
           <span className="text-sm text-paper">
-            members <Badge variant="outlined">owner</Badge> and <Badge tone="warning">pending</Badge>
+            members <Badge variant="tinted">owner</Badge> and <Badge tone="warning">pending</Badge>
           </span>
         </Row>
       </Group>
@@ -488,7 +488,7 @@ function Specimens() {
         </Row>
         <Row code="palette roles">
           <span className="flex items-center gap-2 text-[11px] text-dim">
-            <span className="inline-block h-4 w-4 border border-paper/20 bg-void" /> void
+            <span className="inline-block h-4 w-4 rounded bg-void ring-1 ring-paper/20" /> void
           </span>
           <span className="flex items-center gap-2 text-[11px] text-dim">
             <span className="inline-block h-4 w-4 bg-paper" /> paper

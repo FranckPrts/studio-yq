@@ -77,7 +77,7 @@ export default async function MiniAvatarPage({
           </p>
         </header>
 
-        <details className="group rounded border border-paper/10 p-4 text-xs">
+        <details className="group rounded bg-surface p-4 text-xs">
           <summary className="cursor-pointer text-paper/90">
             what a mini-script must respect
           </summary>

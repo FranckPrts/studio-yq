@@ -54,7 +54,7 @@ function Swatch({
     return (
       <span
         aria-hidden
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-paper/20 text-[10px] text-dim"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-[10px] text-dim"
       >
         {(avatar.name || noun).slice(0, 1).toUpperCase()}
       </span>
@@ -158,7 +158,7 @@ function ScoreRow({
 
   if (mode === "confirm") {
     return (
-      <li className="flex flex-col gap-2 border-b border-paper/10 bg-paper/5 px-2 py-2">
+      <li className="flex flex-col gap-2 rounded bg-surface px-2 py-2">
         <p>
           Delete {names} · {Number(s.score).toFixed(1)}? It comes off the board,
           and cannot be undone.
@@ -193,7 +193,7 @@ function ScoreRow({
 
   if (mode === "edit") {
     return (
-      <li className="border-b border-paper/10 bg-paper/5 px-2 py-2">
+      <li className="rounded bg-surface px-2 py-2">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -223,7 +223,7 @@ function ScoreRow({
                   e.currentTarget.form?.requestSubmit();
                 }
               }}
-              className="term-input resize-y border-b border-paper/20 text-sm leading-relaxed"
+              className="term-input resize-y rounded bg-surface px-2 py-1.5 text-sm leading-relaxed"
             />
           </label>
           <div className="grid grid-cols-2 gap-4">
@@ -235,7 +235,7 @@ function ScoreRow({
                 step="any"
                 required
                 defaultValue={s.score}
-                className="term-input border-b border-paper/20"
+                className="term-input rounded bg-surface px-2 py-1.5"
               />
             </label>
             <label className="flex flex-col gap-1">
@@ -246,7 +246,7 @@ function ScoreRow({
                 step="any"
                 min={0}
                 defaultValue={s.duration ?? ""}
-                className="term-input border-b border-paper/20"
+                className="term-input rounded bg-surface px-2 py-1.5"
               />
             </label>
           </div>
@@ -547,7 +547,7 @@ export default function OpsConsole({
               return (
                 <div
                   key={i}
-                  className="flex min-h-14 items-center gap-3 rounded border border-paper/15 p-3"
+                  className="flex min-h-14 items-center gap-3 rounded bg-surface p-3"
                 >
                   {a ? (
                     <>
@@ -614,7 +614,7 @@ export default function OpsConsole({
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder="search by name"
-                className="term-input w-40 border-b border-paper/20 text-xs"
+                className="term-input w-40 rounded bg-surface px-2 py-1.5 text-xs"
               />
             </div>
 
@@ -720,7 +720,7 @@ export default function OpsConsole({
       <aside className="flex w-full flex-col gap-6 lg:sticky lg:top-8 lg:w-[22rem] lg:shrink-0 lg:self-start">
         <section className="flex flex-col gap-2">
           <h2 className="text-xs text-dim">preview</h2>
-          <div className="relative aspect-square w-full overflow-hidden rounded border border-paper/10 bg-void">
+          <div className="relative aspect-square w-full overflow-hidden rounded bg-surface">
             {current && code ? (
               <AvatarCanvas
                 key={`${scriptVersion}-${current.id}`}

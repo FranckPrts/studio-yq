@@ -2,13 +2,16 @@ import type { ComponentProps, ReactNode } from "react";
 import { cx, FOCUS_RING, SIZE, type Size } from "./tokens";
 
 /**
- * Buttons.
+ * Buttons, in two shapes.
  *
- * There is no filled or boxed button here, and that is on purpose: the terminal
- * look is *underlined text* (`docs/participant-styling.md`), and every button
- * the app actually renders today is one of the five shapes below. They were
- * read off the existing markup rather than invented, so swapping a hand-written
- * button for one of these produces the same classes.
+ * Underlined text — the terminal look (`docs/participant-styling.md`) — for
+ * secondary actions, ways out and options: `action`, `plain`, `quiet`, `danger`,
+ * `choice`, read off the existing markup. And `boxed`, for a form's submit and
+ * the few actions that need weight: a surface with the 4px corner, in one of
+ * three tones. Which to use when is written out on the Button card of the
+ * Studio YQ design system; in short — submit is `boxed`, the one main action on
+ * a page is `boxed` `strong`, a destructive press after a confirm is `boxed`
+ * `danger`, and everything secondary stays text.
  *
  * No `"use client"`. These are plain elements with no state, so they work from
  * a Server Component (a form posting to a server action) and from a Client
@@ -33,7 +36,30 @@ export type ButtonVariant =
    * when chosen. Prefer `OptionGroup` / `MultiOptionGroup`, which handle the
    * roles and keyboard semantics; this variant is the bare look.
    */
-  | "choice";
+  | "choice"
+  /**
+   * A box: a surface, the 4px corner. For a form's submit and the actions that
+   * need weight. Pick a `tone`. Two sizes: the default (`sm`) is 32px tall with
+   * 14px text; `size="xs"` is the compact box — 24px tall (exactly the WCAG
+   * 2.5.8 target-size floor), 12px text — for navigation and per-row actions:
+   * page-header links, `open project` / `preview` on a list item. Keep 8px
+   * between compact neighbours.
+   */
+  | "boxed";
+
+/**
+ * The tone of a `boxed` button.
+ *
+ * - `default` — `surface`, `paper` text (13:1). A form's submit.
+ * - `strong` — inverted, `paper` fill and `void` text (15:1). The one main
+ *   action on a page; never two.
+ * - `danger` — `danger-surface`, `danger-strongest` text (8:1+). A destructive
+ *   press, after an inline confirm. Not inside a danger panel: a red box on red
+ *   disappears, so there the text `danger` style stays.
+ *
+ * Disabled, every tone falls back to `surface` with `dim` text (4.6:1).
+ */
+export type BoxedTone = "default" | "strong" | "danger";
 
 /** The size each variant uses unless the caller overrides it. */
 const DEFAULT_SIZE: Record<ButtonVariant, Size> = {
@@ -42,6 +68,7 @@ const DEFAULT_SIZE: Record<ButtonVariant, Size> = {
   quiet: "xs",
   danger: "xs",
   choice: "sm",
+  boxed: "sm",
 };
 
 const VARIANT: Record<ButtonVariant, string> = {
@@ -50,6 +77,21 @@ const VARIANT: Record<ButtonVariant, string> = {
   quiet: "text-dim underline-offset-4 hover:text-paper hover:underline disabled:no-underline disabled:text-dim/50",
   danger: "text-dim underline-offset-4 hover:text-danger hover:underline disabled:no-underline disabled:text-dim/50",
   choice: "underline-offset-4",
+  boxed:
+    "inline-flex w-fit items-center rounded disabled:cursor-default disabled:bg-surface disabled:text-dim",
+};
+
+/** A box's size is its padding and height as much as its text. */
+const BOXED_SIZE: Record<Size, string> = {
+  xs: "min-h-6 px-2 py-1 text-xs",
+  sm: "min-h-8 px-3 py-1.5 text-sm",
+  base: "min-h-10 px-4 py-2 text-base",
+};
+
+const BOXED_TONE: Record<BoxedTone, string> = {
+  default: "bg-surface text-paper hover:bg-surface-hover",
+  strong: "bg-paper text-void hover:bg-paper/85",
+  danger: "bg-danger-surface text-danger-strongest hover:bg-danger-line/20",
 };
 
 /**
@@ -61,8 +103,15 @@ export function buttonClass(
   variant: ButtonVariant = "action",
   size: Size = DEFAULT_SIZE[variant],
   className?: string,
+  tone: BoxedTone = "default",
 ): string {
-  return cx(SIZE[size], VARIANT[variant], FOCUS_RING, className);
+  return cx(
+    variant === "boxed" ? BOXED_SIZE[size] : SIZE[size],
+    VARIANT[variant],
+    variant === "boxed" && BOXED_TONE[tone],
+    FOCUS_RING,
+    className,
+  );
 }
 
 /**
@@ -92,11 +141,14 @@ export function choiceClass(
 export type ButtonProps = Omit<ComponentProps<"button">, "children"> & {
   children: ReactNode;
   variant?: ButtonVariant;
+  /** Only with `variant="boxed"`. Defaults to `default`. */
+  tone?: BoxedTone;
   size?: Size;
   /**
    * A server action is in flight. Disables the button on its own, so callers
-   * stop writing `disabled={pending || …}`. The *label* stays the caller's
-   * business — "saving…" is tenant copy on the participant side.
+   * stop writing `disabled={pending || …}`, and marks it `aria-busy`. The
+   * *label* stays the caller's business — "saving…" is tenant copy on the
+   * participant side.
    */
   pending?: boolean;
 };
@@ -104,6 +156,7 @@ export type ButtonProps = Omit<ComponentProps<"button">, "children"> & {
 export function Button({
   children,
   variant = "action",
+  tone,
   size,
   pending = false,
   disabled,
@@ -117,7 +170,8 @@ export function Button({
       // has been the source of enough accidental posts to be worth stating.
       type={type}
       disabled={disabled || pending}
-      className={buttonClass(variant, size, className)}
+      aria-busy={pending || undefined}
+      className={buttonClass(variant, size, className, tone)}
       {...rest}
     >
       {children}
@@ -132,14 +186,16 @@ export function Button({
  */
 export type ButtonLinkProps = ComponentProps<"a"> & {
   variant?: ButtonVariant;
+  tone?: BoxedTone;
   size?: Size;
 };
 
 export function ButtonLink({
   variant = "quiet",
+  tone,
   size,
   className,
   ...rest
 }: ButtonLinkProps) {
-  return <a className={buttonClass(variant, size, className)} {...rest} />;
+  return <a className={buttonClass(variant, size, className, tone)} {...rest} />;
 }

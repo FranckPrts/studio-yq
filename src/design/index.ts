@@ -20,11 +20,11 @@
  * the tag and deleting its class string.
  */
 
-export { cx, FOCUS_RING, PEER_FOCUS_RING, FIELD, FIELD_SELECT, TONE, TONE_BORDER, SIZE } from "./tokens";
+export { cx, FOCUS_RING, PEER_FOCUS_RING, FIELD, FIELD_SELECT, TONE, TONE_SURFACE, SIZE } from "./tokens";
 export type { Tone, Size } from "./tokens";
 
 export { Button, ButtonLink, buttonClass, choiceClass } from "./button";
-export type { ButtonProps, ButtonLinkProps, ButtonVariant } from "./button";
+export type { ButtonProps, ButtonLinkProps, ButtonVariant, BoxedTone } from "./button";
 
 export { Select, selectClass, optionsFrom } from "./select";
 export type { SelectProps, SelectOption } from "./select";

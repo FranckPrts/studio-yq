@@ -10,6 +10,7 @@ import { coerceLexicon, coerceTheme, FONTS } from "@/lib/theme/project-theme";
 import PageHeader from "../../page-header";
 import { acknowledgeNotice, disconnectGmailAction, withdrawNotice } from "./actions";
 import SendConsole from "./send-console";
+import { buttonClass } from "@/design";
 
 export const dynamic = "force-dynamic";
 
@@ -90,8 +91,8 @@ export default async function SendPage({
           1 · participants&rsquo; email addresses
         </h2>
         <div
-          className={`flex flex-col gap-3 rounded border p-4 text-xs leading-relaxed ${
-            status.notice.current ? "border-paper/10" : "border-warning-line/40"
+          className={`flex flex-col gap-3 rounded p-4 text-xs leading-relaxed ${
+            status.notice.current ? "bg-surface" : "bg-warning-surface"
           }`}
         >
           {REPORT_NOTICE.map((p) => (
@@ -123,7 +124,7 @@ export default async function SendPage({
                   The notice changed since this project agreed to v{status.notice.version} — it needs agreeing again.
                 </p>
               )}
-              <button className="text-sm text-paper underline underline-offset-4">
+              <button className={buttonClass("boxed")}>
                 I agree, on behalf of this project
               </button>
               <p className="mt-1 text-[11px] text-dim">
@@ -184,7 +185,7 @@ export default async function SendPage({
             <p>
               <a
                 href={`/api/connect/google/start?project=${slug}`}
-                className="text-sm text-paper underline underline-offset-4"
+                className={buttonClass("boxed")}
               >
                 connect a Gmail account
               </a>

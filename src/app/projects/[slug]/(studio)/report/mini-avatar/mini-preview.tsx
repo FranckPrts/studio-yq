@@ -179,7 +179,7 @@ export default function MiniPreview({
             return (
               <li key={s.id} className="flex flex-col gap-1">
                 <div
-                  className="flex aspect-square items-center justify-center overflow-hidden border border-paper/10"
+                  className="flex aspect-square items-center justify-center overflow-hidden rounded bg-surface"
                   style={{ background: ground }}
                 >
                   {!r ? (

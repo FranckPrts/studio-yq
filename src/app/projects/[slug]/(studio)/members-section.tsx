@@ -9,6 +9,7 @@ import {
   type InviteMemberState,
   type MemberState,
 } from "./members-actions";
+import { buttonClass } from "@/design";
 
 type Role = "OWNER" | "COLLABORATOR" | "VIEWER";
 
@@ -70,7 +71,7 @@ function MemberRow({
                 defaultValue={member.role}
                 disabled={rolePending}
                 onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                className="term-input bg-void text-xs text-dim"
+                className="term-input rounded bg-surface px-2 py-1 text-xs text-dim"
                 aria-label={`Role for ${member.label}`}
               >
                 <option value="OWNER">owner</option>
@@ -185,7 +186,7 @@ export default function MembersSection({
                 name="email"
                 type="email"
                 required
-                className="term-input border-b border-paper/20 text-sm"
+                className="term-input rounded bg-surface px-2 py-1.5 text-sm"
               />
             </label>
             <label className="flex flex-col gap-1">
@@ -194,7 +195,7 @@ export default function MembersSection({
                 name="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value as Role)}
-                className="term-input border-b border-paper/20 bg-void text-sm"
+                className="term-input rounded bg-surface px-2 py-1.5 text-sm"
               >
                 <option value="OWNER">owner</option>
                 <option value="COLLABORATOR">collaborator</option>
@@ -204,7 +205,7 @@ export default function MembersSection({
             <button
               type="submit"
               disabled={isPending}
-              className="text-sm text-paper underline underline-offset-4 disabled:text-dim"
+              className={buttonClass("boxed")}
             >
               {isPending ? "…" : "create link"}
             </button>
@@ -217,7 +218,7 @@ export default function MembersSection({
             </p>
           )}
           {state.url && (
-            <div className="flex flex-col gap-2 rounded border border-paper/20 p-3">
+            <div className="flex flex-col gap-2 rounded bg-surface p-3">
               <p className="text-[11px] text-dim">
                 Send this to them. It works only for that address, once, and
                 is shown only now — just its hash is stored. If they already

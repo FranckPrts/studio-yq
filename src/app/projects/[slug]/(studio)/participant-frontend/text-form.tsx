@@ -9,6 +9,7 @@ import {
   type ProjectCopy,
 } from "@/lib/theme/project-copy";
 import { useUnsavedChanges } from "../use-unsaved-changes";
+import { buttonClass } from "@/design";
 
 const GROUPS = Array.from(
   new Set(Object.values(COPY_FIELDS).map((f) => f.group)),
@@ -89,7 +90,7 @@ export default function TextForm({
         <button
           type="submit"
           disabled={pending || !dirty}
-          className="text-sm text-paper underline underline-offset-4 disabled:text-dim disabled:no-underline"
+          className={buttonClass("boxed")}
         >
           {pending ? "saving…" : "save text"}
         </button>
@@ -151,7 +152,7 @@ export default function TextForm({
               name="noun"
               value={draft.noun}
               onChange={(e) => set({ noun: e.target.value })}
-              className="term-input border-b border-paper/20"
+              className="term-input rounded bg-surface px-2 py-1.5"
             />
           </label>
           <label className="flex flex-col gap-1">
@@ -160,7 +161,7 @@ export default function TextForm({
               name="nounPlural"
               value={draft.nounPlural}
               onChange={(e) => set({ nounPlural: e.target.value })}
-              className="term-input border-b border-paper/20"
+              className="term-input rounded bg-surface px-2 py-1.5"
             />
           </label>
         </div>
@@ -218,7 +219,7 @@ export default function TextForm({
                     value={draft[key]}
                     placeholder={field.default}
                     onChange={(e) => set({ [key]: e.target.value })}
-                    className="term-input resize-y border-b border-paper/20 text-sm"
+                    className="term-input resize-y rounded bg-surface px-2 py-1.5 text-sm"
                   />
                 ) : (
                   <input
@@ -227,7 +228,7 @@ export default function TextForm({
                     value={draft[key]}
                     placeholder={field.default}
                     onChange={(e) => set({ [key]: e.target.value })}
-                    className="term-input border-b border-paper/20 text-sm"
+                    className="term-input rounded bg-surface px-2 py-1.5 text-sm"
                   />
                 )}
               </label>

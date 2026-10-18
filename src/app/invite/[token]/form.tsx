@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { acceptInvitation, type AcceptState } from "./actions";
+import { buttonClass } from "@/design";
 
 export default function AcceptForm({
   token,
@@ -28,7 +29,7 @@ export default function AcceptForm({
           required
           defaultValue={lockedEmail ?? ""}
           readOnly={!!lockedEmail}
-          className={`term-input border-b border-paper/20 ${
+          className={`term-input rounded bg-surface px-2 py-1.5 ${
             lockedEmail ? "text-dim" : ""
           }`}
         />
@@ -40,7 +41,7 @@ export default function AcceptForm({
           name="displayName"
           type="text"
           autoComplete="name"
-          className="term-input border-b border-paper/20"
+          className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
 
@@ -52,7 +53,7 @@ export default function AcceptForm({
           autoComplete="new-password"
           required
           minLength={12}
-          className="term-input border-b border-paper/20"
+          className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
 
@@ -64,7 +65,7 @@ export default function AcceptForm({
           autoComplete="new-password"
           required
           minLength={12}
-          className="term-input border-b border-paper/20"
+          className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
 
@@ -77,7 +78,7 @@ export default function AcceptForm({
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 self-start text-sm text-paper underline underline-offset-4 disabled:text-dim"
+        className={buttonClass("boxed", "sm", "mt-2")}
       >
         {pending ? "creating…" : "create account"}
       </button>
