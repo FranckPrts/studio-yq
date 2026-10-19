@@ -32,6 +32,8 @@ type Item = {
   newTab?: boolean;
   /** Shown on hover. */
   hint?: string;
+  /** A play triangle right after the label, like the console's ↗. */
+  play?: boolean;
   children?: { label: string; href: string }[];
 };
 
@@ -100,7 +102,6 @@ export default function Sidebar({
           children: [
             { label: "colours & font", href: `${base}/participant-frontend/colours` },
             { label: "text & participant copy", href: `${base}/participant-frontend/text` },
-            { label: "live preview", href: `${base}/participant-frontend/preview` },
           ],
         },
         {
@@ -108,6 +109,13 @@ export default function Sidebar({
           href: `${base}/visual`,
           match: `${base}/visual`,
           ready: scriptReady,
+        },
+        {
+          label: "live preview",
+          href: `${base}/participant-frontend/preview`,
+          match: `${base}/participant-frontend/preview`,
+          play: true,
+          hint: "The participant page as it stands.",
         },
       ],
     },
@@ -153,10 +161,20 @@ export default function Sidebar({
   ];
 
   // Settings is the base path, so "this path or below" would match every page.
+  // "style & language" owns /participant-frontend, but the preview sits on its
+  // own row, so it must not light that group up too.
   const isCurrent = (item: Item) =>
     item.match === base
       ? pathname === base
-      : pathname === item.match || pathname.startsWith(`${item.match}/`);
+      : (pathname === item.match || pathname.startsWith(`${item.match}/`)) &&
+        !groups.some((g) =>
+          g.items.some(
+            (other) =>
+              other !== item &&
+              other.match.startsWith(`${item.match}/`) &&
+              (pathname === other.match || pathname.startsWith(`${other.match}/`)),
+          ),
+        );
 
   return (
     <nav className="flex flex-col gap-6 text-xs">
@@ -201,6 +219,19 @@ export default function Sidebar({
                     >
                       {item.label}
                       {item.newTab && " ↗"}
+                      {item.play && (
+                        <svg
+                          aria-hidden
+                          viewBox="0 0 24 24"
+                          className="ml-1 inline size-2 align-baseline"
+                          fill="currentColor"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                          strokeLinejoin="round"
+                        >
+                          <path d="M7 4.5v15l12-7.5z" />
+                        </svg>
+                      )}
                     </span>
                     {item.status && (
                       <span
