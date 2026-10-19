@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import CopyLinkButton from "@/components/CopyLinkButton";
 import { createInviteAction, type InviteState } from "./actions";
 import { buttonClass } from "@/design";
 
@@ -93,7 +94,10 @@ export default function InviteForm({
           <p className="text-xs text-dim">
             Copy this now — only its hash is stored, so it cannot be shown again.
           </p>
-          <code className="break-all text-[11px] text-paper/90">{state.url}</code>
+          <div className="flex items-start gap-2">
+            <code className="min-w-0 flex-1 break-all text-[11px] text-paper/90">{state.url}</code>
+            <CopyLinkButton url={state.url} />
+          </div>
         </div>
       )}
     </section>

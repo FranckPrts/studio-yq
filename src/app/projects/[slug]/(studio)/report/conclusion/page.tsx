@@ -6,6 +6,7 @@ import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
 import PageHeader from "../../page-header";
 import ConclusionToggle from "../../conclusion-toggle";
 import ConclusionEditor from "./conclusion-editor";
+import CopyLinkButton from "@/components/CopyLinkButton";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default async function ConclusionEditorPage({
 
   const canEdit = access.role === "OWNER" || access.role === "COLLABORATOR";
   const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
+  const conclusionUrl = `${base}/p/${slug}/conclusion`;
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-8">
@@ -50,8 +52,12 @@ export default async function ConclusionEditorPage({
           publishedAt={project.conclusionPublishedAt?.toISOString() ?? null}
           open={project.openForParticipation}
           canEdit={canEdit}
-          conclusionUrl={`${base}/p/${slug}/conclusion`}
+          conclusionUrl={conclusionUrl}
         />
+        <div className="flex items-center gap-2">
+          <code className="min-w-0 break-all text-[11px] text-paper/60">{conclusionUrl}</code>
+          <CopyLinkButton url={conclusionUrl} />
+        </div>
       </section>
 
       <ConclusionEditor

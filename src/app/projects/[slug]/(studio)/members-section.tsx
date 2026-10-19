@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import CopyLinkButton from "@/components/CopyLinkButton";
 import {
   changeRoleAction,
   inviteMember,
@@ -225,9 +226,12 @@ export default function MembersSection({
                 have an account they will be asked to sign in; if not, they
                 will create one.
               </p>
-              <code className="break-all text-[11px] text-paper/90">
-                {state.url}
-              </code>
+              <div className="flex items-start gap-2">
+                <code className="min-w-0 flex-1 break-all text-[11px] text-paper/90">
+                  {state.url}
+                </code>
+                <CopyLinkButton url={state.url} />
+              </div>
             </div>
           )}
         </form>

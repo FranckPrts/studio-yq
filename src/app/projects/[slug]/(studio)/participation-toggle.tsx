@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState } from "react";
 import {
   setOpenForParticipation,
   type ParticipationState,
 } from "./actions";
 import { buttonClass } from "@/design";
+import CopyLinkButton from "@/components/CopyLinkButton";
 
 export default function ParticipationToggle({
   slug,
@@ -24,22 +25,6 @@ export default function ParticipationToggle({
     setOpenForParticipation,
     {},
   );
-  const [copied, setCopied] = useState(false);
-  const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => () => clearTimeout(copiedTimer.current), []);
-
-  async function copyLink() {
-    try {
-      await navigator.clipboard.writeText(publicUrl);
-    } catch {
-      return;
-    }
-    setCopied(true);
-    clearTimeout(copiedTimer.current);
-    copiedTimer.current = setTimeout(() => setCopied(false), 2000);
-  }
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-4">
@@ -66,17 +51,8 @@ export default function ParticipationToggle({
       {open ? (
         <p className="text-[11px] text-dim">
           Participants go to{" "}
-          <button
-            type="button"
-            onClick={copyLink}
-            title="Copy link"
-            className="text-paper/80 underline underline-offset-4 hover:text-paper"
-          >
-            {publicUrl}
-          </button>
-          <span aria-live="polite" className="ml-2 text-success">
-            {copied ? "copied ✓" : ""}
-          </span>
+          <code className="text-paper/80">{publicUrl}</code>{" "}
+          <CopyLinkButton url={publicUrl} className="ml-1" />
         </p>
       ) : missing.length > 0 ? (
         <p className="text-[11px] leading-relaxed text-warning/80">
@@ -85,7 +61,8 @@ export default function ParticipationToggle({
       ) : (
         <p className="text-[11px] text-dim">
           Ready to open. Participants will go to{" "}
-          <code className="text-paper/60">{publicUrl}</code>.
+          <code className="text-paper/60">{publicUrl}</code>.{" "}
+          <CopyLinkButton url={publicUrl} className="ml-1" />
         </p>
       )}
 

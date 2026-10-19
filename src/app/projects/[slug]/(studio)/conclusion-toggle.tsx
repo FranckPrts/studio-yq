@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import CopyLinkButton from "@/components/CopyLinkButton";
 import {
   setConclusionPublished,
   type ParticipationState,
@@ -74,7 +75,8 @@ export default function ConclusionToggle({
           open ? (
             <>
               Participants see a link to it from their list and their results,
-              at <code className="text-paper/60">{conclusionUrl}</code>.
+              at <code className="text-paper/60">{conclusionUrl}</code>.{" "}
+              <CopyLinkButton url={conclusionUrl} className="ml-1" />
             </>
           ) : (
             "Published, but the project is closed — participants reach it once the project is open."
