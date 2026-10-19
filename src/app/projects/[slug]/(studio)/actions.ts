@@ -89,6 +89,8 @@ export async function setConclusionPublished(
     data: { conclusionPublishedAt: publish ? new Date() : null },
   });
 
+  // Toggled from settings and from the conclusion editor; the menu pill shows it everywhere.
   revalidatePath(`/projects/${slug}`);
+  revalidatePath(`/projects/${slug}/report/conclusion`);
   return {};
 }

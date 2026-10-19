@@ -20,8 +20,11 @@ type Item = {
   match: string;
   /** Unready reads amber, the same signal the settings page uses. */
   ready?: boolean;
-  /** Whether the project is open to participants, shown as a pill. */
-  openState?: boolean;
+  /**
+   * A participant-facing switch shown as a pill — whether the project is open,
+   * whether the conclusion is published. `on` lights the beacon.
+   */
+  status?: { on: boolean; label: string };
   /**
    * Opens in its own tab — the console on a second screen, the board on a
    * projector — so neither carries this menu.
@@ -36,12 +39,14 @@ export default function Sidebar({
   slug,
   projectName,
   open,
+  conclusionPublished,
   scriptReady,
   databaseReady,
 }: {
   slug: string;
   projectName: string;
   open: boolean;
+  conclusionPublished: boolean;
   scriptReady: boolean;
   databaseReady: boolean;
 }) {
@@ -52,7 +57,12 @@ export default function Sidebar({
     {
       heading: "overview",
       items: [
-        { label: "settings", href: base, match: base, openState: open },
+        {
+          label: "settings",
+          href: base,
+          match: base,
+          status: { on: open, label: open ? "open" : "closed" },
+        },
         {
           label: "live console",
           href: `${base}/console`,
@@ -127,6 +137,10 @@ export default function Sidebar({
           href: `${base}/report/conclusion`,
           match: `${base}/report/conclusion`,
           hint: "The page everyone can read once it is published.",
+          status: {
+            on: conclusionPublished,
+            label: conclusionPublished ? "published" : "hidden",
+          },
         },
         {
           label: "send",
@@ -188,22 +202,22 @@ export default function Sidebar({
                       {item.label}
                       {item.newTab && " ↗"}
                     </span>
-                    {item.openState !== undefined && (
+                    {item.status && (
                       <span
                         className={cx(
                           "inline-flex shrink-0 items-center gap-1.5 rounded px-2 py-px text-[10px]",
-                          item.openState
+                          item.status.on
                             ? "bg-surface-hover text-paper"
                             : "bg-surface text-dim",
                         )}
                       >
-                        {item.openState && (
+                        {item.status.on && (
                           <span
                             aria-hidden
                             className="size-1.5 animate-beacon rounded-full bg-success motion-reduce:animate-none"
                           />
                         )}
-                        {item.openState ? "open" : "closed"}
+                        {item.status.label}
                       </span>
                     )}
                     {item.ready === false && (

@@ -4,6 +4,7 @@ import { coerceConclusionPage } from "@/lib/report/conclusion-template";
 import { coerceCopy } from "@/lib/theme/project-copy";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
 import PageHeader from "../../page-header";
+import ConclusionToggle from "../../conclusion-toggle";
 import ConclusionEditor from "./conclusion-editor";
 
 export const dynamic = "force-dynamic";
@@ -27,26 +28,35 @@ export default async function ConclusionEditorPage({
       lexicon: true,
       copy: true,
       conclusionPage: true,
+      openForParticipation: true,
       conclusionPublishedAt: true,
     },
   });
 
-  const published = project.conclusionPublishedAt;
+  const canEdit = access.role === "OWNER" || access.role === "COLLABORATOR";
+  const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-8">
       <PageHeader
         title="conclusion"
-        subtitle={`How every run went, for anyone with the link — ${
-          published
-            ? `published since ${published.toISOString().slice(0, 10)}`
-            : "not published yet; publish it from settings once the event is over"
-        }.`}
+        subtitle="How every run went, for anyone with the link — publish it once the event is over."
       />
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xs text-dim">status</h2>
+        <ConclusionToggle
+          slug={slug}
+          publishedAt={project.conclusionPublishedAt?.toISOString() ?? null}
+          open={project.openForParticipation}
+          canEdit={canEdit}
+          conclusionUrl={`${base}/p/${slug}/conclusion`}
+        />
+      </section>
 
       <ConclusionEditor
         slug={slug}
-        canEdit={access.role === "OWNER" || access.role === "COLLABORATOR"}
+        canEdit={canEdit}
         initial={coerceConclusionPage(project.conclusionPage)}
         theme={coerceTheme(project.theme)}
         lexicon={coerceLexicon(project.lexicon)}

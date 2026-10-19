@@ -21,7 +21,11 @@ export default async function StudioLayout({
   const [project, readiness] = await Promise.all([
     db.project.findUniqueOrThrow({
       where: { id: access.projectId },
-      select: { name: true, openForParticipation: true },
+      select: {
+        name: true,
+        openForParticipation: true,
+        conclusionPublishedAt: true,
+      },
     }),
     projectReadiness(access.projectId),
   ]);
@@ -33,6 +37,7 @@ export default async function StudioLayout({
           slug={slug}
           projectName={project.name}
           open={project.openForParticipation}
+          conclusionPublished={project.conclusionPublishedAt !== null}
           scriptReady={readiness.hasScript}
           databaseReady={readiness.hasConnection && readiness.provisioned}
         />
