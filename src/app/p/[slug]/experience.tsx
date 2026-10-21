@@ -37,6 +37,7 @@ import {
 } from "@/lib/theme/project-theme";
 import { fillCopy, type ProjectCopy } from "@/lib/theme/project-copy";
 import { NavLink, type Nav } from "./nav";
+import LegalLinks from "./legal-links";
 
 export type Step =
   | "intro"
@@ -648,6 +649,9 @@ export default function ParticipantExperience({
           </div>
         )}
 
+        </div>
+        <div className="mx-auto w-full max-w-md px-6 pb-6">
+          <LegalLinks dim={theme.dim} />
         </div>
       </div>
     </main>

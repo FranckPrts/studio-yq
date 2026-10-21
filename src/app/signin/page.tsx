@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth/dal";
+import { LegalFooter } from "../legal";
 import SignInForm from "./form";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,9 @@ export default async function SignInPage({
           Accounts are created by invitation only. If you need one, ask an
           administrator to send you a link.
         </p>
+        <div className="mt-6">
+          <LegalFooter />
+        </div>
       </div>
     </main>
   );

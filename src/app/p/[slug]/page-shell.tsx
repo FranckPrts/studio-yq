@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import LegalLinks from "./legal-links";
 import { FONTS, themeCssVars, themeScheme, type ProjectTheme } from "@/lib/theme/project-theme";
 
 /**
@@ -27,6 +28,7 @@ export default function PageShell({
     >
       <div className="mx-auto flex w-full max-w-lg flex-col gap-8 px-6 pb-16 pt-10">
         {children}
+        <LegalLinks dim={theme.dim} />
       </div>
     </main>
   );
