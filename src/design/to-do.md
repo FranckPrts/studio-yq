@@ -190,6 +190,13 @@ The table at the bottom, `AvatarControls.tsx` first.
 - [x] **`badge.tsx`** — `Badge`, `ReadyBadge`, `badgeClass()`. `bare` (coloured
       text, the default, which is what the pages already do) and `outlined`
       (square hairline box).
+- [x] **`skeleton.tsx`** *(2026-10-22)* — `Skeleton` (a `surface` block,
+      4px corner, `animate-skeleton`), `SkeletonTitle` / `SkeletonLine` /
+      `SkeletonButton` at the sizes the pages use, `SkeletonHeader`,
+      `SkeletonSection`, and `SkeletonPage` (the `role="status"` wrapper, fading
+      in after 150ms so fast navigations never flash). Used by every
+      `loading.tsx` on the admin and studio pages; the participant flow has none
+      yet. The studio layout streams its menu behind a skeleton too.
 - [x] **`index.ts`** — one import path, `@/design`.
 
 ### Harness

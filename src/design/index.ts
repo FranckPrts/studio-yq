@@ -43,3 +43,13 @@ export type { SliderProps } from "./slider";
 
 export { Badge, ReadyBadge, badgeClass } from "./badge";
 export type { BadgeProps, BadgeVariant } from "./badge";
+
+export {
+  Skeleton,
+  SkeletonTitle,
+  SkeletonLine,
+  SkeletonButton,
+  SkeletonHeader,
+  SkeletonSection,
+  SkeletonPage,
+} from "./skeleton";

@@ -147,6 +147,36 @@
 }
 
 /*
+ * Loading skeletons (`@/design` `Skeleton`). The shimmer breathes like the
+ * beacon but never drops below half, so a page of grey blocks does not strobe.
+ * `loading-in` holds a skeleton invisible for its first 150ms and then fades it
+ * in, so a navigation that resolves quickly never flashes one at all.
+ */
+@theme {
+  --animate-skeleton: skeleton 2.4s ease-in-out infinite;
+  --animate-loading-in: loading-in 200ms ease-out 150ms both;
+
+  @keyframes skeleton {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes loading-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/*
  * The page itself. What daisyUI's base used to supply, from our palette rather
  * than its own blue-grey: the ground behind any page that does not paint one,
  * the default text colour, native controls and scrollbars drawn dark.

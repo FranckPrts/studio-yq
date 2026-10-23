@@ -11,6 +11,12 @@ import {
   RadioGroup,
   ReadyBadge,
   Select,
+  Skeleton,
+  SkeletonButton,
+  SkeletonHeader,
+  SkeletonLine,
+  SkeletonSection,
+  SkeletonTitle,
   Slider,
   Switch,
   SwitchRow,
@@ -337,6 +343,25 @@ function Specimens() {
           <span className="text-sm text-paper">
             members <Badge variant="tinted">owner</Badge> and <Badge tone="warning">pending</Badge>
           </span>
+        </Row>
+      </Group>
+
+      <Group name="Skeleton">
+        <Row code="Skeleton · Title · Line · Button">
+          <Skeleton className="size-8" />
+          <SkeletonTitle />
+          <SkeletonLine className="w-32" />
+          <SkeletonButton />
+        </Row>
+        <Row code="SkeletonHeader actions={2} divided">
+          <div className="w-72">
+            <SkeletonHeader actions={2} divided />
+          </div>
+        </Row>
+        <Row code="SkeletonSection rows={2}">
+          <div className="w-72">
+            <SkeletonSection rows={2} />
+          </div>
         </Row>
       </Group>
 
