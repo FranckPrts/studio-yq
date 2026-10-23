@@ -34,6 +34,13 @@ model User {
   /// ever says what someone may do inside one project.
   isPlatformAdmin Boolean @default(false)
 
+  /// What this person may start on the platform, as opposed to what they may
+  /// do inside a project (`Role`) or across all of them (`isPlatformAdmin`).
+  /// Granted by an admin to an existing account, never carried by an
+  /// invitation. What each level allows is decided in one place,
+  /// `src/lib/auth/capabilities.ts`, not by comparing this field ad hoc.
+  platformRole PlatformRole @default(MEMBER)
+
   /// The studio interface this person sees — theirs alone. Two members of one
   /// project each keep their own. Never reaches a participant page, which is
   /// drawn in the project's palette whoever is looking.
@@ -150,6 +157,19 @@ enum Role {
 }
 
 /// The two studio themes, declared as `[data-theme]` blocks in `globals.css`.
+/// Ordered: each level includes everything the one before it allows.
+enum PlatformRole {
+  /// Works only in projects they were invited into.
+  MEMBER
+  /// May also create projects of their own.
+  CREATOR
+  /// May also run research consent — gated on the Studio-provided database,
+  /// not yet built.
+  RESEARCHER
+
+  @@map("platform_role")
+}
+
 enum StudioTheme {
   DARK
   LIGHT

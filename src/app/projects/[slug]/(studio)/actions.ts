@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { projectReadiness } from "@/lib/projects/readiness";
@@ -93,4 +94,47 @@ export async function setConclusionPublished(
   revalidatePath(`/projects/${slug}`);
   revalidatePath(`/projects/${slug}/report/conclusion`);
   return {};
+}
+
+export type DeleteState = { error?: string };
+
+/**
+ * Deletes a project and everything we hold for it — scripts, members,
+ * invitations, the stored Supabase and Gmail credentials, report history — by
+ * cascade. The owner or a platform admin only, whatever role an admin also
+ * holds as a member.
+ *
+ * Only our side. Nothing is revoked or deleted elsewhere: the tenant's Supabase
+ * keeps every participant, avatar and score, and the OAuth grants stay until
+ * the tenant revokes them. The confirmation lists those steps, because this
+ * cannot do them. Revoking the grants here is a later improvement.
+ *
+ * Refused while open, so a live event can't lose its page to one confirmation.
+ */
+export async function deleteProject(
+  _prev: DeleteState,
+  formData: FormData,
+): Promise<DeleteState> {
+  const slug = String(formData.get("slug") ?? "");
+  const { projectId, role, user } = await requireProjectRole(slug, "VIEWER");
+  if (role !== "OWNER" && !user.isPlatformAdmin) {
+    return { error: "Only the owner or an administrator can delete a project." };
+  }
+
+  if (String(formData.get("confirm") ?? "").trim() !== slug) {
+    return { error: `Type ${slug} exactly to confirm.` };
+  }
+
+  const project = await db.project.findUniqueOrThrow({
+    where: { id: projectId },
+    select: { openForParticipation: true },
+  });
+  if (project.openForParticipation) {
+    return { error: "Close the project to participants first." };
+  }
+
+  await db.project.delete({ where: { id: projectId } });
+
+  revalidatePath("/projects");
+  redirect("/projects");
 }

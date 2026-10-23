@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser, visibleProjects } from "@/lib/auth/dal";
 import { signOut } from "@/app/signin/actions";
 import { buttonClass } from "@/design";
+import { canCreateProjects } from "@/lib/auth/capabilities";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,14 @@ export default async function ProjectsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {canCreateProjects(user) && (
+            <Link
+              href="/projects/new"
+              className={buttonClass("boxed", "xs", undefined, "strong")}
+            >
+              new project
+            </Link>
+          )}
           {user.isPlatformAdmin && (
             <Link
               href="/admin/invitations"
@@ -48,6 +57,7 @@ export default async function ProjectsPage() {
       {projects.length === 0 ? (
         <p className="text-xs text-dim">
           You are not a member of any project yet.
+          {canCreateProjects(user) && " Start one with “new project” above."}
         </p>
       ) : (
         <ul className="flex flex-col gap-3">

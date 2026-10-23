@@ -2,11 +2,13 @@
 
 import { useActionState } from "react";
 import {
+  adoptStarterScript,
   promoteScriptVersion,
   uploadScript,
   type UploadState,
 } from "./actions";
 import { buttonClass } from "@/design";
+import StarterButton from "./starter-button";
 
 export type ScriptVersion = {
   version: number;
@@ -71,6 +73,17 @@ export default function ScriptSection({
           )}
         </div>
       </div>
+
+      {!active && canEdit && (
+        <div className="flex flex-wrap items-center gap-3 rounded bg-surface p-3">
+          <StarterButton slug={slug} action={adoptStarterScript} />
+          <p className="min-w-48 flex-1 text-[11px] leading-relaxed text-dim">
+            Adds the starter sketch and its parameters as v1 — a working avatar
+            to preview and adjust now, and to replace with your own upload
+            whenever it is ready.
+          </p>
+        </div>
+      )}
 
       {active && (
         <p className="text-[11px] leading-relaxed text-dim">

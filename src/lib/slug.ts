@@ -23,6 +23,13 @@ export function slugify(input: string): string {
 }
 
 /**
+ * Slugs that would shadow, or be shadowed by, a fixed route beside
+ * `/projects/[slug]` — a project called "new" would be unreachable behind
+ * `/projects/new`.
+ */
+export const RESERVED_SLUGS: readonly string[] = ["new"];
+
+/**
  * `taken` is every existing slug that starts with the base. Returns the base if
  * it is free, otherwise the first free `base-2`, `base-3`, … — counting, not
  * appending a count, so a gap left by a deleted project gets reused instead of
@@ -30,11 +37,25 @@ export function slugify(input: string): string {
  */
 export function uniqueSlug(input: string, taken: Iterable<string>): string {
   const base = slugify(input);
-  const used = new Set(taken);
+  const used = new Set([...taken, ...RESERVED_SLUGS]);
   if (!used.has(base)) return base;
 
   for (let n = 2; ; n++) {
     const candidate = `${base}-${n}`;
     if (!used.has(candidate)) return candidate;
   }
+}
+
+/**
+ * Whether a hand-typed slug is one `slugify` could have produced: lowercase
+ * letters, digits and single hyphens, not at either end, at most 60 long.
+ * Checked rather than silently slugified, so the URL someone approved is the
+ * URL they get. Reserved slugs are refused.
+ */
+export function isValidSlug(slug: string): boolean {
+  return (
+    slug.length <= 60 &&
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) &&
+    !RESERVED_SLUGS.includes(slug)
+  );
 }

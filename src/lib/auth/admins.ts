@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { PlatformRole } from "@/generated/prisma/enums";
 
 /**
  * Platform admin is granted, never invited.
@@ -79,4 +80,43 @@ export async function revokeAdmin(
     });
     return { ok: true, message: `${target.email} is no longer an administrator.` };
   });
+}
+
+/** Every account, for the role picker. A handful of tenants, so no paging. */
+export async function listPeople() {
+  return db.user.findMany({
+    select: {
+      id: true,
+      email: true,
+      displayName: true,
+      isPlatformAdmin: true,
+      platformRole: true,
+      _count: { select: { ownedProjects: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+/**
+ * Sets what an existing account may start on the platform. Like admin, it is
+ * granted to someone already signed up rather than sent in an invitation.
+ * Lowering a role takes nothing away that already exists: projects they made
+ * stay theirs, they just cannot make another.
+ */
+export async function setPlatformRole(
+  targetId: string,
+  role: string,
+): Promise<AdminChange> {
+  if (!Object.hasOwn(PlatformRole, role)) {
+    return { ok: false, error: "Unknown role." };
+  }
+  const target = await db.user
+    .update({
+      where: { id: targetId },
+      data: { platformRole: role as PlatformRole },
+      select: { email: true },
+    })
+    .catch(() => null);
+  if (!target) return { ok: false, error: "No such account." };
+  return { ok: true, message: `${target.email} is now a ${role.toLowerCase()}.` };
 }

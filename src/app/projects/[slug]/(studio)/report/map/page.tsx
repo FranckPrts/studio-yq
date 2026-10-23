@@ -6,6 +6,8 @@ import { reportScript } from "@/lib/report/mini-script";
 import { coerceLexicon, coerceTheme, FONTS } from "@/lib/theme/project-theme";
 import PageHeader from "../../page-header";
 import MapView from "./map-view";
+import StarterButton from "../../visual/starter-button";
+import { adoptStarterScript } from "../../visual/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,7 @@ export default async function MapPage({
 }) {
   const { slug } = await params;
   const access = await requireProjectRole(slug, "VIEWER");
+  const canEdit = access.role === "OWNER" || access.role === "COLLABORATOR";
 
   const [project, script] = await Promise.all([
     db.project.findUniqueOrThrow({
@@ -73,16 +76,19 @@ export default async function MapPage({
       </p>
 
       {!script ? (
-        <p className="text-xs text-dim">
-          Nothing to draw yet —{" "}
-          <Link
-            href={`/projects/${slug}/visual`}
-            className="underline underline-offset-4 hover:text-paper"
-          >
-            upload the main script
-          </Link>{" "}
-          first.
-        </p>
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-xs text-dim">
+            Nothing to draw yet —{" "}
+            <Link
+              href={`/projects/${slug}/visual`}
+              className="underline underline-offset-4 hover:text-paper"
+            >
+              upload the main script
+            </Link>{" "}
+            first{canEdit ? ", or start from the starter visual." : "."}
+          </p>
+          {canEdit && <StarterButton slug={slug} action={adoptStarterScript} />}
+        </div>
       ) : !database ? (
         <p className="text-xs text-dim">
           The map is drawn from the project&rsquo;s database, which isn&rsquo;t

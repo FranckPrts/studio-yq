@@ -5,6 +5,8 @@ import type { Parameter } from "@/lib/params/types";
 import { MINI_CONTRACT } from "@/lib/report/mini";
 import { reportScript } from "@/lib/report/mini-script";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
+import StarterButton from "../../visual/starter-button";
+import { adoptStarterScript } from "../../visual/actions";
 import PageHeader from "../../page-header";
 import MiniUploadSection from "./upload-section";
 import MiniPreview from "./mini-preview";
@@ -131,16 +133,19 @@ export default async function MiniAvatarPage({
             database={database}
           />
         ) : (
-          <p className="text-xs text-dim">
-            Nothing to draw yet —{" "}
-            <Link
-              href={`/projects/${slug}/visual`}
-              className="underline underline-offset-4 hover:text-paper"
-            >
-              upload the main script
-            </Link>{" "}
-            first.
-          </p>
+          <div className="flex flex-col items-start gap-3">
+            <p className="text-xs text-dim">
+              Nothing to draw yet —{" "}
+              <Link
+                href={`/projects/${slug}/visual`}
+                className="underline underline-offset-4 hover:text-paper"
+              >
+                upload the main script
+              </Link>{" "}
+              first{canEdit ? ", or start from the starter visual." : "."}
+            </p>
+            {canEdit && <StarterButton slug={slug} action={adoptStarterScript} />}
+          </div>
         )}
       </section>
     </main>

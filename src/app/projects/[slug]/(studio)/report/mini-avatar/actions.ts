@@ -6,6 +6,7 @@ import { requireProjectRole } from "@/lib/auth/dal";
 import { analyzeScript } from "@/lib/params/analyze";
 import type { Parameter } from "@/lib/params/types";
 import { MINI_HOST_KNOBS } from "@/lib/report/mini";
+import { starterFile } from "@/lib/visuals/bundle";
 
 export type MiniUploadState = {
   error?: string;
@@ -168,5 +169,34 @@ export async function deleteMiniScript(formData: FormData): Promise<void> {
   if (!Number.isInteger(version)) return;
 
   await db.miniScript.deleteMany({ where: { projectId, version } });
+  revalidatePath(pagePath(slug));
+}
+
+/**
+ * Uses the starter mini-script, the simplified companion of the starter
+ * sketch. Added as a version like any upload, so it is undone the same way.
+ * It reads the starter's parameter names; with another main script, any it
+ * doesn't find simply keep the mini-script's defaults.
+ */
+export async function adoptStarterMini(formData: FormData): Promise<void> {
+  const slug = String(formData.get("slug") ?? "");
+  const { projectId, user } = await requireProjectRole(slug, "COLLABORATOR");
+
+  const main = await db.avatarScript.findFirst({
+    where: { projectId },
+    select: { id: true },
+  });
+  if (!main) return;
+
+  await db.miniScript.create({
+    data: {
+      projectId,
+      version: await nextVersion(projectId),
+      label: "starter mini",
+      code: await starterFile("mini"),
+      uploadedById: user.id,
+    },
+  });
+
   revalidatePath(pagePath(slug));
 }

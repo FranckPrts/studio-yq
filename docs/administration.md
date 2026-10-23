@@ -7,12 +7,17 @@ nobody can.
 
 | | Can |
 | --- | --- |
-| **Platform administrator** | See every project, invite people, grant and remove administrator access |
-| **Project owner** | Everything in their project: members, database, opening and closing |
+| **Platform administrator** | See every project, invite people, grant and remove administrator access, set platform roles, delete any project |
+| **Researcher** (platform role) | Everything a creator can, plus research consent once the Studio database exists |
+| **Creator** (platform role) | Create projects of their own, becoming their owner |
+| **Member** (platform role, the default) | Work in the projects they are invited into |
+| **Project owner** | Everything in their project: members, database, opening and closing, deleting it |
 | **Project collaborator** | Style, script and parameters |
 | **Project viewer** | Look, not change |
 
-Platform admin is account-wide. Project roles belong to one project each.
+Platform admin and platform roles are account-wide. Project roles belong to one
+project each. An administrator can do everything a researcher can, whatever
+their own platform role says.
 
 ## Getting people in
 
@@ -39,6 +44,32 @@ it, and this role reaches every project.
 
 Nobody can remove their own administrator access, and the last administrator
 cannot be removed. Removal takes effect on the person's next click.
+
+## Letting someone create projects
+
+Like admin, a platform role is **never carried by an invitation**.
+
+1. Invite the person as a normal user (they start as a **member**).
+2. Once they have signed up, an administrator sets their role under
+   **platform roles** on `/admin/invitations`.
+
+A creator then sees **new project** on `/projects`. They choose the name and the
+participant address (`/p/<slug>`), which cannot change once the project exists.
+The project starts empty and closed; each part offers the starter visual as a
+way in. Lowering someone's role leaves the projects they made with them.
+
+## Deleting a project
+
+The project's owner, or any administrator, can delete it from the **danger
+zone** at the bottom of its overview — after closing it to participants and
+typing its slug.
+
+This deletes everything Studio holds for it: settings, scripts, members,
+invitations, the stored Supabase and Gmail credentials, and the report history.
+It deletes **nothing elsewhere**. The tenant's Supabase project keeps every
+participant, avatar, score and email address, and the Supabase and Google
+authorisations stay in place until the tenant revokes them; the confirmation
+screen lists these steps.
 
 ## `npm run admin` — first administrator, and the way back in
 

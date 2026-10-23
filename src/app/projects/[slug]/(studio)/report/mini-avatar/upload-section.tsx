@@ -6,9 +6,11 @@ import {
   promoteMiniScript,
   uploadMiniScript,
   revertToMainScript,
+  adoptStarterMini,
   type MiniUploadState,
 } from "./actions";
 import { buttonClass } from "@/design";
+import StarterButton from "../../visual/starter-button";
 
 export type MiniVersion = {
   version: number;
@@ -99,6 +101,21 @@ export default function MiniUploadSection({
           Upload the main script first — a mini-avatar draws with its
           parameters.
         </p>
+      )}
+
+      {canEdit && hasMainScript && !usingMini && (
+        <div className="flex flex-wrap items-center gap-3 rounded bg-surface p-3">
+          <StarterButton
+            slug={slug}
+            action={adoptStarterMini}
+            label="use the starter mini-script"
+          />
+          <p className="min-w-48 flex-1 text-[11px] leading-relaxed text-dim">
+            The starter sketch&rsquo;s simplified companion. It reads the
+            starter&rsquo;s parameters, so it fits best when the main script is
+            the starter too.
+          </p>
+        </div>
       )}
 
       {canEdit && hasMainScript && (

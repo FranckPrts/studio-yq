@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
-import type { StudioTheme } from "@/generated/prisma/enums";
+import type { PlatformRole, StudioTheme } from "@/generated/prisma/enums";
 
 /**
  * Server-side sessions.
@@ -66,6 +66,8 @@ export type SessionUser = {
   email: string;
   displayName: string | null;
   isPlatformAdmin: boolean;
+  /** What they may start on the platform; see `src/lib/auth/capabilities.ts`. */
+  platformRole: PlatformRole;
   /** Their own studio interface; see `User.studioTheme`. */
   studioTheme: StudioTheme;
 };
@@ -87,6 +89,7 @@ export async function readSession(): Promise<SessionUser | null> {
           email: true,
           displayName: true,
           isPlatformAdmin: true,
+          platformRole: true,
           studioTheme: true,
         },
       },

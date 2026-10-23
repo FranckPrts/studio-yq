@@ -9,6 +9,7 @@ import ConclusionToggle from "./conclusion-toggle";
 import { projectReadiness } from "@/lib/projects/readiness";
 import { pendingInvitations } from "@/lib/auth/invitations";
 import MembersSection from "./members-section";
+import DeleteSection from "./delete-section";
 import { credentialsReadable } from "@/lib/supabase/management";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +71,7 @@ export default async function ProjectSettingsPage({
         take: 1,
         select: { version: true, parameters: true },
       },
+      gmail: { select: { googleEmail: true } },
       members: {
         include: { user: { select: { email: true, displayName: true } } },
         orderBy: { createdAt: "asc" },
@@ -82,6 +84,7 @@ export default async function ProjectSettingsPage({
   const script = project.scripts[0];
   const connection = project.connection;
   const isOwner = access.role === "OWNER";
+  const canDelete = isOwner || access.user.isPlatformAdmin;
   const canOperate = isOwner || access.role === "COLLABORATOR";
   const readiness = await projectReadiness(access.projectId);
   const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
@@ -181,6 +184,18 @@ export default async function ProjectSettingsPage({
           }
         />
       </section>
+
+      {canDelete && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-xs text-dim">danger zone</h2>
+          <DeleteSection
+            slug={project.slug}
+            open={project.openForParticipation}
+            supabaseRef={connection?.projectRef ?? null}
+            gmailAddress={project.gmail?.googleEmail ?? null}
+          />
+        </section>
+      )}
     </main>
   );
 }

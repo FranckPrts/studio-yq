@@ -9,7 +9,7 @@ import {
   revokeInvitation,
 } from "@/lib/auth/invitations";
 import type { Role } from "@/generated/prisma/enums";
-import { grantAdmin, revokeAdmin } from "@/lib/auth/admins";
+import { grantAdmin, revokeAdmin, setPlatformRole } from "@/lib/auth/admins";
 
 export type InviteState = { url?: string; error?: string };
 
@@ -82,6 +82,20 @@ export async function revokeAdminAction(
 ): Promise<AdminState> {
   const actor = await requirePlatformAdmin();
   const result = await revokeAdmin(String(formData.get("userId") ?? ""), actor.id);
+  revalidatePath("/admin/invitations");
+  return result.ok ? { message: result.message } : { error: result.error };
+}
+
+/** Sets an existing account's platform role. Re-checks admin itself. */
+export async function setPlatformRoleAction(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  await requirePlatformAdmin();
+  const result = await setPlatformRole(
+    String(formData.get("userId") ?? ""),
+    String(formData.get("platformRole") ?? ""),
+  );
   revalidatePath("/admin/invitations");
   return result.ok ? { message: result.message } : { error: result.error };
 }

@@ -4,7 +4,8 @@ import { requirePlatformAdmin } from "@/lib/auth/dal";
 import { revokeInviteAction } from "./actions";
 import InviteForm from "./form";
 import AdminsSection from "./admins-section";
-import { listAdmins } from "@/lib/auth/admins";
+import PeopleSection from "./people-section";
+import { listAdmins, listPeople } from "@/lib/auth/admins";
 import { buttonClass } from "@/design";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ function status(i: {
 export default async function InvitationsPage() {
   const me = await requirePlatformAdmin();
 
-  const [projects, invitations, admins] = await Promise.all([
+  const [projects, invitations, admins, people] = await Promise.all([
     db.project.findMany({
       select: { slug: true, name: true },
       orderBy: { createdAt: "asc" },
@@ -37,6 +38,7 @@ export default async function InvitationsPage() {
       },
     }),
     listAdmins(),
+    listPeople(),
   ]);
 
   return (
@@ -45,7 +47,7 @@ export default async function InvitationsPage() {
         <div>
           <h1 className="text-sm">People</h1>
           <p className="text-xs text-dim">
-            Administrators, and the invitation links accounts are created from.
+            Administrators, what each person may start, and the invitation links accounts are created from.
           </p>
         </div>
         <Link
@@ -61,6 +63,16 @@ export default async function InvitationsPage() {
           id: a.id,
           label: a.displayName ? `${a.displayName} · ${a.email}` : a.email,
           isYou: a.id === me.id,
+        }))}
+      />
+
+      <PeopleSection
+        people={people.map((p) => ({
+          id: p.id,
+          label: p.displayName ? `${p.displayName} · ${p.email}` : p.email,
+          isAdmin: p.isPlatformAdmin,
+          role: p.platformRole,
+          owns: p._count.ownedProjects,
         }))}
       />
 

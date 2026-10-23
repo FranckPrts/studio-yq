@@ -7,6 +7,7 @@ import { validateParameters } from "@/lib/params/validate";
 import { analyzeScript } from "@/lib/params/analyze";
 import { coerceLexicon } from "@/lib/theme/project-theme";
 import type { Parameter, VisualDefinition } from "@/lib/params/types";
+import { starterFile } from "@/lib/visuals/bundle";
 
 export type UploadState = {
   error?: string;
@@ -175,4 +176,52 @@ export async function promoteScriptVersion(formData: FormData): Promise<void> {
   });
 
   revalidatePath(`/projects/${slug}`);
+}
+
+/**
+ * Starts an empty project from the starter visual: its sketch and declaration
+ * become v1, exactly as if the starter bundle had been downloaded and uploaded.
+ *
+ * Offered only while there is no script, and refused otherwise — on a project
+ * with a script this would quietly replace it. Someone who wants the starter
+ * over their own work can still download it and upload it as a version.
+ * The starter's lexicon is taken only when the project has none of its own.
+ */
+export async function adoptStarterScript(formData: FormData): Promise<void> {
+  const slug = String(formData.get("slug") ?? "");
+  const { projectId, user } = await requireProjectRole(slug, "COLLABORATOR");
+
+  const project = await db.project.findUniqueOrThrow({
+    where: { id: projectId },
+    select: { lexicon: true, scripts: { take: 1, select: { id: true } } },
+  });
+  if (project.scripts.length) return;
+
+  const [code, declaration] = await Promise.all([
+    starterFile("sketch"),
+    starterFile("parameters"),
+  ]);
+  const definition = JSON.parse(declaration) as VisualDefinition;
+
+  await db.$transaction(async (tx) => {
+    await tx.avatarScript.create({
+      data: {
+        projectId,
+        version: 1,
+        label: "starter",
+        code,
+        parameters: definition.parameters as never,
+        extensions: [],
+        uploadedById: user.id,
+      },
+    });
+    if (project.lexicon === null && definition.lexicon) {
+      await tx.project.update({
+        where: { id: projectId },
+        data: { lexicon: coerceLexicon(definition.lexicon) },
+      });
+    }
+  });
+
+  revalidatePath(`/projects/${slug}`, "layout");
 }

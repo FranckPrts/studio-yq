@@ -26,6 +26,13 @@ export type ScriptInput = {
 export type NewProject = {
   ownerId: string;
   name: string;
+  /**
+   * Chosen by the person creating the project, already checked with
+   * `isValidSlug`. When absent the slug is derived from the name and
+   * disambiguated; when present it is used as is, and a clash fails the
+   * create rather than silently becoming `slug-2`, which is not what they saw.
+   */
+  slug?: string;
   supabase?: SupabaseInput;
   script?: ScriptInput;
   theme?: unknown;
@@ -48,17 +55,7 @@ export function projectRefFromUrl(projectUrl: string): string {
  * we are about to write.
  */
 export async function createProject(input: NewProject) {
-  // Only slugs sharing this base can collide, so there is no need to read the
-  // whole table to pick a suffix.
-  const base = slugify(input.name);
-  const siblings = await db.project.findMany({
-    where: { slug: { startsWith: base } },
-    select: { slug: true },
-  });
-  const slug = uniqueSlug(
-    input.name,
-    siblings.map((p) => p.slug),
-  );
+  const slug = input.slug ?? (await freeSlugFor(input.name));
 
   return db.$transaction(async (tx) => {
     const project = await tx.project.create({
@@ -121,6 +118,23 @@ export async function createProject(input: NewProject) {
       include: { connection: true, scripts: true, members: true },
     });
   });
+}
+
+/**
+ * The first free slug for a name: the name slugified, or `-2`, `-3`, … after
+ * it. Only slugs sharing this base can collide, so there is no need to read the
+ * whole table to pick a suffix.
+ */
+export async function freeSlugFor(name: string): Promise<string> {
+  const base = slugify(name);
+  const siblings = await db.project.findMany({
+    where: { slug: { startsWith: base } },
+    select: { slug: true },
+  });
+  return uniqueSlug(
+    name,
+    siblings.map((p) => p.slug),
+  );
 }
 
 /** Appends a new version rather than overwriting, so a bad upload is reversible. */
