@@ -14,6 +14,8 @@ export type ProvisionView = {
   schemaVersion: number | null;
   currentVersion: number;
   anonEnabled: boolean;
+  /** Anonymous sign-ins per hour, per IP, as Supabase has it; null if unread. */
+  anonRateLimit: number | null;
   sceneSnippet: string | null;
 };
 
@@ -71,6 +73,10 @@ export default function ProvisionSection({
       </p>
     );
   }
+
+  // The last save wins over the page's read, which may predate it.
+  const currentLimit =
+    limitState.done?.rateLimit ?? state.done?.rateLimit ?? view.anonRateLimit;
 
   const stale =
     view.provisioned &&
@@ -145,7 +151,8 @@ export default function ProvisionSection({
                 {" "}
                 Rate limit: <strong>{state.done.rateLimit}</strong> per hour per
                 IP address. A room of participants on one network shares that
-                number — raise it before an event rather than during one.
+                number — if you expect more, raise it before the event rather
+                than during one.
               </>
             )}
           </p>
@@ -173,10 +180,13 @@ export default function ProvisionSection({
               anonymous sign-ins per hour, per IP
             </span>
             <input
+              // Remounts when the saved limit changes, so the field follows it.
+              key={currentLimit ?? "unknown"}
               name="limit"
               type="number"
               min={1}
-              defaultValue={30}
+              defaultValue={currentLimit ?? undefined}
+              placeholder={currentLimit == null ? "unknown" : undefined}
               className="term-input w-32 rounded bg-surface px-2 py-1.5"
             />
           </label>
@@ -185,14 +195,16 @@ export default function ProvisionSection({
             disabled={limitPending}
             className="text-xs text-dim underline underline-offset-4 hover:text-paper disabled:no-underline"
           >
-            {limitPending ? "saving…" : "raise limit"}
+            {limitPending ? "saving…" : "set limit"}
           </button>
           {limitState.error && (
             <span className="text-xs text-danger">{limitState.error}</span>
           )}
-          {limitState.done?.rateLimit != null && (
+          {!limitState.error && (
             <span className="text-xs text-dim">
-              now {limitState.done.rateLimit}/hour
+              {currentLimit != null
+                ? `currently ${currentLimit}/hour`
+                : "couldn’t read the current limit from Supabase"}
             </span>
           )}
         </form>

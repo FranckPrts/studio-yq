@@ -3,6 +3,7 @@ import { requireProjectRole } from "@/lib/auth/dal";
 import {
   accessTokenFor,
   credentialsReadable,
+  getAuthConfig,
   listSupabaseProjects,
   SCOPE_PURPOSE,
   SupabaseApiError,
@@ -165,6 +166,28 @@ async function liveState(connection: {
   }
 }
 
+/**
+ * The project's anonymous sign-in limit as Supabase has it now, so the form
+ * starts from the real number rather than a guess. Null when it cannot be read.
+ */
+async function anonRateLimit(connection: {
+  id: string;
+  projectRef: string | null;
+  provisionedAt: Date | null;
+  accessTokenEnc: string | null;
+} | null): Promise<number | null> {
+  if (!connection?.projectRef || !connection.provisionedAt) return null;
+  if (!connection.accessTokenEnc) return null;
+  try {
+    const token = await accessTokenFor(connection.id);
+    const config = await getAuthConfig(connection.projectRef, token);
+    return config?.rate_limit_anonymous_users ?? null;
+  } catch (error) {
+    console.warn("[supabase] reading the auth config failed:", error);
+    return null;
+  }
+}
+
 export default async function DatabasePage({
   params,
 }: {
@@ -223,6 +246,7 @@ export default async function DatabasePage({
             schemaVersion: project.connection?.schemaVersion ?? null,
             currentVersion: SCHEMA_VERSION,
             anonEnabled: !!project.connection?.anonSignInsEnabled,
+            anonRateLimit: await anonRateLimit(project.connection),
             sceneSnippet:
               project.connection?.projectUrl &&
               project.connection?.publishableKey

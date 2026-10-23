@@ -80,6 +80,9 @@ export async function chooseSupabaseProject(
   }
 }
 
+/** Anonymous sign-ins per hour, per IP, that provisioning raises a project to. */
+const EVENT_ANON_RATE_LIMIT = 1000;
+
 export type ProvisionState = {
   error?: string;
   /** Present when the tables could not be created and must be run by hand. */
@@ -158,6 +161,23 @@ export async function provisionDatabase(
     }
   } catch (error) {
     console.warn("[provision] enabling anonymous sign-ins failed:", error);
+  }
+
+  // Supabase's default (~30 an hour, per IP) is shared by a whole room behind
+  // one venue network, so every project starts at an event-sized limit. Only
+  // ever upwards: a limit we cannot read, or one already set higher, is left
+  // alone. Its own call, so a refusal here never costs the sign-ins above.
+  if (anonEnabled && rateLimit !== null && rateLimit < EVENT_ANON_RATE_LIMIT) {
+    try {
+      const raised = await updateAuthConfig(
+        connection.projectRef,
+        accessToken,
+        { rate_limit_anonymous_users: EVENT_ANON_RATE_LIMIT },
+      );
+      rateLimit = raised?.rate_limit_anonymous_users ?? EVENT_ANON_RATE_LIMIT;
+    } catch (error) {
+      console.warn("[provision] raising the anonymous rate limit failed:", error);
+    }
   }
 
   await db.supabaseConnection.update({
