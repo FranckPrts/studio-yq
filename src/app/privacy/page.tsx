@@ -113,8 +113,8 @@ export default function PrivacyPage() {
 
         <Section title="Google user data">
           <p>
-            A project owner may connect a Google account so that participant
-            reports are sent from that account. We request only:
+            A project owner or collaborator may connect a Google account so
+            that participant reports are sent from that account. We request only:
           </p>
           <ul>
             <li>
@@ -157,8 +157,8 @@ export default function PrivacyPage() {
             , including the Limited Use requirements.
           </p>
           <p>
-            <strong>Disconnecting.</strong> An owner can disconnect Gmail on the
-            project&rsquo;s send page: we revoke the grant at Google and delete
+            <strong>Disconnecting.</strong> Any owner or collaborator can
+            disconnect Gmail on the project&rsquo;s send page: we revoke the grant at Google and delete
             the stored token. You can also remove studio-yq&rsquo;s access at
             any time from{" "}
             <a href="https://myaccount.google.com/permissions">

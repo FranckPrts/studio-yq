@@ -11,8 +11,8 @@ nobody can.
 | **Researcher** (platform role) | Everything a creator can, plus research consent once the Studio database exists |
 | **Creator** (platform role) | Create projects of their own, becoming their owner |
 | **Member** (platform role, the default) | Work in the projects they are invited into |
-| **Project owner** | Everything in their project: members, database, opening and closing, deleting it |
-| **Project collaborator** | Style, script and parameters |
+| **Project owner** | Everything a collaborator can, plus members, renaming, wiping or disconnecting the database, and deleting the project |
+| **Project collaborator** | Style, script and parameters; connecting and provisioning the database; opening and closing; the report, Gmail, the email notice and sending |
 | **Project viewer** | Look, not change |
 
 Platform admin and platform roles are account-wide. Project roles belong to one
@@ -122,8 +122,8 @@ DATABASE_URL='<Neon connection string>' npm run admin -- --email you@example.com
   for local development — its password was chosen for a laptop.
 - `APP_MASTER_KEY` is not needed for this, and production must have its own,
   never the local one. Copying local projects into production therefore leaves
-  their Supabase connections reading as "reconnect needed"; an owner reconnects
-  each, and nothing on the Supabase side is lost.
+  their Supabase connections reading as "reconnect needed"; an owner or
+  collaborator reconnects each, and nothing on the Supabase side is lost.
 
 ## Passwords and lockouts
 

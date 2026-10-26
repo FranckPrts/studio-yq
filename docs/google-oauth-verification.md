@@ -11,18 +11,18 @@ studio-yq is a web app that research teams and event organisers use to run parti
 avatar experiences. After a session, each participant receives a short personal report of
 their experience by email.
 
-The owner of a project connects their own Gmail account so these reports are sent from the
-organiser's address, the address participants already know and can reply to. studio-yq uses
-`gmail.send` only to send these report emails, one per participant, when an owner starts a
-send on the project's "send" page. A send only starts after the owner has agreed to a notice
-about using participants' email addresses.
+An owner or collaborator on a project connects their own Gmail account so these reports are
+sent from the organiser's address, the address participants already know and can reply to.
+studio-yq uses `gmail.send` only to send these report emails, one per participant, when an
+owner or collaborator starts a send on the project's "send" page. A send only starts after an
+owner or collaborator has agreed to a notice about using participants' email addresses.
 
 We request only `gmail.send`, the narrowest scope that allows sending. studio-yq never reads,
 lists, modifies or deletes any email, contact or other Gmail data. A narrower scope would not
 work: the reports must come from the organiser's own mailbox, not a shared no-reply address,
 so that participants recognise the sender and replies reach the organiser. The OAuth refresh
-token is stored encrypted, used only for sending, and deleted when an owner clicks
-"disconnect" or deletes the project. How data is handled is described in our privacy policy:
+token is stored encrypted, used only for sending, and deleted when an owner or
+collaborator clicks "disconnect" or deletes the project. How data is handled is described in our privacy policy:
 https://studio.youquantified.com/privacy
 
 ## Demo video script (≈2–3 min, upload to YouTube as Unlisted)
