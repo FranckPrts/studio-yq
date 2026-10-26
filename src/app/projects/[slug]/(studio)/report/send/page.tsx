@@ -87,7 +87,7 @@ export default async function SendPage({
 
       {/* ── 1. The notice ─────────────────────────────────────────────── */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-xs tracking-widest text-dim uppercase">
+        <h2 className="text-xs text-dim">
           1 · participants&rsquo; email addresses
         </h2>
         <div
@@ -141,7 +141,7 @@ export default async function SendPage({
 
       {/* ── 2. Gmail ──────────────────────────────────────────────────── */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-xs tracking-widest text-dim uppercase">2 · sending account</h2>
+        <h2 className="text-xs text-dim">2 · sending account</h2>
         <div className="flex flex-col gap-2 text-xs leading-relaxed">
           {gmailError && (
             <p role="alert" className="text-danger">
@@ -203,7 +203,7 @@ export default async function SendPage({
 
       {/* ── 3. Sending ────────────────────────────────────────────────── */}
       <section className="flex flex-col gap-3">
-        <h2 className="text-xs tracking-widest text-dim uppercase">3 · send</h2>
+        <h2 className="text-xs text-dim">3 · send</h2>
         <p className="max-w-prose text-[11px] leading-relaxed text-dim">
           Sends the{" "}
           <Link
@@ -250,7 +250,7 @@ export default async function SendPage({
       {/* ── History ───────────────────────────────────────────────────── */}
       {runs.length > 0 && (
         <section className="flex flex-col gap-3 border-t border-paper/10 pt-8">
-          <h2 className="text-xs tracking-widest text-dim uppercase">sent so far</h2>
+          <h2 className="text-xs text-dim">sent so far</h2>
           <ul className="flex flex-col gap-2 text-xs">
             {runs.map((r) => (
               <li

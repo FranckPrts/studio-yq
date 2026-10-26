@@ -69,7 +69,7 @@ export default async function MiniAvatarPage({
 
       <section className="flex max-w-3xl flex-col gap-4">
         <header className="flex flex-col gap-1">
-          <h2 className="text-xs tracking-widest text-dim uppercase">script</h2>
+          <h2 className="text-xs text-dim">script</h2>
           <p className="max-w-prose text-[11px] leading-relaxed text-dim">
             Optional. Without one, reports draw the main script as it is — which
             can crowd a map, so a simpler version helps: one fish instead of a
@@ -114,7 +114,7 @@ export default async function MiniAvatarPage({
 
       <section className="flex flex-col gap-4 border-t border-paper/10 pt-8">
         <header className="flex flex-col gap-1">
-          <h2 className="text-xs tracking-widest text-dim uppercase">preview</h2>
+          <h2 className="text-xs text-dim">preview</h2>
           <p className="max-w-prose text-[11px] leading-relaxed text-dim">
             Real {lexicon.nounPlural}, rendered the way a report will: each one
             run to frame and photographed, on the project&rsquo;s background.

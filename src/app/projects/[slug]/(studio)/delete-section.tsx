@@ -34,7 +34,7 @@ export default function DeleteSection({
       <div className="mt-4 flex flex-col gap-4 leading-relaxed">
         <div className="flex flex-col gap-1">
           <p className="text-paper/90">Removed from Studio, for good:</p>
-          <ul className="list-disc pl-5 text-dim">
+          <ul className="list-disc pl-5 text-paper/80">
             <li>the project, its settings, wording and report templates</li>
             <li>every script and mini-script version</li>
             <li>its members and open invitations</li>
@@ -49,7 +49,7 @@ export default function DeleteSection({
 
         <div className="flex flex-col gap-1">
           <p className="text-paper/90">Not touched — yours to do, if you want them gone:</p>
-          <ul className="list-disc pl-5 text-dim">
+          <ul className="list-disc pl-5 text-paper/80">
             <li>
               {supabaseRef ? (
                 <>
@@ -92,7 +92,7 @@ export default function DeleteSection({
           <form action={action} className="flex flex-col gap-3">
             <input type="hidden" name="slug" value={slug} />
             <label className="flex flex-col gap-1">
-              <span className="text-dim">
+              <span className="text-paper/80">
                 type <code className="text-paper/90">{slug}</code> to confirm
               </span>
               <input

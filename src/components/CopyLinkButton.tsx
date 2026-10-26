@@ -3,7 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { buttonClass, cx } from "@/design";
 
-/** A small "copy" button that puts `url` on the clipboard and says so for 2s. */
+/**
+ * A small "copy" button that puts `url` on the clipboard and says so for 2s.
+ *
+ * The button keeps its label; "copied" appears beside it, never inside it —
+ * status sits next to a button (`docs/participant-styling.md`). The live
+ * region is always rendered, so a screen reader hears it when it fills.
+ */
 export default function CopyLinkButton({
   url,
   className,
@@ -27,15 +33,22 @@ export default function CopyLinkButton({
     timer.current = setTimeout(() => setCopied(false), 2000);
   }
 
+  // One inline box, so a flex parent's gap counts it once whether or not the
+  // status is showing.
   return (
-    <button
-      type="button"
-      onClick={copy}
-      title="Copy link"
-      aria-label={copied ? "Link copied" : "Copy link"}
-      className={cx(buttonClass("boxed", "xs"), "shrink-0 align-middle", className)}
-    >
-      <span aria-live="polite">{copied ? "copied ✓" : "copy"}</span>
-    </button>
+    <span className={cx("inline-flex shrink-0 items-center align-middle", className)}>
+      <button
+        type="button"
+        onClick={copy}
+        title="Copy link"
+        aria-label="Copy link"
+        className={buttonClass("boxed", "xs")}
+      >
+        copy
+      </button>
+      <span aria-live="polite" className={cx("text-[11px] text-success", copied && "ml-2")}>
+        {copied && "copied"}
+      </span>
+    </span>
   );
 }
