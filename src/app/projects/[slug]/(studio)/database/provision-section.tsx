@@ -211,7 +211,7 @@ export default function ProvisionSection({
       )}
 
       {view.provisioned && view.sceneSnippet && (
-        <div className="flex flex-col gap-2 border-t border-paper/10 pt-5">
+        <div id="scene-hookup" className="flex flex-col gap-2 border-t border-paper/10 pt-5">
           <h3 className="text-xs text-dim">scene hookup</h3>
           <p className="text-[11px] leading-relaxed text-dim">
             Your synchrony scene talks to this database directly — nothing is
