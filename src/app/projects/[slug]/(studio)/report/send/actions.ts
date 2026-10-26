@@ -17,12 +17,12 @@ import {
 const pagePath = (slug: string) => `/projects/${slug}/report/send`;
 
 /**
- * Agreeing to the pass-through notice — an owner's decision, recorded with who
- * and when, against the notice's current version.
+ * Agreeing to the pass-through notice — any collaborator's to make, recorded
+ * with who and when, against the notice's current version.
  */
 export async function acknowledgeNotice(formData: FormData): Promise<void> {
   const slug = String(formData.get("slug") ?? "");
-  const { projectId, user } = await requireProjectRole(slug, "OWNER");
+  const { projectId, user } = await requireProjectRole(slug, "COLLABORATOR");
   if (Number(formData.get("version")) !== REPORT_NOTICE_VERSION) return; // agreed to old words
   await db.project.update({
     where: { id: projectId },
@@ -38,7 +38,7 @@ export async function acknowledgeNotice(formData: FormData): Promise<void> {
 /** Withdrawing it stops any send, including one in progress. */
 export async function withdrawNotice(formData: FormData): Promise<void> {
   const slug = String(formData.get("slug") ?? "");
-  const { projectId } = await requireProjectRole(slug, "OWNER");
+  const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
   await db.project.update({
     where: { id: projectId },
     data: { reportNoticeAckById: null, reportNoticeAckAt: null, reportNoticeVersion: null },
@@ -48,7 +48,7 @@ export async function withdrawNotice(formData: FormData): Promise<void> {
 
 export async function disconnectGmailAction(formData: FormData): Promise<void> {
   const slug = String(formData.get("slug") ?? "");
-  const { projectId } = await requireProjectRole(slug, "OWNER");
+  const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
   await disconnectGmail(projectId);
   revalidatePath(pagePath(slug));
 }

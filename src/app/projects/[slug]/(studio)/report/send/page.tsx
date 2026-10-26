@@ -26,8 +26,8 @@ function when(date: Date | string): string {
 }
 
 /**
- * Sending participant reports. Three gates stand in front of it, in order: an
- * owner's agreement that addresses pass through studio-yq, a Gmail account to
+ * Sending participant reports. Three gates stand in front of it, in order: a
+ * collaborator's agreement that addresses pass through studio-yq, a Gmail account to
  * send from, and — for anything that reaches participants — a test of the saved
  * text to the team.
  */
@@ -41,8 +41,9 @@ export default async function SendPage({
   const { slug } = await params;
   const { gmail: justConnected, gmail_error: gmailError } = await searchParams;
   const access = await requireProjectRole(slug, "VIEWER");
-  const isOwner = access.role === "OWNER";
-  const canSend = isOwner || access.role === "COLLABORATOR";
+  // Any collaborator may agree to the notice, connect Gmail and send; each of
+  // those records who did it, and the page names them.
+  const canSend = access.role === "OWNER" || access.role === "COLLABORATOR";
 
   const [project, script, status, team, runs] = await Promise.all([
     db.project.findUniqueOrThrow({
@@ -106,7 +107,7 @@ export default async function SendPage({
                 Agreed by {status.notice.by?.displayName || status.notice.by?.email || "a former member"}{" "}
                 on {when(status.notice.at!)} (notice v{status.notice.version}).
               </p>
-              {isOwner && (
+              {canSend && (
                 <form action={withdrawNotice}>
                   <input type="hidden" name="slug" value={slug} />
                   <button className="text-dim underline-offset-4 hover:text-paper hover:underline">
@@ -115,7 +116,7 @@ export default async function SendPage({
                 </form>
               )}
             </div>
-          ) : isOwner ? (
+          ) : canSend ? (
             <form action={acknowledgeNotice} className="border-t border-paper/10 pt-3">
               <input type="hidden" name="slug" value={slug} />
               <input type="hidden" name="version" value={REPORT_NOTICE_VERSION} />
@@ -128,12 +129,12 @@ export default async function SendPage({
                 I agree, on behalf of this project
               </button>
               <p className="mt-1 text-[11px] text-dim">
-                Recorded with your name and the time. Any owner can withdraw it.
+                Recorded with your name and the time. Any collaborator can withdraw it.
               </p>
             </form>
           ) : (
             <p className="border-t border-paper/10 pt-3 text-warning/90">
-              Not agreed yet. Only an owner of the project can agree.
+              Not agreed yet. You are a viewer, so you can&rsquo;t agree — ask a collaborator or owner.
             </p>
           )}
         </div>
@@ -159,7 +160,7 @@ export default async function SendPage({
                   {when(status.gmail.updatedAt)}. It can send as this account, never read it.
                 </span>
               </p>
-              {isOwner && (
+              {canSend && (
                 <div className="flex gap-4">
                   <a
                     href={`/api/connect/google/start?project=${slug}`}
@@ -181,7 +182,7 @@ export default async function SendPage({
               Gmail sending isn&rsquo;t set up on this server yet — it needs the{" "}
               <code>GOOGLE_OAUTH_*</code> settings in <code>.env.example</code>.
             </p>
-          ) : isOwner ? (
+          ) : canSend ? (
             <p>
               <a
                 href={`/api/connect/google/start?project=${slug}`}
@@ -196,7 +197,7 @@ export default async function SendPage({
               </span>
             </p>
           ) : (
-            <p className="text-warning/90">No account connected. Only an owner can connect one.</p>
+            <p className="text-warning/90">No account connected. You are a viewer, so you can&rsquo;t connect one — ask a collaborator or owner.</p>
           )}
         </div>
       </section>
@@ -216,7 +217,7 @@ export default async function SendPage({
           finishes.
         </p>
         {!canSend ? (
-          <p className="text-xs text-dim">You have read-only access to this project.</p>
+          <p className="text-xs text-dim">You are a viewer on this project, so you can&rsquo;t send — ask an owner to make you a collaborator.</p>
         ) : !ready ? (
           <p className="text-xs text-warning/90">Sending opens once 1 and 2 are done.</p>
         ) : !script || !database ? (
@@ -226,7 +227,6 @@ export default async function SendPage({
         ) : (
           <SendConsole
             slug={slug}
-            isOwner={isOwner}
             team={team}
             projectName={project.name}
             theme={{ ...theme, fontStack: FONTS[theme.font].stack }}

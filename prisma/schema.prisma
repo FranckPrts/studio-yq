@@ -317,6 +317,11 @@ model SupabaseConnection {
   /// backwards past its recorded snippet.
   schemaVersion      Int?
 
+  /// Who authorised the Supabase account and who last ran provisioning. Any
+  /// collaborator may do either, so the setup records the person, not a role.
+  connectedById   String?
+  provisionedById String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

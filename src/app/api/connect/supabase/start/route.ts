@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Missing project" }, { status: 400 });
   }
 
-  // Connecting a database is an owner's decision, not a collaborator's.
-  await requireProjectRole(slug, "OWNER");
+  // Any collaborator may connect the database; who did is recorded on callback.
+  await requireProjectRole(slug, "COLLABORATOR");
 
   const state = base64url(randomBytes(32));
   const codeVerifier = base64url(randomBytes(64));

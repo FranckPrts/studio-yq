@@ -12,6 +12,7 @@ import MembersSection from "./members-section";
 import DeleteSection from "./delete-section";
 import { credentialsReadable } from "@/lib/supabase/management";
 import SetupChecklist, { setupSteps } from "./setup-checklist";
+import { databaseActors } from "@/lib/projects/setup-actors";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,8 @@ export default async function ProjectSettingsPage({
       connection: {
         select: {
           id: true,
+          connectedById: true,
+          provisionedById: true,
           projectRef: true,
           provisionedAt: true,
           accessTokenEnc: true,
@@ -106,6 +109,13 @@ export default async function ProjectSettingsPage({
         : connection.provisionedAt
           ? `${connection.projectRef} · provisioned`
           : `${connection.projectRef} · not provisioned`;
+  // Any collaborator may set the database up, so name the person who did.
+  const actors = await databaseActors(connection);
+  const databaseState = connection?.provisionedAt && actors.provisionedBy
+    ? `${connectionState} by ${actors.provisionedBy}`
+    : connection?.accessTokenEnc && actors.connectedBy
+      ? `${connectionState} · connected by ${actors.connectedBy}`
+      : connectionState;
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
@@ -121,7 +131,7 @@ export default async function ProjectSettingsPage({
           steps={setupSteps({
             slug: project.slug,
             databaseReady,
-            databaseState: connectionState,
+            databaseState,
             hasScript: !!script,
             parameterCount: script ? (script.parameters as unknown[]).length : 0,
             hasTeam: project.members.length > 1 || pending.length > 0,

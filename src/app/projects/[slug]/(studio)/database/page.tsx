@@ -14,6 +14,7 @@ import ProvisionSection from "./provision-section";
 import DangerSection, { type LiveState } from "./danger-section";
 import { inspectSpoke } from "@/lib/spoke/inspect";
 import { SCHEMA_VERSION, sceneSnippet } from "@/lib/spoke/schema";
+import { databaseActors } from "@/lib/projects/setup-actors";
 
 export const dynamic = "force-dynamic";
 
@@ -214,10 +215,22 @@ export default async function DatabasePage({
           accessTokenEnc: true,
           refreshTokenEnc: true,
           keyVersion: true,
+          connectedById: true,
+          provisionedById: true,
         },
       },
     },
   });
+
+  // Connecting and provisioning are shared work; wiping and disconnecting stay
+  // with owners because they destroy participant data or strand the project.
+  const canSetUp = access.role === "OWNER" || access.role === "COLLABORATOR";
+  const canDestroy = access.role === "OWNER";
+  const actors = await databaseActors(project.connection);
+  const byline = [
+    actors.connectedBy && `connected by ${actors.connectedBy}`,
+    actors.provisionedBy && `provisioned by ${actors.provisionedBy}`,
+  ].filter(Boolean);
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
@@ -229,17 +242,28 @@ export default async function DatabasePage({
         back; the secret key is encrypted at rest and never reaches a browser.
       </p>
 
+      {!canSetUp && (
+        <p className="max-w-prose text-[11px] leading-relaxed text-warning/80">
+          You are a viewer on this project, so you can see the database setup
+          but not change it. Ask an owner to make you a collaborator.
+        </p>
+      )}
+
+      {byline.length > 0 && (
+        <p className="text-[11px] text-dim">{byline.join(" · ")}</p>
+      )}
+
       <ConnectionSection
         slug={slug}
         view={await connectionView(project.connection)}
-        canEdit={access.role === "OWNER"}
+        canEdit={canSetUp}
       />
 
       <section className="flex flex-col gap-4 border-t border-paper/10 pt-6">
         <h2 className="text-xs text-dim">tables &amp; policies</h2>
         <ProvisionSection
           slug={slug}
-          canEdit={access.role === "OWNER"}
+          canEdit={canSetUp}
           view={{
             ready: !!project.connection?.projectRef,
             provisioned: !!project.connection?.provisionedAt,
@@ -262,7 +286,7 @@ export default async function DatabasePage({
       <section className="flex flex-col gap-4 border-t border-paper/10 pt-6">
         <DangerSection
           slug={slug}
-          canEdit={access.role === "OWNER"}
+          canEdit={canDestroy}
           isOpen={project.openForParticipation}
           live={await liveState(project.connection)}
         />

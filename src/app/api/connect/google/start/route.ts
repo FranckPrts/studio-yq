@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("project");
   if (!slug) return NextResponse.json({ error: "Missing project" }, { status: 400 });
 
-  // Which account a project's mail comes from is an owner's decision.
-  await requireProjectRole(slug, "OWNER");
+  // Any collaborator may choose the sending account; who did is recorded.
+  await requireProjectRole(slug, "COLLABORATOR");
   if (!gmailConfigured()) {
     return NextResponse.json({ error: "Google OAuth is not configured" }, { status: 503 });
   }

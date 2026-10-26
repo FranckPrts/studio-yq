@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { db } from "@/lib/db";
-import type { ReportRunKind, Role } from "@/generated/prisma/enums";
+import type { Role } from "@/generated/prisma/enums";
 import { participantEmail, reachableOwners } from "@/lib/spoke/ops";
 import { coerceTheme } from "@/lib/theme/project-theme";
 import {
@@ -40,8 +40,6 @@ export type RecipientKey = `p:${string}` | `t:${string}:${string}`;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Runs that write to participants — only owners may create them. */
-const TO_PARTICIPANTS: ReportRunKind[] = ["PARTICIPANTS", "EVERYONE"];
 
 export function templateHash(template: ReportEmail): string {
   return createHash("sha256").update(JSON.stringify(template)).digest("hex");
@@ -169,9 +167,6 @@ export async function createRun(
 ) {
   const status = await requireReady(access.projectId);
   const kind = request.kind;
-  if (TO_PARTICIPANTS.includes(kind) && access.role !== "OWNER") {
-    throw new SendRefused("Only an owner can send to participants.");
-  }
 
   let plan: RecipientKey[];
   let skipped = 0;
@@ -301,9 +296,6 @@ export async function deliver(
   });
   if (!run) throw new SendRefused("No such send.");
   if (run.stoppedAt) throw new SendRefused("This send was stopped.");
-  if (TO_PARTICIPANTS.includes(run.kind) && access.role !== "OWNER") {
-    throw new SendRefused("Only an owner can send to participants.");
-  }
   const plan = run.plan as string[];
   if (!plan.includes(request.recipientKey)) throw new SendRefused("Not a recipient of this send.");
 

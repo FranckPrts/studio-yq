@@ -39,7 +39,6 @@ type Progress = {
 
 export default function SendConsole({
   slug,
-  isOwner,
   team,
   projectName,
   theme,
@@ -53,7 +52,6 @@ export default function SendConsole({
   testedAt,
 }: {
   slug: string;
-  isOwner: boolean;
   team: TeamMember[];
   projectName: string;
   theme: ProjectTheme & { font: FontKey; fontStack: string };
@@ -240,7 +238,6 @@ export default function SendConsole({
       )}
 
       <SendTo
-        isOwner={isOwner}
         team={team}
         people={people}
         firstPlayed={firstPlayed}
@@ -251,18 +248,16 @@ export default function SendConsole({
         execute={execute}
       />
 
-      {isOwner && (
-        <Everyone
-          slug={slug}
-          audience={audience}
-          picturesReady={picturesReady}
-          failedPictures={failedPictures}
-          testedAt={testedAt}
-          busy={running}
-          nounPlural={nounPlural}
-          execute={execute}
-        />
-      )}
+      <Everyone
+        slug={slug}
+        audience={audience}
+        picturesReady={picturesReady}
+        failedPictures={failedPictures}
+        testedAt={testedAt}
+        busy={running}
+        nounPlural={nounPlural}
+        execute={execute}
+      />
     </div>
   );
 }
@@ -270,7 +265,6 @@ export default function SendConsole({
 // ─── "Send to" ───────────────────────────────────────────────────────────────
 
 function SendTo({
-  isOwner,
   team,
   people,
   firstPlayed,
@@ -280,7 +274,6 @@ function SendTo({
   testedAt,
   execute,
 }: {
-  isOwner: boolean;
   team: TeamMember[];
   people: Person[];
   firstPlayed: string | null;
@@ -330,10 +323,6 @@ function SendTo({
   }, [query, team, people, audience, recipients]);
 
   function add(r: Recipient) {
-    if (r.type === "participant" && !isOwner) {
-      setError("Only an owner can send to participants. Add someone from the team.");
-      return;
-    }
     setError(null);
     setConfirming(false);
     setRecipients((list) => (has(r) ? list : [...list, r]));
@@ -433,7 +422,6 @@ function SendTo({
                 <button
                   type="button"
                   onClick={() => add(r.recipient)}
-                  disabled={r.tag === "participant" && !isOwner}
                   className="flex w-full items-baseline justify-between gap-3 px-2 py-1 text-left hover:bg-paper/10 disabled:opacity-40"
                 >
                   <span className="truncate">
@@ -560,7 +548,7 @@ function Everyone({
   const count = includeSent ? reachable : reachable - already;
 
   const checks = [
-    { ok: true, text: "An owner agreed to the notice about participant emails" },
+    { ok: true, text: "The notice about participant emails is agreed" },
     { ok: true, text: "A Gmail account is connected" },
     { ok: !!testedAt, text: testedAt ? "The team received a test of the current saved text" : "Send the team a test of the current saved text (above)" },
     {

@@ -57,7 +57,10 @@ export async function GET(request: NextRequest) {
   // The cookie proves the flow; it does not prove the person still may act on
   // this project. Re-authorise rather than trusting what we wrote ten minutes
   // ago — membership can have been revoked in between.
-  const { projectId } = await requireProjectRole(flow.slug, "OWNER");
+  const { projectId, user } = await requireProjectRole(
+    flow.slug,
+    "COLLABORATOR",
+  );
 
   try {
     const tokens = await exchangeCode(code, flow.codeVerifier);
@@ -78,6 +81,10 @@ export async function GET(request: NextRequest) {
     }
 
     await storeGrant(connectionId, tokens);
+    await db.supabaseConnection.update({
+      where: { id: connectionId },
+      data: { connectedById: user.id },
+    });
     return back(flow.slug);
   } catch (error) {
     console.error("[supabase oauth] exchange failed:", error);

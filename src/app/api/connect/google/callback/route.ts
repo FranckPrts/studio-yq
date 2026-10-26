@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
   const state = params.get("state");
   if (!code || !state || !safeEqual(state, flow.state)) return back(flow.slug, "state");
 
-  // The cookie proves the flow, not that this person still owns the project.
-  const { projectId, user } = await requireProjectRole(flow.slug, "OWNER");
+  // The cookie proves the flow, not that this person may still act on it.
+  const { projectId, user } = await requireProjectRole(flow.slug, "COLLABORATOR");
 
   try {
     await connectGmail(projectId, user.id, code, flow.codeVerifier);

@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { notFound, redirect } from "next/navigation";
+import { forbidden, notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { readSession, type SessionUser } from "./session";
 import type { Role } from "@/generated/prisma/enums";
@@ -95,7 +95,9 @@ export async function requireProjectRole(
   // Not a member: answer exactly as if the project did not exist, so the set of
   // slugs in use cannot be probed by a signed-in stranger.
   if (!membership) notFound();
-  if (RANK[membership.role] < RANK[minimum]) notFound();
+  // A member already knows the project exists, so a 404 would only confuse
+  // them: say their role does not allow this, and let them ask an owner.
+  if (RANK[membership.role] < RANK[minimum]) forbidden();
 
   return {
     user,

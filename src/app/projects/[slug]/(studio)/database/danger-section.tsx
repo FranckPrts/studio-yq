@@ -211,6 +211,13 @@ export default function DangerSection({
         )}
       </section>
 
+      {!canEdit && (
+        <p className="text-[11px] leading-relaxed text-dim">
+          Wiping data, dropping the schema and disconnecting are for owners
+          only — ask one if this database needs resetting.
+        </p>
+      )}
+
       {canEdit && (
         <section className="flex flex-col gap-4">
           <h2 className="text-xs text-dim">destructive</h2>

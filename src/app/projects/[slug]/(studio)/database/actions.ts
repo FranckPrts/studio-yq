@@ -33,7 +33,7 @@ export async function chooseSupabaseProject(
 ): Promise<ConnectionState> {
   const slug = String(formData.get("slug") ?? "");
   const ref = String(formData.get("ref") ?? "").trim();
-  const { projectId } = await requireProjectRole(slug, "OWNER");
+  const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
 
   if (!ref) return { error: "Choose a Supabase project." };
 
@@ -109,7 +109,7 @@ export async function provisionDatabase(
   formData: FormData,
 ): Promise<ProvisionState> {
   const slug = String(formData.get("slug") ?? "");
-  const { projectId } = await requireProjectRole(slug, "OWNER");
+  const { projectId, user } = await requireProjectRole(slug, "COLLABORATOR");
 
   const connection = await db.supabaseConnection.findUnique({
     where: { projectId },
@@ -184,6 +184,7 @@ export async function provisionDatabase(
     where: { id: connection.id },
     data: {
       provisionedAt: new Date(),
+      provisionedById: user.id,
       schemaVersion: SCHEMA_VERSION,
       anonSignInsEnabled: anonEnabled,
     },
@@ -206,7 +207,7 @@ export async function setAnonRateLimit(
 ): Promise<ProvisionState> {
   const slug = String(formData.get("slug") ?? "");
   const limit = Number(formData.get("limit"));
-  const { projectId } = await requireProjectRole(slug, "OWNER");
+  const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
 
   if (!Number.isInteger(limit) || limit < 1) {
     return { error: "Enter a whole number of sign-ins per hour." };
