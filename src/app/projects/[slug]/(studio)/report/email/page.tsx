@@ -55,7 +55,7 @@ export default async function EmailPage({
       : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-8">
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-4 md:p-8">
       <PageHeader
         title="email"
         subtitle="What each participant receives — one email per person, covering all their avatars."

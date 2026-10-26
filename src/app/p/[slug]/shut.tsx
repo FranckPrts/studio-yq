@@ -28,7 +28,7 @@ export default function Shut({
         color: theme.paper,
         fontFamily: FONTS[theme.font].stack,
       }}
-      className="flex min-h-screen items-center justify-center p-8"
+      className="flex min-h-screen items-center justify-center p-4 md:p-8"
     >
       <div className="max-w-sm">
         <h1 className="text-sm">{title}</h1>

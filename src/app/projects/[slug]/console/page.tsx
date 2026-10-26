@@ -48,10 +48,10 @@ export default async function ConsolePage({
     !!connection.provisionedAt;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 bg-void p-8 text-paper">
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 bg-void p-4 md:p-8 text-paper">
       {/* Opened in its own tab from the project menu, so no menu here — just
           the way back to it. */}
-      <header className="flex items-center justify-between gap-4 border-b border-paper/10 pb-3">
+      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-paper/10 pb-3">
         <div className="min-w-0">
           <h1 className="text-sm">{project.name} · live console</h1>
           <p className="text-xs text-dim">

@@ -61,7 +61,7 @@ export default async function MiniAvatarPage({
       : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 p-8">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 p-4 md:p-8">
       <PageHeader
         title="mini-avatar"
         subtitle={`The simplified ${lexicon.noun} a participant report draws — on the map, and in the email.`}

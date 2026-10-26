@@ -56,7 +56,7 @@ export function SkeletonHeader({
   return (
     <div
       className={cx(
-        "flex items-center justify-between gap-4",
+        "flex flex-wrap items-center justify-between gap-x-6 gap-y-2",
         divided && "border-b border-paper/10 pb-3",
       )}
     >
@@ -65,7 +65,7 @@ export function SkeletonHeader({
         <SkeletonLine className="w-48" />
       </div>
       {actions > 0 && (
-        <div className="flex shrink-0 gap-2">
+        <div className="flex flex-wrap gap-2">
           {Array.from({ length: actions }, (_, i) => (
             <SkeletonButton key={i} />
           ))}
@@ -87,7 +87,7 @@ export function SkeletonSection({ rows = 3 }: { rows?: number }) {
       {Array.from({ length: rows }, (_, i) => (
         <div
           key={i}
-          className="flex items-center justify-between gap-4 border-b border-paper/10 pb-3"
+          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-paper/10 pb-3"
         >
           <div className="flex flex-col gap-2">
             <SkeletonTitle className={i % 2 ? "w-32" : "w-48"} />

@@ -233,7 +233,7 @@ export default async function DatabasePage({
   ].filter(Boolean);
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-8">
       <PageHeader title="database" />
 
       <p className="max-w-prose text-[11px] leading-relaxed text-dim">

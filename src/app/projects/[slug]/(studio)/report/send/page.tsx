@@ -80,7 +80,7 @@ export default async function SendPage({
   const ready = status.notice.current && !!status.gmail;
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 p-8">
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 p-4 md:p-8">
       <PageHeader
         title="send"
         subtitle="One email per participant, from your Gmail. Nothing goes out without the checks below."

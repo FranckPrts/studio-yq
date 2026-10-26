@@ -9,7 +9,7 @@ import { buttonClass } from "@/design";
  */
 export default function Forbidden() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 bg-void p-8 text-paper">
+    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 bg-void p-4 md:p-8 text-paper">
       <h1 className="text-sm">Your role doesn&apos;t allow this</h1>
       <p className="max-w-prose text-xs leading-relaxed text-dim">
         You are on this project, but the thing you tried needs a higher role —

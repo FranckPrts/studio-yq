@@ -54,7 +54,7 @@ export default async function MapPage({
       : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-8">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-4 md:p-8">
       <PageHeader
         title="map"
         subtitle="The room as every report shows it. Find someone to see it as they will."

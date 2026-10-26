@@ -54,7 +54,7 @@ export default async function VisualPage({
   const { optionalMarker } = coerceCopy(project.copy);
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 p-8">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 p-4 md:p-8">
       <PageHeader
         title="script & parameters"
         subtitle="The p5 sketch, and which of its knobs a participant may turn."

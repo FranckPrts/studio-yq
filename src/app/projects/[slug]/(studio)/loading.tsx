@@ -7,7 +7,7 @@ import { SkeletonHeader, SkeletonPage, SkeletonSection } from "@/design";
  */
 export default function Loading() {
   return (
-    <SkeletonPage className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
+    <SkeletonPage className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-8">
       <SkeletonHeader divided />
       <SkeletonSection rows={2} />
       <SkeletonSection rows={3} />

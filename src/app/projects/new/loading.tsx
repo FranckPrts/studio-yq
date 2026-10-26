@@ -3,7 +3,7 @@ import { Skeleton, SkeletonHeader, SkeletonLine, SkeletonPage } from "@/design";
 /** The new-project form while it loads: two fields and the submit. */
 export default function Loading() {
   return (
-    <SkeletonPage className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-8 bg-void p-8 text-paper">
+    <SkeletonPage className="mx-auto flex min-h-screen w-full max-w-xl flex-col gap-8 bg-void p-4 md:p-8 text-paper">
       <SkeletonHeader actions={1} />
       <div className="flex flex-col gap-4">
         {[0, 1].map((i) => (

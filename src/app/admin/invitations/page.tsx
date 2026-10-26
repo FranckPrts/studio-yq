@@ -42,9 +42,9 @@ export default async function InvitationsPage() {
   ]);
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 bg-void p-8 text-paper">
-      <header className="flex items-center justify-between">
-        <div>
+    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-8 bg-void p-4 md:p-8 text-paper">
+      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+        <div className="min-w-0">
           <h1 className="text-sm">People</h1>
           <p className="text-xs text-dim">
             Administrators, what each person may start, and the invitation links accounts are created from.

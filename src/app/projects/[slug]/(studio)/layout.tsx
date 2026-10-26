@@ -4,6 +4,7 @@ import { requireProjectRole } from "@/lib/auth/dal";
 import { projectReadiness } from "@/lib/projects/readiness";
 import { Skeleton, SkeletonLine, SkeletonTitle } from "@/design";
 import Sidebar from "./sidebar";
+import { MenuPanel, ProjectMenuProvider } from "./project-menu";
 
 /**
  * Everything used to *set up* a project shares this frame: a vertical menu on
@@ -16,6 +17,9 @@ import Sidebar from "./sidebar";
  * Only the access check holds the frame back. The menu's own data (name,
  * readiness) streams in behind a skeleton, so opening a project shows the
  * frame and the page's `loading.tsx` at once instead of waiting on both.
+ *
+ * On a phone the menu hides behind the page header's `menu` button
+ * (`project-menu.tsx`).
  */
 export default async function StudioLayout({
   children,
@@ -25,14 +29,16 @@ export default async function StudioLayout({
   const access = await requireProjectRole(slug, "VIEWER");
 
   return (
-    <div className="flex min-h-screen flex-col bg-void text-paper md:flex-row">
-      <aside className="shrink-0 border-b border-paper/10 p-6 md:sticky md:top-0 md:h-screen md:w-60 md:overflow-y-auto md:border-r md:border-b-0">
-        <Suspense fallback={<SidebarSkeleton />}>
-          <ProjectSidebar slug={slug} projectId={access.projectId} />
-        </Suspense>
-      </aside>
-      <div className="min-w-0 flex-1">{children}</div>
-    </div>
+    <ProjectMenuProvider>
+      <div className="flex min-h-screen flex-col bg-void text-paper md:flex-row">
+        <MenuPanel>
+          <Suspense fallback={<SidebarSkeleton />}>
+            <ProjectSidebar slug={slug} projectId={access.projectId} />
+          </Suspense>
+        </MenuPanel>
+        <div className="min-w-0 flex-1">{children}</div>
+      </div>
+    </ProjectMenuProvider>
   );
 }
 

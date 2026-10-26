@@ -14,7 +14,7 @@ export default async function ColoursPage({
   const { theme, canEdit } = await loadFrontend(slug);
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-8">
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-8">
       <PageHeader
         title="style & language · colours & font"
         subtitle="The colours and typeface the participant page is drawn in."
