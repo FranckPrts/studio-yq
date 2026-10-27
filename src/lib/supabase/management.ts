@@ -453,3 +453,25 @@ export async function updateAuthConfig(
     config,
   );
 }
+
+/**
+ * The project's anonymous sign-in limit as Supabase has it now, so the form
+ * starts from the real number rather than a guess. Null when it cannot be read.
+ */
+export async function anonRateLimit(connection: {
+  id: string;
+  projectRef: string | null;
+  provisionedAt: Date | null;
+  accessTokenEnc: string | null;
+} | null): Promise<number | null> {
+  if (!connection?.projectRef || !connection.provisionedAt) return null;
+  if (!connection.accessTokenEnc) return null;
+  try {
+    const token = await accessTokenFor(connection.id);
+    const config = await getAuthConfig(connection.projectRef, token);
+    return config?.rate_limit_anonymous_users ?? null;
+  } catch (error) {
+    console.warn("[supabase] reading the auth config failed:", error);
+    return null;
+  }
+}

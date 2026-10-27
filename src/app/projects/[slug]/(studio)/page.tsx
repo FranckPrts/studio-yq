@@ -90,7 +90,7 @@ export default async function ProjectSettingsPage({
   const isOwner = access.role === "OWNER";
   const canDelete = isOwner || access.user.isPlatformAdmin;
   const canOperate = isOwner || access.role === "COLLABORATOR";
-  const readiness = await projectReadiness(access.projectId);
+  const readiness = await projectReadiness(access.projectId, { checkAnonLimit: true });
   const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
 
   const needsReconnect = !!connection && !credentialsReadable(connection);
@@ -132,6 +132,9 @@ export default async function ProjectSettingsPage({
             slug: project.slug,
             databaseReady,
             databaseState,
+            databaseWarnings: readiness.warnings
+              .filter((w) => w.area === "database")
+              .map((w) => w.text),
             hasScript: !!script,
             parameterCount: script ? (script.parameters as unknown[]).length : 0,
             hasTeam: project.members.length > 1 || pending.length > 0,
@@ -147,6 +150,7 @@ export default async function ProjectSettingsPage({
           open={project.openForParticipation}
           canEdit={canOperate}
           missing={readiness.missing}
+          warnings={readiness.warnings}
           publicUrl={`${base}/p/${project.slug}`}
         />
         <ConclusionToggle

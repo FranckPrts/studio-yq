@@ -32,7 +32,7 @@ export default function NewProjectForm({ base }: { base: string }) {
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Nowadays · CCN 2026"
+          placeholder="Studio project"
           className="term-input rounded bg-surface px-2 py-1.5"
         />
       </label>
@@ -52,7 +52,7 @@ export default function NewProjectForm({ base }: { base: string }) {
             }}
             spellCheck={false}
             autoCapitalize="off"
-            className="term-input min-w-0 flex-1 bg-transparent"
+            className="term-input min-w-0 flex-1 bg-transparent pb-0"
           />
         </div>
       </label>

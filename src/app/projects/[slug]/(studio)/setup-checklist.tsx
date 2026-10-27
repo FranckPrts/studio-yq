@@ -20,12 +20,15 @@ export type SetupStep = {
   /** null — nothing the platform can check. */
   done: boolean | null;
   optional?: boolean;
+  /** Done, but something there looks off. Shown, never blocking. */
+  warnings?: string[];
 };
 
 export function setupSteps({
   slug,
   databaseReady,
   databaseState,
+  databaseWarnings,
   hasScript,
   parameterCount,
   hasTeam,
@@ -34,6 +37,7 @@ export function setupSteps({
   slug: string;
   databaseReady: boolean;
   databaseState: string;
+  databaseWarnings: string[];
   hasScript: boolean;
   parameterCount: number;
   hasTeam: boolean;
@@ -49,6 +53,7 @@ export function setupSteps({
         : "Create a new Supabase project for this experiment, connect it here, then let us set up its tables and anonymous sign-ins.",
       href: `${base}/database`,
       done: databaseReady,
+      warnings: databaseReady ? databaseWarnings : [],
     },
     {
       key: "visual",
@@ -136,6 +141,11 @@ export default function SetupChecklist({ steps }: { steps: SetupStep[] }) {
                   <StepState step={step} />
                 </span>
                 <span className="text-[11px] leading-relaxed text-dim">{step.blurb}</span>
+                {step.warnings?.map((w) => (
+                  <span key={w} className="text-[11px] leading-relaxed text-warning/80">
+                    Check: {w}.
+                  </span>
+                ))}
               </span>
             </Link>
           </li>
@@ -146,6 +156,7 @@ export default function SetupChecklist({ steps }: { steps: SetupStep[] }) {
 }
 
 function StepState({ step }: { step: SetupStep }) {
+  if (step.done && step.warnings?.length) return <Badge tone="warning">check</Badge>;
   if (step.done) return <Badge>done</Badge>;
   if (step.optional) return <Badge>optional</Badge>;
   if (step.done === null) return <Badge>by hand</Badge>;

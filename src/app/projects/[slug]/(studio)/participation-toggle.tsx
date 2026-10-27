@@ -7,18 +7,22 @@ import {
 } from "./actions";
 import { buttonClass } from "@/design";
 import CopyLinkButton from "@/components/CopyLinkButton";
+import type { ReadinessWarning } from "@/lib/projects/readiness";
 
 export default function ParticipationToggle({
   slug,
   open,
   canEdit,
   missing,
+  warnings,
   publicUrl,
 }: {
   slug: string;
   open: boolean;
   canEdit: boolean;
   missing: string[];
+  /** Shown but never blocking — see `projectReadiness`. */
+  warnings: ReadinessWarning[];
   publicUrl: string;
 }) {
   const [state, action, pending] = useActionState<ParticipationState, FormData>(
@@ -64,6 +68,14 @@ export default function ParticipationToggle({
           <code className="text-paper/60">{publicUrl}</code>.{" "}
           <CopyLinkButton url={publicUrl} className="ml-1" />
         </p>
+      )}
+
+      {warnings.length > 0 && (
+        <ul className="flex flex-col gap-1 text-[11px] leading-relaxed text-warning/80">
+          {warnings.map((w) => (
+            <li key={w.text}>Check: {w.text}.</li>
+          ))}
+        </ul>
       )}
 
       {state.error && (

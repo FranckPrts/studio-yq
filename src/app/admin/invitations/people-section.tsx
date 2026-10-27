@@ -39,7 +39,7 @@ function RoleForm({
         ))}
       </select>
       <button type="submit" disabled={pending} className={buttonClass("boxed", "xs")}>
-        set
+        {pending ? "…" : "set"}
       </button>
     </form>
   );
@@ -71,7 +71,10 @@ export default function PeopleSection({ people }: { people: Person[] }) {
                 {p.owns > 0 && ` · owns ${p.owns} project${p.owns === 1 ? "" : "s"}`}
               </p>
             </div>
-            <RoleForm person={p} action={action} pending={pending} />
+            {/* Keyed on role: React resets the form after the action, and an
+                uncontrolled select only reads defaultValue on mount, so
+                without a remount it snaps back to the old role. */}
+            <RoleForm key={p.role} person={p} action={action} pending={pending} />
           </li>
         ))}
       </ul>

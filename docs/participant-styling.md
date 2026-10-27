@@ -95,6 +95,13 @@ component holding a hex stops following the project the moment it ships.
   status box, text keeps to that box's tones and `paper`; `dim` does not
   reliably clear 4.5:1 there. Success has no surface: green text on a green
   tint fails in light.
+- **Status sits beside a button, never inside it.** A button keeps its label;
+  `saved`, `unsaved changes` or the copy button's `copied` is a word next to
+  it, in a live region. Only the pending label (`saving…`) replaces the text.
+- **Section headings are lowercase.** `text-xs text-dim`, the same on every
+  page (`participation`, `2 · sending account`). The project menu's group
+  headings are the one uppercase, letter-spaced label: they are navigation,
+  not page content. (Decided 2026-10-26.)
 - **The rule.** The `------` line under a terminal text field and between
   control rows is `.term-rule`: a gradient of 10px dashes and 7px gaps, 2px
   tall, so it reads like typed hyphens.
