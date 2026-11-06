@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import AvatarCanvas from "@/components/AvatarCanvas";
 import { MAX_STRATEGY_LENGTH } from "@/lib/board";
+import BoardDisplayControls from "./board-display-controls";
 import { renderValues } from "@/lib/params/coerce";
 import {
   hueDegrees,
@@ -745,6 +746,8 @@ export default function OpsConsole({
             </div>
           )}
         </section>
+
+        <BoardDisplayControls slug={slug} />
       </aside>
     </div>
   );

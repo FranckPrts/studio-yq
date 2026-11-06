@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { buildBoard, type BoardRun, type BoardScore } from "@/lib/board";
+import { useBoardDisplay } from "@/lib/board-display";
 import { allRuns } from "@/lib/spoke/results";
 import type { ProjectLexicon, ProjectTheme } from "@/lib/theme/project-theme";
 import type { ProjectCopy } from "@/lib/theme/project-copy";
@@ -15,9 +15,6 @@ import BoardView from "./board-view";
  * Names are re-read with them, so a renamed avatar catches up too.
  */
 const POLL_MS = 10_000;
-
-/** Whoever runs the screen toggles the histogram with this key. */
-const HISTOGRAM_KEY = "h";
 
 export default function Board({
   slug,
@@ -39,7 +36,22 @@ export default function Board({
   const [scores, setScores] = useState<BoardScore[] | null>(null);
   const [names, setNames] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
-  const [showHistogram, setShowHistogram] = useState(true);
+  // Set from the live console, shared through this browser's storage — see
+  // lib/board-display. The board itself carries no controls.
+  const [display] = useBoardDisplay(slug);
+  const { showHistogram, scale } = display;
+
+  // Scale by the root font size, on this page only: every rem-based size
+  // follows, and it is put back when leaving for the console.
+  useEffect(() => {
+    if (scale === 1) return;
+    const root = document.documentElement;
+    const before = root.style.fontSize;
+    root.style.fontSize = `${scale * 100}%`;
+    return () => {
+      root.style.fontSize = before;
+    };
+  }, [scale]);
 
   useEffect(() => {
     // No persisted session: a screen showing the board must not take out an
@@ -70,24 +82,6 @@ export default function Board({
     };
   }, [projectUrl, publishableKey]);
 
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      // A bare `h` only: Cmd+H hides the browser on a Mac, and a held key
-      // shouldn't strobe the chart.
-      if (e.key.toLowerCase() !== HISTOGRAM_KEY) return;
-      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
-      if (
-        e.target instanceof Element &&
-        e.target.closest("input, textarea, select, [contenteditable]")
-      ) {
-        return;
-      }
-      setShowHistogram((shown) => !shown);
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-
   const rows = useMemo(
     () => (scores ? buildBoard(scores, names) : null),
     [scores, names],
@@ -95,7 +89,10 @@ export default function Board({
   // Every run, not just the board's: the histogram fills in over the event.
   const runs = useMemo<BoardRun[] | undefined>(
     () =>
-      scores?.map((s) => ({ score: Number(s.score), recordedAt: s.recorded_at })),
+      scores?.map((s) => ({
+        score: Number(s.score),
+        recordedAt: s.recorded_at,
+      })),
     [scores],
   );
   return (
@@ -109,29 +106,7 @@ export default function Board({
       showHistogram={showHistogram}
       status={error ?? undefined}
       footer={
-        <>
-          <span>{rows !== null && error ? `not updating: ${error}` : ""}</span>
-          {/* For whoever is running the screen; faint enough to ignore. */}
-          <span className="flex items-baseline gap-4">
-            {runs && runs.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowHistogram((shown) => !shown)}
-                aria-pressed={showHistogram}
-                aria-keyshortcuts={HISTOGRAM_KEY}
-                className="opacity-40 underline-offset-4 hover:underline hover:opacity-100"
-              >
-                [{HISTOGRAM_KEY}] {showHistogram ? "hide" : "show"} histogram
-              </button>
-            )}
-            <Link
-              href={`/projects/${slug}/console`}
-              className="opacity-40 underline-offset-4 hover:underline hover:opacity-100"
-            >
-              console
-            </Link>
-          </span>
-        </>
+        rows !== null && error ? <span>not updating: {error}</span> : undefined
       }
     />
   );
