@@ -10,7 +10,7 @@ import {
   type ProjectTheme,
 } from "@/lib/theme/project-theme";
 import { useUnsavedChanges } from "../use-unsaved-changes";
-import { buttonClass } from "@/design";
+import { buttonClass, SaveBar } from "@/design";
 
 export type Palette = Pick<ProjectTheme, "void" | "paper" | "dim">;
 
@@ -125,7 +125,7 @@ export default function PaletteForm({
         </p>
       </section>
 
-      <div className="flex items-center gap-3">
+      <SaveBar>
         <button
           type="submit"
           disabled={pending || !dirty}
@@ -142,7 +142,7 @@ export default function PaletteForm({
         ) : (
           state.saved && <p className="text-xs text-dim">saved</p>
         )}
-      </div>
+      </SaveBar>
     </form>
   );
 }

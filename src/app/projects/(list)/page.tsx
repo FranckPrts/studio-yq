@@ -72,7 +72,10 @@ export default async function ProjectsPage() {
                   {project.slug} ·{" "}
                   {project.members[0]?.role.toLowerCase() ??
                     "visible as administrator"}{" "}
-                  · {project.openForParticipation ? "open" : "closed"}
+                  · {project.openForParticipation ? "open" : "closed"} ·{" "}
+                  {project.conclusionPublishedAt
+                    ? "published"
+                    : "unpublished"}
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">

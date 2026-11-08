@@ -9,7 +9,7 @@ import {
   type ProjectCopy,
 } from "@/lib/theme/project-copy";
 import { useUnsavedChanges } from "../use-unsaved-changes";
-import { buttonClass } from "@/design";
+import { buttonClass, SaveBar } from "@/design";
 
 const GROUPS = Array.from(
   new Set(Object.values(COPY_FIELDS).map((f) => f.group)),
@@ -85,25 +85,6 @@ export default function TextForm({
   return (
     <form action={action} className="flex flex-col gap-6">
       <input type="hidden" name="slug" value={slug} />
-
-      <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={pending || !dirty}
-          className={buttonClass("boxed")}
-        >
-          {pending ? "saving…" : "save text"}
-        </button>
-        {state.error ? (
-          <p role="alert" className="text-xs text-danger">
-            {state.error}
-          </p>
-        ) : dirty ? (
-          <p className="text-xs text-warning/80">unsaved changes</p>
-        ) : (
-          state.saved && <p className="text-xs text-dim">saved</p>
-        )}
-      </div>
 
       <div
         role="tablist"
@@ -236,6 +217,24 @@ export default function TextForm({
           </section>
         );
       })}
+      <SaveBar>
+        <button
+          type="submit"
+          disabled={pending || !dirty}
+          className={buttonClass("boxed")}
+        >
+          {pending ? "saving…" : "save text"}
+        </button>
+        {state.error ? (
+          <p role="alert" className="text-xs text-danger">
+            {state.error}
+          </p>
+        ) : dirty ? (
+          <p className="text-xs text-warning/80">unsaved changes</p>
+        ) : (
+          state.saved && <p className="text-xs text-dim">saved</p>
+        )}
+      </SaveBar>
     </form>
   );
 }

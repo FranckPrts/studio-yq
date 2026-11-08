@@ -24,7 +24,7 @@ import {
 import { saveParameters, type SaveState } from "./parameter-actions";
 import { useUnsavedChanges } from "../use-unsaved-changes";
 import { GROUPS, type Group } from "./groups";
-import { buttonClass } from "@/design";
+import { buttonClass, SaveBar } from "@/design";
 
 /**
  * The parameter builder — YouQuantified's repeating `{name, suggested}` row,
@@ -919,46 +919,48 @@ export default function ParameterBuilder({
           </div>
         )}
 
-        <form action={action} className="flex items-center gap-4">
-          <input type="hidden" name="slug" value={slug} />
-          {/* Each part is sent only when it changed: the declaration because
-              saving it cuts a new script version, the email question and the
-              randomize switch because they belong to the project and are
-              saved in place. */}
-          {paramsDirty && (
-            <input
-              type="hidden"
-              name="parameters"
-              value={JSON.stringify(draft)}
-            />
-          )}
-          {detailsDirty && (
-            <input
-              type="hidden"
-              name="participantDetails"
-              value={JSON.stringify({ email, randomize })}
-            />
-          )}
-          <button
-            type="submit"
-            disabled={pending || problems.length > 0 || !dirty}
-            className={buttonClass("boxed")}
-          >
-            {pending
-              ? "saving…"
-              : paramsDirty || !dirty
-                ? `save as v${scriptVersion + 1}`
-                : "save"}
-          </button>
-          {state.saved && (
-            <span className="text-xs text-dim">
-              {state.saved.version ? `saved as v${state.saved.version}` : "saved"}
-            </span>
-          )}
-          {!dirty && !state.saved && (
-            <span className="text-xs text-dim">no changes</span>
-          )}
-        </form>
+        <SaveBar>
+          <form action={action} className="flex items-center gap-4">
+            <input type="hidden" name="slug" value={slug} />
+            {/* Each part is sent only when it changed: the declaration because
+                saving it cuts a new script version, the email question and the
+                randomize switch because they belong to the project and are
+                saved in place. */}
+            {paramsDirty && (
+              <input
+                type="hidden"
+                name="parameters"
+                value={JSON.stringify(draft)}
+              />
+            )}
+            {detailsDirty && (
+              <input
+                type="hidden"
+                name="participantDetails"
+                value={JSON.stringify({ email, randomize })}
+              />
+            )}
+            <button
+              type="submit"
+              disabled={pending || problems.length > 0 || !dirty}
+              className={buttonClass("boxed")}
+            >
+              {pending
+                ? "saving…"
+                : paramsDirty || !dirty
+                  ? `save as v${scriptVersion + 1}`
+                  : "save"}
+            </button>
+            {state.saved && (
+              <span className="text-xs text-dim">
+                {state.saved.version ? `saved as v${state.saved.version}` : "saved"}
+              </span>
+            )}
+            {!dirty && !state.saved && (
+              <span className="text-xs text-dim">no changes</span>
+            )}
+          </form>
+        </SaveBar>
       </div>
 
       <aside className="flex w-full flex-col gap-6 lg:w-[26rem] lg:shrink-0">

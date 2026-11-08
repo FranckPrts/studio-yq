@@ -18,7 +18,7 @@ import type { ReportScriptInfo } from "../use-report-room";
 import { saveReportEmail, type EmailSaveState } from "./actions";
 import EmailPreview from "./email-preview";
 import TemplateField, { CONDITIONAL_CHIPS, FORMATTING } from "../template-field";
-import { buttonClass } from "@/design";
+import { buttonClass, SaveBar } from "@/design";
 
 const FIELDS: (keyof ReportEmail)[] = ["subject", "senderName", "replyTo", "look", "body"];
 
@@ -83,29 +83,6 @@ export default function EmailEditor({
       <form action={action} className="flex flex-col gap-5">
         <input type="hidden" name="slug" value={slug} />
         <fieldset disabled={!canEdit} className="flex flex-col gap-5">
-          <div className="flex items-center gap-3">
-            {canEdit && (
-              <button
-                type="submit"
-                disabled={pending || !dirty}
-                className={buttonClass("boxed")}
-              >
-                {pending ? "saving…" : "save email"}
-              </button>
-            )}
-            {state.error ? (
-              <p role="alert" className="text-xs text-danger">
-                {state.error}
-              </p>
-            ) : dirty ? (
-              <p className="text-xs text-warning/80">unsaved changes</p>
-            ) : state.saved ? (
-              <p className="text-xs text-dim">saved</p>
-            ) : (
-              !canEdit && <p className="text-xs text-dim">You have read-only access to this project.</p>
-            )}
-          </div>
-
           <label className="flex flex-col gap-1">
             <span className="text-xs text-dim">subject</span>
             <input
@@ -213,6 +190,28 @@ export default function EmailEditor({
               CONDITIONAL_CHIPS(CONDITIONALS),
             ]}
           />
+          <SaveBar>
+            {canEdit && (
+              <button
+                type="submit"
+                disabled={pending || !dirty}
+                className={buttonClass("boxed")}
+              >
+                {pending ? "saving…" : "save email"}
+              </button>
+            )}
+            {state.error ? (
+              <p role="alert" className="text-xs text-danger">
+                {state.error}
+              </p>
+            ) : dirty ? (
+              <p className="text-xs text-warning/80">unsaved changes</p>
+            ) : state.saved ? (
+              <p className="text-xs text-dim">saved</p>
+            ) : (
+              !canEdit && <p className="text-xs text-dim">You have read-only access to this project.</p>
+            )}
+          </SaveBar>
         </fieldset>
       </form>
 

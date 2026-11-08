@@ -118,6 +118,7 @@ export async function visibleProjects(user: SessionUser) {
       slug: true,
       name: true,
       openForParticipation: true,
+      conclusionPublishedAt: true,
       members: { where: { userId: user.id }, select: { role: true } },
     },
     orderBy: { createdAt: "asc" },
