@@ -66,6 +66,11 @@ In the parameter builder, declare the choices participants make for their avatar
 You can also ask for an **email address** (optional). Explain why you're asking in the
 "purpose" line. Addresses are stored only in your Supabase project.
 
+You can also let participants **randomize** their controls. A button at the top of the
+controls picks new values for every slider, option and switch, within the range each one
+allows. Participants can then start from somewhere far from your defaults. Their answers
+to questions don't change.
+
 ## 6. Make it look like yours
 
 Set your palette, font, wording and links, and pick the light or dark theme. Preview the

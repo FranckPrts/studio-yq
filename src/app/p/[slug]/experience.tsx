@@ -5,6 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import AvatarCanvas from "@/components/AvatarCanvas";
 import AvatarControls from "@/components/AvatarControls";
 import { coerceAll, defaults, renderValues } from "@/lib/params/coerce";
+import { randomizeValues } from "@/lib/params/randomize";
 import type { ParamValues } from "@/lib/params/coerce";
 import type { Parameter, ParameterValue } from "@/lib/params/types";
 import {
@@ -88,6 +89,7 @@ export default function ParticipantExperience({
   copy,
   conclusionOpen,
   email = null,
+  randomize = false,
   preview = false,
   sample,
   step: stepProp,
@@ -111,6 +113,8 @@ export default function ParticipantExperience({
    * the person, so it must never reach `answers`, `{name}` or the sketch.
    */
   email?: EmailQuestion | null;
+  /** Whether the tune screen offers a button that redraws every control. */
+  randomize?: boolean;
   /**
    * The participant-frontend preview: the same page, with no anonymous sign-in
    * and a save that writes nothing, so a tenant can walk through it without
@@ -521,6 +525,15 @@ export default function ParticipantExperience({
               parameters={parameters}
               values={values}
               onChange={set}
+              randomize={
+                randomize
+                  ? {
+                      label: t("randomizeButton"),
+                      onClick: () =>
+                        setValues((prev) => randomizeValues(parameters, prev)),
+                    }
+                  : undefined
+              }
             />
             {error && (
               <p role="alert" className="text-xs text-danger">

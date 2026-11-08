@@ -53,6 +53,12 @@ export const COPY_FIELDS = {
     default: "next",
     multiline: false,
   },
+  randomizeButton: {
+    group: "making it",
+    label: "randomize, when offered",
+    default: "randomize",
+    multiline: false,
+  },
   saveButton: {
     group: "making it",
     label: "save, first time",

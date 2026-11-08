@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import AvatarControls from "@/components/AvatarControls";
 import { coerceAll, defaults } from "@/lib/params/coerce";
+import { randomizeValues } from "@/lib/params/randomize";
 import type { ParamValues } from "@/lib/params/coerce";
 import { validateParameters } from "@/lib/params/validate";
 import { blankParameter, uniqueName } from "@/lib/params/blank";
@@ -18,6 +19,7 @@ import {
   emailLabel,
   MAX_PURPOSE_LENGTH,
   type EmailQuestion,
+  type RandomizeOption,
 } from "@/lib/projects/participant-details";
 import { saveParameters, type SaveState } from "./parameter-actions";
 import { useUnsavedChanges } from "../use-unsaved-changes";
@@ -179,13 +181,55 @@ function EmailCard({
   );
 }
 
+/**
+ * Like the email question, a project setting rather than a parameter: it sits
+ * at the top of the tune screen's controls, and an upload never drops it.
+ */
+function RandomizeCard({
+  randomize,
+  buttonLabel,
+  onChange,
+}: {
+  randomize: RandomizeOption;
+  buttonLabel: string;
+  onChange: (patch: Partial<RandomizeOption>) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 border-b border-paper/10 pb-4">
+      <label className="flex items-baseline gap-2 text-sm text-paper">
+        <input
+          type="checkbox"
+          checked={randomize.enabled}
+          onChange={(e) => onChange({ enabled: e.target.checked })}
+        />
+        <span>
+          let participants randomize{" "}
+          <span className="text-dim">
+            · a “{buttonLabel}” button above the controls
+          </span>
+        </span>
+      </label>
+      {randomize.enabled && (
+        <p className="pl-6 text-[11px] leading-relaxed text-dim">
+          Redraws every main and additional control at once, anywhere in the
+          range each one offers — so a participant can start far from the
+          defaults set here. Questions are left alone. The button&rsquo;s
+          wording is edited with the rest of the wording.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function ParameterBuilder({
   slug,
   initial,
   scriptVersion,
   initialEmail,
   emailAvailable,
+  initialRandomize,
   optionalMarker,
+  randomizeLabel,
 }: {
   slug: string;
   initial: Parameter[];
@@ -193,7 +237,10 @@ export default function ParameterBuilder({
   initialEmail: EmailQuestion;
   /** Whether the tenant's database has the table an address is stored in. */
   emailAvailable: boolean;
+  initialRandomize: RandomizeOption;
   optionalMarker: string;
+  /** The participant-facing wording of the button, for the card and preview. */
+  randomizeLabel: string;
 }) {
   const [draft, setDraft] = useState<Parameter[]>(initial);
   // A new upload on this page replaces the declaration underneath the builder,
@@ -212,6 +259,13 @@ export default function ParameterBuilder({
     setSeenEmailJson(initialEmailJson);
     setEmail(initialEmail);
   }
+  const [randomize, setRandomize] = useState<RandomizeOption>(initialRandomize);
+  const initialRandomizeJson = JSON.stringify(initialRandomize);
+  const [seenRandomizeJson, setSeenRandomizeJson] = useState(initialRandomizeJson);
+  if (initialRandomizeJson !== seenRandomizeJson) {
+    setSeenRandomizeJson(initialRandomizeJson);
+    setRandomize(initialRandomize);
+  }
   const [open, setOpen] = useState<string | null>(null);
   const [json, setJson] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -225,8 +279,10 @@ export default function ParameterBuilder({
     () => JSON.stringify(draft) !== initialJson,
     [draft, initialJson],
   );
-  const emailDirty = JSON.stringify(email) !== initialEmailJson;
-  const dirty = paramsDirty || emailDirty;
+  const detailsDirty =
+    JSON.stringify(email) !== initialEmailJson ||
+    JSON.stringify(randomize) !== initialRandomizeJson;
+  const dirty = paramsDirty || detailsDirty;
   useUnsavedChanges(dirty);
 
   // Preview values, re-derived whenever the shape changes. Coercing through the
@@ -760,6 +816,7 @@ export default function ParameterBuilder({
             .map((param, index) => ({ param, index }))
             .filter(({ param }) => group.holds(param));
           const withEmail = group.key === "questions";
+          const withRandomize = group.key === "main";
           const count =
             members.length + (withEmail && email.enabled ? 1 : 0);
           return (
@@ -777,10 +834,19 @@ export default function ParameterBuilder({
                 </p>
               </header>
 
-              {members.length === 0 && !withEmail ? (
+              {members.length === 0 && !withEmail && !withRandomize ? (
                 <p className="text-[11px] text-dim/70">none yet</p>
               ) : (
                 <div className="flex flex-col gap-4">
+                  {withRandomize && (
+                    <RandomizeCard
+                      randomize={randomize}
+                      buttonLabel={randomizeLabel}
+                      onChange={(patch) =>
+                        setRandomize((prev) => ({ ...prev, ...patch }))
+                      }
+                    />
+                  )}
                   {members.map(({ param, index }) => renderCard(param, index, group))}
                   {withEmail && (
                     <EmailCard
@@ -856,8 +922,9 @@ export default function ParameterBuilder({
         <form action={action} className="flex items-center gap-4">
           <input type="hidden" name="slug" value={slug} />
           {/* Each part is sent only when it changed: the declaration because
-              saving it cuts a new script version, the email question because
-              it belongs to the project and is saved in place. */}
+              saving it cuts a new script version, the email question and the
+              randomize switch because they belong to the project and are
+              saved in place. */}
           {paramsDirty && (
             <input
               type="hidden"
@@ -865,11 +932,11 @@ export default function ParameterBuilder({
               value={JSON.stringify(draft)}
             />
           )}
-          {emailDirty && (
+          {detailsDirty && (
             <input
               type="hidden"
               name="participantDetails"
-              value={JSON.stringify({ email })}
+              value={JSON.stringify({ email, randomize })}
             />
           )}
           <button
@@ -913,6 +980,15 @@ export default function ParameterBuilder({
                 }
                 includeText
                 advancedOpen
+                randomize={
+                  randomize.enabled
+                    ? {
+                        label: randomizeLabel,
+                        onClick: () =>
+                          setPreviewValues((prev) => randomizeValues(draft, prev)),
+                      }
+                    : undefined
+                }
               />
             )}
           </div>

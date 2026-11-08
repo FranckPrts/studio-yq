@@ -1,6 +1,6 @@
 /**
- * Questions about the participant themselves, as opposed to the avatar they
- * make — today only an optional email address.
+ * What the participant page offers beyond the declaration — an optional email
+ * address, and whether participants may randomize their starting controls.
  *
  * Kept apart from the parameter declaration on purpose. A `text` parameter is
  * an answer *about the avatar* and lands in `avatars.answers`, which every
@@ -27,7 +27,19 @@ export type EmailQuestion = {
   required: boolean;
 };
 
-export type ParticipantDetails = { email: EmailQuestion };
+/**
+ * A "randomize" button at the top of the tune screen's controls, so a
+ * participant can start somewhere far from the tenant's defaults. Lives here
+ * rather than in the declaration for the same reason the email question does:
+ * a script upload replaces the declaration wholesale, and must not quietly
+ * take the button away.
+ */
+export type RandomizeOption = { enabled: boolean };
+
+export type ParticipantDetails = {
+  email: EmailQuestion;
+  randomize: RandomizeOption;
+};
 
 /** The tenant schema version that first has `participant_contacts`. */
 export const CONTACTS_SCHEMA_VERSION = 2;
@@ -51,6 +63,7 @@ export const DEFAULT_PARTICIPANT_DETAILS: ParticipantDetails = {
     purpose: DEFAULT_EMAIL_PURPOSE,
     required: false,
   },
+  randomize: { enabled: false },
 };
 
 function clean(value: unknown, max: number): string {
@@ -69,6 +82,10 @@ export function coerceParticipantDetails(value: unknown): ParticipantDetails {
     raw.email && typeof raw.email === "object"
       ? (raw.email as Record<string, unknown>)
       : {};
+  const randomize =
+    raw.randomize && typeof raw.randomize === "object"
+      ? (raw.randomize as Record<string, unknown>)
+      : {};
   const fallback = DEFAULT_PARTICIPANT_DETAILS.email;
   return {
     email: {
@@ -78,6 +95,7 @@ export function coerceParticipantDetails(value: unknown): ParticipantDetails {
       purpose: clean(email.purpose, MAX_PURPOSE_LENGTH) || fallback.purpose,
       required: email.required === true,
     },
+    randomize: { enabled: randomize.enabled === true },
   };
 }
 

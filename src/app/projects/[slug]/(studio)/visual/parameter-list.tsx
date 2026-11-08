@@ -6,11 +6,14 @@ import { GROUPS } from "./groups";
 export default function ParameterList({
   parameters,
   email,
+  randomizeLabel,
   optionalMarker,
 }: {
   parameters: Parameter[];
   /** The project's email question, when it is switched on. */
   email: EmailQuestion | null;
+  /** The randomize button's wording, when the project offers one. */
+  randomizeLabel: string | null;
   optionalMarker: string;
 }) {
   return (
@@ -18,6 +21,7 @@ export default function ParameterList({
       {GROUPS.map((group) => {
         const members = parameters.filter(group.holds);
         const withEmail = group.key === "questions" && !!email;
+        const withRandomize = group.key === "main" && !!randomizeLabel;
         return (
           <section key={group.key} className="flex flex-col gap-3 rounded bg-surface p-4">
             <header className="flex flex-col gap-1">
@@ -29,10 +33,18 @@ export default function ParameterList({
               </div>
               <p className="text-[11px] leading-relaxed text-dim">{group.blurb}</p>
             </header>
-            {members.length === 0 && !withEmail ? (
+            {members.length === 0 && !withEmail && !withRandomize ? (
               <p className="text-[11px] text-dim/70">none</p>
             ) : (
               <ul className="flex flex-col gap-2 text-sm">
+                {withRandomize && (
+                  <li className="border-b border-paper/10 pb-2">
+                    “{randomizeLabel}” button{" "}
+                    <span className="text-dim">
+                      · participants may randomize every control
+                    </span>
+                  </li>
+                )}
                 {members.map((p) => (
                   <li
                     key={p.name}

@@ -147,6 +147,7 @@ export default function LivePreview({
   conclusion: savedConclusion,
   conclusionOpen,
   email,
+  randomize,
   script,
 }: {
   /** The experience takes it for its links, though here they step in place. */
@@ -163,6 +164,7 @@ export default function LivePreview({
   conclusionOpen: boolean;
   /** As participants are asked it — null when they are not. */
   email: EmailQuestion | null;
+  randomize: boolean;
   script: { code: string; version: number; parameters: Parameter[] } | null;
 }) {
   const [theme, setTheme] = useState(savedTheme);
@@ -256,6 +258,7 @@ export default function LivePreview({
           copy={copy}
           conclusionOpen={conclusionOpen}
           email={email}
+          randomize={randomize}
           step={
             EXPERIENCE_STEPS.includes(shown) ? (shown as Step) : undefined
           }

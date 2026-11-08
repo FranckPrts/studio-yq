@@ -30,10 +30,10 @@ export type SaveState = {
  * code change — had no way back. A version is cheap; a mid-event mistake with
  * no undo is not.
  *
- * The email question rides along on the same form but is saved in place on the
- * project: it is not part of the declaration, and an upload must not drop it.
- * Each part arrives only when it changed, so editing just the email question
- * does not cut a script version.
+ * The email question and the randomize switch ride along on the same form but
+ * are saved in place on the project: they are not part of the declaration, and
+ * an upload must not drop them. Each part arrives only when it changed, so
+ * editing just those does not cut a script version.
  */
 export async function saveParameters(
   _prev: SaveState,
@@ -53,7 +53,7 @@ export async function saveParameters(
     try {
       details = coerceParticipantDetails(JSON.parse(String(rawDetails)));
     } catch {
-      return { error: "The email question could not be read." };
+      return { error: "The email question and randomize switch could not be read." };
     }
     const refusal = await refuseEmailWithoutTable(projectId, details);
     if (refusal) return { error: refusal };

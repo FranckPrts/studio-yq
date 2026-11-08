@@ -49,6 +49,7 @@ export default async function ParticipantPreviewPage({
 
   const script = project.scripts[0];
   const parameters = (script?.parameters ?? []) as unknown as Parameter[];
+  const details = coerceParticipantDetails(project.participantDetails);
   const usable = !!script && validateParameters(parameters).length === 0;
 
   return (
@@ -67,10 +68,8 @@ export default async function ParticipantPreviewPage({
         copy={coerceCopy(project.copy)}
         conclusion={coerceConclusionPage(project.conclusionPage)}
         conclusionOpen={project.conclusionPublishedAt !== null}
-        email={askedEmail(
-          coerceParticipantDetails(project.participantDetails),
-          project.connection?.schemaVersion,
-        )}
+        email={askedEmail(details, project.connection?.schemaVersion)}
+        randomize={details.randomize.enabled}
         script={
           usable
             ? { code: script.code, version: script.version, parameters }

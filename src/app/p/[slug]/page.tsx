@@ -121,6 +121,8 @@ export default async function ExperiencePage({
     !!script &&
     validateParameters(parameters).length === 0;
 
+  const details = coerceParticipantDetails(project.participantDetails);
+
   if (!usable) {
     return (
       <Shut
@@ -161,10 +163,8 @@ export default async function ExperiencePage({
         parameters={parameters}
         copy={copy}
         conclusionOpen={project.conclusionPublishedAt !== null}
-        email={askedEmail(
-          coerceParticipantDetails(project.participantDetails),
-          connection!.schemaVersion,
-        )}
+        email={askedEmail(details, connection!.schemaVersion)}
+        randomize={details.randomize.enabled}
       />
     </>
   );

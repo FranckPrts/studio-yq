@@ -88,6 +88,12 @@ type AvatarControlsProps = {
    * opens it, because a bench that hides half the knobs is a worse bench.
    */
   advancedOpen?: boolean;
+  /**
+   * Offered when the tenant switches randomizing on: a button above every
+   * control that redraws them all at once. The caller owns the draw, so the
+   * values still flow through its `onChange`-style state like any other edit.
+   */
+  randomize?: { label: string; onClick: () => void };
 };
 
 export default function AvatarControls({
@@ -96,6 +102,7 @@ export default function AvatarControls({
   onChange,
   includeText = false,
   advancedOpen = false,
+  randomize,
 }: AvatarControlsProps) {
   const rows = parameters.filter((p) => includeText || p.type !== "text");
   // Two tiers, each keeping declaration order within itself.
@@ -257,6 +264,17 @@ export default function AvatarControls({
 
   return (
     <div className="flex flex-col gap-1">
+      {randomize && (
+        <div className="flex justify-end pb-1">
+          <button
+            type="button"
+            onClick={randomize.onClick}
+            className="text-xs text-dim underline underline-offset-4 hover:text-paper"
+          >
+            {randomize.label}
+          </button>
+        </div>
+      )}
       {plain.map(renderRow)}
 
       {advanced.length > 0 && (

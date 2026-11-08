@@ -50,8 +50,10 @@ export default async function VisualPage({
   const canEdit = access.role === "OWNER" || access.role === "COLLABORATOR";
   const active = project.scripts[0];
   const parameters = (active?.parameters ?? []) as unknown as Parameter[];
-  const { email } = coerceParticipantDetails(project.participantDetails);
-  const { optionalMarker } = coerceCopy(project.copy);
+  const { email, randomize } = coerceParticipantDetails(
+    project.participantDetails,
+  );
+  const { optionalMarker, randomizeButton } = coerceCopy(project.copy);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 p-4 md:p-8">
@@ -119,12 +121,15 @@ export default async function VisualPage({
                 (project.connection?.schemaVersion ?? 0) >=
                 CONTACTS_SCHEMA_VERSION
               }
+              initialRandomize={randomize}
               optionalMarker={optionalMarker}
+              randomizeLabel={randomizeButton}
             />
           ) : (
             <ParameterList
               parameters={parameters}
               email={email.enabled ? email : null}
+              randomizeLabel={randomize.enabled ? randomizeButton : null}
               optionalMarker={optionalMarker}
             />
           ))}
