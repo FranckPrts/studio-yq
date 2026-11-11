@@ -217,7 +217,9 @@ export default function ProvisionSection({
             Your synchrony scene talks to this database directly — nothing is
             handed to YouQuantified as an application. Paste this into the scene
             script and it can read the staged pair, write scores, and clear the
-            staging flag. The key below is the publishable one, public by design.
+            staging flag. Build each score with its scoreRow() and call
+            checkSchema() from setup(). The key below is the publishable one,
+            public by design.
           </p>
           <Copyable label="scene config" text={view.sceneSnippet} />
         </div>

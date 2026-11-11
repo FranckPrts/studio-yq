@@ -291,8 +291,34 @@ const DB = {
   pollMs:  2000,
 };
 
-// The score row this schema expects:
-//   { yq_session_id, avatar_a_id, avatar_b_id, score, duration }
+// The score row this schema expects. Build every insert with scoreRow() so the
+// column names live in one place. Scripts carried over from the CCN event
+// wrote planet_a_id / planet_b_id, which this schema rejects (PGRST204), and
+// the failure only shows when a run ends. Read rows back as avatar_a_id /
+// avatar_b_id too.
+function scoreRow({ sessionId, avatarA, avatarB, score, duration }) {
+  return {
+    yq_session_id: sessionId,
+    avatar_a_id: avatarA,
+    avatar_b_id: avatarB,
+    score,
+    duration,
+  };
+}
+
+// Call once from setup(). Logs an error straight away if the database is
+// missing a column this script writes, instead of losing the first run.
+async function checkSchema() {
+  const cols = Object.keys(scoreRow({})).join(",");
+  const res = await fetch(\`\${DB.url}/rest/v1/\${DB.scores}?select=\${cols}&limit=0\`, {
+    headers: { apikey: DB.anonKey, Authorization: \`Bearer \${DB.anonKey}\` },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    console.error(\`[studio-yq] \${DB.scores} doesn't match schema v${SCHEMA_VERSION}:\`, body.message ?? res.status);
+  }
+}
+
 // Un-stage a pair when a run ends by PATCHing is_staged = false.
 `;
 }
