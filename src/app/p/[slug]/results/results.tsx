@@ -33,7 +33,7 @@ export default function Results({
   publishableKey: string;
   conclusionOpen: boolean;
 }) {
-  const who = useReturning(supabaseUrl, publishableKey);
+  const who = useReturning(slug, supabaseUrl, publishableKey);
   const [runs, setRuns] = useState<MyRuns | null>(null);
   const [error, setError] = useState<string | null>(null);
 

@@ -178,7 +178,7 @@ export default function ParticipantExperience({
       const client = spokeClient(supabaseUrl, publishableKey);
       clientRef.current = client;
 
-      const session = await ensureParticipant(client);
+      const session = await ensureParticipant(client, slug);
       if (cancelled) return;
       if ("error" in session) {
         setError(session.error);
@@ -212,7 +212,7 @@ export default function ParticipantExperience({
     };
     // `setStep` is recreated each render but only ever sets state and reports.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preview, supabaseUrl, publishableKey, parameters, asksEmail]);
+  }, [preview, slug, supabaseUrl, publishableKey, parameters, asksEmail]);
 
   const sketchParams = useMemo(
     () => renderValues(parameters, values),
@@ -323,6 +323,33 @@ export default function ParticipantExperience({
     setSaving(true);
     setError(null);
     try {
+      // The sign-in from page load may have lapsed while they were tuning.
+      // Usually it is restored, or the old identity's avatars are handed over
+      // to the new one, and the save goes on as if nothing happened.
+      const who = await ensureParticipant(client, slug);
+      if ("error" in who) {
+        setError(who.error);
+        return;
+      }
+      if (who.userId !== userIdRef.current) {
+        // A new identity: list what it owns now — everything, after a
+        // handover; nothing, if that failed.
+        userIdRef.current = who.userId;
+        const mine = await myAvatars(client, who.userId, parameters).catch(
+          () => [],
+        );
+        setAvatars(mine);
+        if (avatarId && !mine.some((a) => a.id === avatarId)) {
+          // Saving these values as a new one is their call, not ours: it
+          // leaves the old one on the board as it was.
+          setAvatarId(null);
+          setError(
+            `Your sign-in on this device expired, so your earlier ${lexicon.noun} can’t be changed any more. Save again to add this as a new ${lexicon.noun}.`,
+          );
+          return;
+        }
+      }
+
       const { answers, params } = splitValues(parameters, values);
       const name = avatarName(
         questions[0] ? String(values[questions[0].name] ?? "") : "",
@@ -356,8 +383,13 @@ export default function ParticipantExperience({
       }
       setStep("done");
     } catch (e) {
+      const message = e instanceof Error ? e.message : "";
+      // Should no longer happen now the session is checked first, but if it
+      // does, a Postgres privilege error tells a participant nothing.
       setError(
-        e instanceof Error ? e.message : "Could not save. Try once more.",
+        message.toLowerCase().includes("permission denied")
+          ? "Your sign-in on this device expired. Reload the page and try again."
+          : message || "Could not save. Try once more.",
       );
     } finally {
       setSaving(false);

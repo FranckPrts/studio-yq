@@ -8,8 +8,9 @@ import { myAvatarIds } from "@/lib/spoke/avatars";
 /**
  * Who is reading, on the pages a participant comes back to: the identity this
  * browser already holds with the tenant's Supabase, and the avatars it made.
- * Never signs anyone in — someone with no avatar here gets told so, not a new
- * anonymous account with nothing to show.
+ * Never signs a stranger in — someone with no avatar here gets told so, not a
+ * new anonymous account with nothing to show. A lapsed session is recovered,
+ * though: see `existingParticipant`.
  */
 export type Returning =
   | { status: "loading" }
@@ -18,6 +19,7 @@ export type Returning =
   | { status: "error"; client: SupabaseClient };
 
 export function useReturning(
+  slug: string,
   supabaseUrl: string,
   publishableKey: string,
 ): Returning {
@@ -29,7 +31,7 @@ export function useReturning(
     let cancelled = false;
 
     async function start() {
-      const userId = await existingParticipant(client);
+      const userId = await existingParticipant(client, slug);
       if (cancelled) return;
       if (!userId) {
         setState({ status: "none", client });
@@ -53,7 +55,7 @@ export function useReturning(
     return () => {
       cancelled = true;
     };
-  }, [supabaseUrl, publishableKey]);
+  }, [slug, supabaseUrl, publishableKey]);
 
   return state;
 }

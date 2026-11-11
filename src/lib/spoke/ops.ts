@@ -7,6 +7,7 @@ import {
   UnreadableSecretError,
 } from "@/lib/crypto/envelope";
 import { TABLES } from "./schema";
+import { verifyParticipantToken } from "./participant-token";
 
 /**
  * Operating a live experience, from our server, with the tenant's secret key.
@@ -215,4 +216,75 @@ export async function reachableOwners(
   return [...new Set((contacts.data ?? []).map((r) => String(r.owner)))].filter((o) =>
     withAvatar.has(o),
   );
+}
+
+// ─── Handing a lapsed participant's avatars to their new identity ───────────
+
+/** How long after its expiry an old token still proves who someone was. */
+const HANDOVER_WINDOW_S = 7 * 24 * 60 * 60;
+
+export type HandoverResult =
+  | { ok: true; moved: number }
+  | { ok: false; status: 400 | 403 | 409 | 503; error: string };
+
+/**
+ * Moves every avatar, and the email address, from the participant a lapsed
+ * session belonged to over to the one now signed in in the same browser.
+ *
+ * `to` is a live token and checked by the tenant's own auth. `from` has usually
+ * expired, so its signature is checked against the project's signing keys
+ * instead — it only ever lived in that browser's storage, which is the whole
+ * of the proof. Both must be anonymous participants: an account that signed in
+ * any other way is not ours to rearrange.
+ *
+ * Scores need nothing: they point at avatar ids, which do not change.
+ */
+export async function handOverParticipant(
+  projectId: string,
+  projectUrl: string,
+  from: string,
+  to: string,
+): Promise<HandoverResult> {
+  const old = await verifyParticipantToken(projectUrl, from);
+  if (!old || old.role !== "authenticated" || old.is_anonymous !== true) {
+    return { ok: false, status: 403, error: "not a participant token" };
+  }
+  if (!UUID.test(old.sub)) {
+    return { ok: false, status: 400, error: "bad subject" };
+  }
+  if (old.exp + HANDOVER_WINDOW_S < Date.now() / 1000) {
+    return { ok: false, status: 403, error: "too old" };
+  }
+
+  const client = await opsClient(projectId);
+  if (!client) return { ok: false, status: 503, error: NEEDS_RECONNECT };
+
+  const { data: current, error: userError } = await client.auth.getUser(to);
+  const user = current?.user;
+  if (userError || !user || !user.is_anonymous) {
+    return { ok: false, status: 403, error: "not signed in" };
+  }
+  if (user.id === old.sub) {
+    return { ok: false, status: 409, error: "same participant" };
+  }
+
+  const { data: moved, error } = await client
+    .from(TABLES.avatars)
+    .update({ owner: user.id })
+    .eq("owner", old.sub)
+    .select("id");
+  if (error) throw new Error(error.message);
+
+  // One row per participant, keyed by them. The new identity was signed in
+  // moments ago and has none — if it somehow does, theirs wins and the old
+  // address stays where it was rather than failing the avatars' move.
+  const contact = await client
+    .from(TABLES.contacts)
+    .update({ owner: user.id })
+    .eq("owner", old.sub);
+  if (contact.error) {
+    console.warn("[ops] handover left the email address behind:", contact.error.message);
+  }
+
+  return { ok: true, moved: moved?.length ?? 0 };
 }
