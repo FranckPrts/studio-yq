@@ -1,4 +1,5 @@
 import "server-only";
+import { appBaseUrl } from "@/lib/app-url";
 import { db } from "@/lib/db";
 import {
   aadFor,
@@ -33,7 +34,7 @@ export function oauthConfig() {
   const clientSecret = process.env.SUPABASE_OAUTH_CLIENT_SECRET;
   const redirectUri =
     process.env.SUPABASE_OAUTH_REDIRECT_URI ??
-    `${process.env.APP_BASE_URL ?? "http://localhost:3100"}/api/connect/supabase/callback`;
+    `${appBaseUrl()}/api/connect/supabase/callback`;
 
   if (!clientId || !clientSecret) {
     throw new Error(

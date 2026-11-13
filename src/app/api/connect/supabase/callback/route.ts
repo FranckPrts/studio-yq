@@ -1,3 +1,4 @@
+import { appBaseUrl } from "@/lib/app-url";
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
@@ -20,7 +21,7 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 function back(slug: string | null, error?: string): NextResponse {
-  const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
+  const base = appBaseUrl();
   const path = slug ? `/projects/${slug}` : "/projects";
   const url = new URL(path, base);
   if (error) url.searchParams.set("connect_error", error);

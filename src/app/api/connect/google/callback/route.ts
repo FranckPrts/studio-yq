@@ -1,3 +1,4 @@
+import { appBaseUrl } from "@/lib/app-url";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 import { requireProjectRole } from "@/lib/auth/dal";
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 const FLOW_COOKIE = "google_oauth_flow";
 
 function back(slug: string | null, error?: string): NextResponse {
-  const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
+  const base = appBaseUrl();
   const url = new URL(slug ? `/projects/${slug}/report/send` : "/projects", base);
   if (error) url.searchParams.set("gmail_error", error);
   else url.searchParams.set("gmail", "connected");

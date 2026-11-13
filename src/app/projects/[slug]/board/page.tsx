@@ -3,6 +3,7 @@ import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
 import { coerceCopy } from "@/lib/theme/project-copy";
 import Shut from "@/app/p/[slug]/shut";
+import { publicProjectUrl } from "@/lib/app-url";
 import Board from "./board";
 
 export const dynamic = "force-dynamic";
@@ -64,6 +65,7 @@ export default async function BoardPage({
       copy={coerceCopy(project.copy)}
       projectUrl={connection.projectUrl}
       publishableKey={connection.publishableKey}
+      joinUrl={publicProjectUrl(slug)}
     />
   );
 }

@@ -1,3 +1,4 @@
+import { appBaseUrl } from "@/lib/app-url";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/dal";
@@ -12,7 +13,7 @@ export default async function NewProjectPage() {
   // The same 404 as any page they can't reach; the button is hidden for them too.
   if (!canCreateProjects(user)) notFound();
 
-  const base = (process.env.APP_BASE_URL ?? "http://localhost:3100").replace(
+  const base = appBaseUrl().replace(
     /^https?:\/\//,
     "",
   );

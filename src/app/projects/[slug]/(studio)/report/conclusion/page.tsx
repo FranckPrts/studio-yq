@@ -1,3 +1,4 @@
+import { publicProjectUrl } from "@/lib/app-url";
 import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceConclusionPage } from "@/lib/report/conclusion-template";
@@ -35,8 +36,7 @@ export default async function ConclusionEditorPage({
   });
 
   const canEdit = access.role === "OWNER" || access.role === "COLLABORATOR";
-  const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
-  const conclusionUrl = `${base}/p/${slug}/conclusion`;
+  const conclusionUrl = publicProjectUrl(slug, "/conclusion");
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 p-4 md:p-8">

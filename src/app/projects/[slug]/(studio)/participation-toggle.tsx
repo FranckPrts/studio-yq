@@ -7,6 +7,7 @@ import {
 } from "./actions";
 import { buttonClass } from "@/design";
 import CopyLinkButton from "@/components/CopyLinkButton";
+import { qrImagePath } from "@/lib/app-url";
 import type { ReadinessWarning } from "@/lib/projects/readiness";
 
 export default function ParticipationToggle({
@@ -57,6 +58,7 @@ export default function ParticipationToggle({
           Participants go to{" "}
           <code className="text-paper/80">{publicUrl}</code>{" "}
           <CopyLinkButton url={publicUrl} className="ml-1" />
+          <QrLinks slug={slug} />
         </p>
       ) : missing.length > 0 ? (
         <p className="text-[11px] leading-relaxed text-warning/80">
@@ -67,6 +69,7 @@ export default function ParticipationToggle({
           Ready to open. Participants will go to{" "}
           <code className="text-paper/60">{publicUrl}</code>.{" "}
           <CopyLinkButton url={publicUrl} className="ml-1" />
+          <QrLinks slug={slug} />
         </p>
       )}
 
@@ -84,5 +87,29 @@ export default function ParticipationToggle({
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * The participation link as a QR code: PNG for slides, SVG for print, and the
+ * full-screen page for a tablet at the door. Downloadable before the project
+ * opens — the page itself says "closed" until then.
+ */
+function QrLinks({ slug }: { slug: string }) {
+  const link =
+    "text-dim underline-offset-4 hover:text-paper hover:underline";
+  return (
+    <span className="ml-2 inline-flex items-baseline gap-2 align-middle">
+      <span className="text-dim">QR:</span>
+      <a href={qrImagePath(slug, "png", true)} download className={link}>
+        png
+      </a>
+      <a href={qrImagePath(slug, "svg", true)} download className={link}>
+        svg
+      </a>
+      <a href={`/p/${slug}/qr`} target="_blank" rel="noopener" className={link}>
+        full screen ↗
+      </a>
+    </span>
   );
 }

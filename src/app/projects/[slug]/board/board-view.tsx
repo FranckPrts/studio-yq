@@ -34,6 +34,7 @@ export default function BoardView({
   rows,
   runs,
   showHistogram = true,
+  qr,
   status,
   footer,
 }: {
@@ -50,6 +51,11 @@ export default function BoardView({
   runs?: readonly BoardRun[];
   /** False hides the histogram; the footer stays pinned on its own. */
   showHistogram?: boolean;
+  /**
+   * The participation link as a QR code beside the title, so the room can
+   * join from the board. Left out, there is none.
+   */
+  qr?: { src: string; url: string };
   /** Shown in place of the rows while there are none to show yet. */
   status?: string;
   footer?: ReactNode;
@@ -79,11 +85,28 @@ export default function BoardView({
       className="min-h-dvh"
     >
       <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-6 pt-10">
-        <header>
-          <h1 className="text-2xl">{t("boardTitle")}</h1>
-          <p className="mt-2 max-w-[46ch] whitespace-pre-line text-sm leading-relaxed text-dim">
-            {t("boardSubtitle")}
-          </p>
+        <header className="flex items-start justify-between gap-6">
+          <div className="min-w-0">
+            <h1 className="text-2xl">{t("boardTitle")}</h1>
+            <p className="mt-2 max-w-[46ch] whitespace-pre-line text-sm leading-relaxed text-dim">
+              {t("boardSubtitle")}
+            </p>
+          </div>
+          {/* rem-sized, so the console's text-size control grows it too. The
+              image brings its own white quiet zone, on any theme. */}
+          {qr && (
+            <figure className="flex w-32 shrink-0 flex-col items-center gap-1.5">
+              {/* eslint-disable-next-line @next/next/no-img-element -- an SVG from our own route, already sized */}
+              <img
+                src={qr.src}
+                alt={`QR code for ${qr.url}`}
+                className="aspect-square w-full rounded"
+              />
+              <figcaption className="break-all text-center text-[11px] text-dim">
+                {qr.url.replace(/^https?:\/\//, "")}
+              </figcaption>
+            </figure>
+          )}
         </header>
 
         <section className="mt-12">

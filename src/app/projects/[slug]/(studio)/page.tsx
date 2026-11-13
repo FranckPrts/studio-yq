@@ -1,3 +1,4 @@
+import { publicProjectUrl } from "@/lib/app-url";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
@@ -91,7 +92,6 @@ export default async function ProjectSettingsPage({
   const canDelete = isOwner || access.user.isPlatformAdmin;
   const canOperate = isOwner || access.role === "COLLABORATOR";
   const readiness = await projectReadiness(access.projectId, { checkAnonLimit: true });
-  const base = process.env.APP_BASE_URL ?? "http://localhost:3100";
 
   const needsReconnect = !!connection && !credentialsReadable(connection);
   const databaseReady = !!connection?.provisionedAt && !needsReconnect;
@@ -151,14 +151,14 @@ export default async function ProjectSettingsPage({
           canEdit={canOperate}
           missing={readiness.missing}
           warnings={readiness.warnings}
-          publicUrl={`${base}/p/${project.slug}`}
+          publicUrl={publicProjectUrl(project.slug)}
         />
         <ConclusionToggle
           slug={project.slug}
           publishedAt={project.conclusionPublishedAt?.toISOString() ?? null}
           open={project.openForParticipation}
           canEdit={canOperate}
-          conclusionUrl={`${base}/p/${project.slug}/conclusion`}
+          conclusionUrl={publicProjectUrl(project.slug, "/conclusion")}
         />
       </section>
 

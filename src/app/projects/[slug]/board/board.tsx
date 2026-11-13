@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { buildBoard, type BoardRun, type BoardScore } from "@/lib/board";
 import { useBoardDisplay } from "@/lib/board-display";
+import { qrImagePath } from "@/lib/app-url";
 import { allRuns } from "@/lib/spoke/results";
 import type { ProjectLexicon, ProjectTheme } from "@/lib/theme/project-theme";
 import type { ProjectCopy } from "@/lib/theme/project-copy";
@@ -24,6 +25,7 @@ export default function Board({
   copy,
   projectUrl,
   publishableKey,
+  joinUrl,
 }: {
   slug: string;
   projectName: string;
@@ -32,6 +34,8 @@ export default function Board({
   copy: ProjectCopy;
   projectUrl: string;
   publishableKey: string;
+  /** The participation link, for the QR code. */
+  joinUrl: string;
 }) {
   const [scores, setScores] = useState<BoardScore[] | null>(null);
   const [names, setNames] = useState<Map<string, string>>(new Map());
@@ -39,7 +43,7 @@ export default function Board({
   // Set from the live console, shared through this browser's storage — see
   // lib/board-display. The board itself carries no controls.
   const [display] = useBoardDisplay(slug);
-  const { showHistogram, scale } = display;
+  const { showHistogram, showQr, scale } = display;
 
   // Scale by the root font size, on this page only: every rem-based size
   // follows, and it is put back when leaving for the console.
@@ -104,6 +108,7 @@ export default function Board({
       rows={rows}
       runs={runs}
       showHistogram={showHistogram}
+      qr={showQr ? { src: qrImagePath(slug), url: joinUrl } : undefined}
       status={error ?? undefined}
       footer={
         rows !== null && error ? <span>not updating: {error}</span> : undefined

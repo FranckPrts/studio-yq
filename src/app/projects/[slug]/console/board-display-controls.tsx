@@ -91,6 +91,15 @@ export default function BoardDisplayControls({ slug }: { slug: string }) {
         <span>show histogram</span>
       </label>
 
+      <label className="flex items-center gap-2 text-xs">
+        <input
+          type="checkbox"
+          checked={display.showQr}
+          onChange={(e) => update({ showQr: e.target.checked })}
+        />
+        <span>show QR code to join</span>
+      </label>
+
       <p className="text-[11px] leading-relaxed text-dim">
         Applies to a board open in this browser, in another window or tab.
       </p>

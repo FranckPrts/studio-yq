@@ -1,4 +1,5 @@
 import "server-only";
+import { appBaseUrl } from "@/lib/app-url";
 import { createHash, randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
 import { hashPassword } from "./password";
@@ -61,10 +62,7 @@ export async function createInvitation(input: NewInvitation) {
 }
 
 export function invitationUrl(token: string, baseUrl?: string): string {
-  const base =
-    baseUrl ??
-    process.env.APP_BASE_URL ??
-    `http://localhost:${process.env.PORT ?? 3100}`;
+  const base = baseUrl ?? appBaseUrl();
   return `${base.replace(/\/$/, "")}/invite/${token}`;
 }
 

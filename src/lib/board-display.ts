@@ -17,11 +17,14 @@ export type BoardDisplay = {
   /** Multiplies every rem-based size on the board: type, spacing, width. */
   scale: number;
   showHistogram: boolean;
+  /** The participation link as a QR code beside the title. Off until asked for. */
+  showQr: boolean;
 };
 
 export const BOARD_DISPLAY_DEFAULT: BoardDisplay = {
   scale: 1,
   showHistogram: true,
+  showQr: false,
 };
 
 export const BOARD_SCALE_MIN = 0.5;
@@ -59,6 +62,7 @@ function read(slug: string): BoardDisplay {
       value = {
         scale: clampScale(Number(parsed.scale ?? 1)),
         showHistogram: parsed.showHistogram !== false,
+        showQr: parsed.showQr === true,
       };
     } catch {
       // Unreadable: defaults.
