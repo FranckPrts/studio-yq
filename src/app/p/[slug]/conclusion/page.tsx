@@ -60,6 +60,7 @@ export default async function ConclusionPage({
         conclusion={project.conclusion}
         supabaseUrl={project.supabaseUrl}
         publishableKey={project.publishableKey}
+        snapshot={project.snapshot}
       />
     </>
   );

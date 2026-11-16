@@ -12,7 +12,9 @@ import {
 import { coerceCopy, fillCopy, type ProjectCopy } from "@/lib/theme/project-copy";
 import {
   coerceConclusionPage,
+  conclusionSnapshot,
   type ConclusionPage,
+  type ConclusionSnapshot,
 } from "@/lib/report/conclusion-template";
 import Shut from "./shut";
 
@@ -34,6 +36,8 @@ export type ReadingProject = {
   publishableKey: string;
   /** Published by the people running it, once the event is over. */
   conclusionOpen: boolean;
+  /** The map snapshot chosen for reports, for the conclusion's {snapshot}. */
+  snapshot: ConclusionSnapshot | null;
 };
 
 export async function readingMetadata(slug: string): Promise<Metadata> {
@@ -56,6 +60,7 @@ export async function loadReadingProject(
       lexicon: true,
       copy: true,
       conclusionPage: true,
+      reportSnapshot: { select: { id: true, width: true, height: true } },
       connection: {
         select: { projectUrl: true, publishableKey: true, provisionedAt: true },
       },
@@ -99,6 +104,7 @@ export async function loadReadingProject(
       supabaseUrl: connection.projectUrl,
       publishableKey: connection.publishableKey,
       conclusionOpen: project.conclusionPublishedAt !== null,
+      snapshot: conclusionSnapshot(slug, project.reportSnapshot),
     },
   };
 }

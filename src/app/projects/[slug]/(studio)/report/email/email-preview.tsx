@@ -22,6 +22,7 @@ import {
   useReportRoom,
   type ReportScriptInfo,
 } from "../use-report-room";
+import { useSnapshotImage, type ReportSnapshot } from "../use-report-snapshot";
 
 type Theme = { void: string; paper: string; dim: string; font: FontKey; fontStack: string };
 
@@ -35,6 +36,8 @@ type Props = {
   parameters: Parameter[];
   script: ReportScriptInfo | null;
   database: RoomDatabase | null;
+  /** The map snapshot chosen for reports, for {snapshot}; null leaves it out. */
+  snapshot: ReportSnapshot | null;
 };
 
 /**
@@ -60,7 +63,7 @@ const SAMPLE_STATS: PersonStats = {
   topStrategy: "we matched breathing first and let the movement follow",
 };
 
-function SamplePreview({ draft, projectName, theme, noun, nounPlural, answerKeys }: Props) {
+function SamplePreview({ draft, projectName, theme, noun, nounPlural, answerKeys, snapshot }: Props) {
   const person: Person = {
     owner: "sample",
     names: ["Tide Chorus"],
@@ -83,6 +86,7 @@ function SamplePreview({ draft, projectName, theme, noun, nounPlural, answerKeys
       values={values}
       played
       images={{}}
+      snapshot={snapshot}
       theme={theme}
       header={
         <p className="text-[11px] text-dim">
@@ -104,6 +108,7 @@ function LivePreview({
   parameters,
   script,
   database,
+  snapshot,
 }: Props & { database: RoomDatabase; script: ReportScriptInfo }) {
   const { room, loadError, layout, people, queue, sprites, raw, font } = useReportRoom({
     database,
@@ -178,6 +183,7 @@ function LivePreview({
       values={values}
       played={stats.runs > 0}
       images={images}
+      snapshot={snapshot}
       theme={theme}
       header={
         <div className="flex flex-col gap-3">
@@ -216,7 +222,8 @@ function Shown({
   projectName,
   values,
   played,
-  images,
+  images: personal,
+  snapshot,
   theme,
   header,
 }: {
@@ -225,14 +232,22 @@ function Shown({
   values: Record<string, string>;
   played: boolean;
   images: Partial<Record<ImageBlock, EmailImage>>;
+  snapshot: ReportSnapshot | null;
   theme: Theme;
   header: ReactNode;
 }) {
   const [view, setView] = useState<"html" | "text">("html");
+  // The chosen snapshot is the same for everyone, so it joins each person's.
+  const { image: snapshotImage } = useSnapshotImage(snapshot);
+  const images = useMemo(
+    () => (snapshotImage ? { ...personal, snapshot: snapshotImage } : personal),
+    [personal, snapshotImage],
+  );
   const rendered = useMemo(
     () => renderReportEmail(draft, values, played, images, emailStyle(draft.look, theme)),
     [draft, values, played, images, theme],
   );
+  const snapshotMissing = !snapshot && /\{snapshot\}/.test(draft.body);
   // Roughly what the pictures add to the message: base64 is 4/3 of the bytes.
   const kb = Math.round(
     rendered.images.reduce((sum, k) => sum + (images[k]?.src.length ?? 0) * 0.75, 0) / 1024,
@@ -241,6 +256,15 @@ function Shown({
   return (
     <section className="flex flex-col gap-4 lg:sticky lg:top-8 lg:self-start">
       {header}
+      {snapshotMissing && (
+        <p className="text-[11px] text-warning/80">
+          No snapshot is chosen for reports, so {"{snapshot}"} is left out.{" "}
+          <a href="./map" className="underline underline-offset-4 hover:text-paper">
+            Choose one on the map page
+          </a>
+          .
+        </p>
+      )}
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-y border-paper/10 py-3 text-xs">
         <dt className="text-dim">from</dt>
         <dd>{draft.senderName || projectName}</dd>

@@ -6,7 +6,8 @@ import { joinNames, ordinal, percentileOf } from "./people";
  * The conclusion page (/p/[slug]/conclusion), as the tenant writes it: the
  * same light markdown as the report email (see `markup.ts`), plus "# " and
  * "## " headings, with blocks for the figures — {histogram}, {figures} and
- * {top} — where the email has pictures.
+ * {top} — where the email has pictures, and {snapshot}: the map snapshot
+ * chosen for reports, the same picture the email's {snapshot} shows.
  *
  * Read by whoever opens the link, so "you" is whoever's browser made avatars
  * here: their runs are the ones marked, and {#runs} is for them. A visitor
@@ -26,14 +27,32 @@ export type ConclusionPage = {
 
 export const CONCLUSION_LIMITS = { body: 10_000, empty: 400, pending: 400 } as const;
 
-export const CONCLUSION_BLOCKS = ["histogram", "figures", "top"] as const;
+export const CONCLUSION_BLOCKS = ["histogram", "figures", "top", "snapshot"] as const;
 export type ConclusionBlock = (typeof CONCLUSION_BLOCKS)[number];
 
 export const CONCLUSION_BLOCK_DESCRIPTIONS: Record<ConclusionBlock, string> = {
   histogram: "Every run's score, with the reader's marked",
   figures: "Runs, median, best — and theirs, if they made one",
   top: "The best runs, with who played them",
+  snapshot: "The map snapshot chosen for reports — the same for everyone",
 };
+
+/** The chosen snapshot as the conclusion page shows it, or null for none. */
+export type ConclusionSnapshot = { url: string; width: number; height: number };
+
+/**
+ * Where the conclusion page loads the chosen snapshot from: a public route
+ * that serves only that one, and only once the conclusion is published (or to
+ * the team, for the preview). `v` makes choosing another a new URL.
+ */
+export function conclusionSnapshot(
+  slug: string,
+  row: { id: string; width: number; height: number } | null,
+): ConclusionSnapshot | null {
+  return row
+    ? { url: `/p/${encodeURIComponent(slug)}/conclusion/map?v=${row.id}`, width: row.width, height: row.height }
+    : null;
+}
 
 /**
  * Kept word for word in the migration that carried each project's old

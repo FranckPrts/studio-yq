@@ -15,6 +15,7 @@ import type { RoomDatabase } from "@/lib/report/room";
 import type { FontKey } from "@/lib/theme/project-theme";
 import { useUnsavedChanges } from "../../use-unsaved-changes";
 import type { ReportScriptInfo } from "../use-report-room";
+import type { ReportSnapshot } from "../use-report-snapshot";
 import { saveReportEmail, type EmailSaveState } from "./actions";
 import EmailPreview from "./email-preview";
 import TemplateField, { CONDITIONAL_CHIPS, FORMATTING } from "../template-field";
@@ -49,6 +50,7 @@ export default function EmailEditor({
   parameters,
   script,
   database,
+  snapshot,
 }: {
   slug: string;
   canEdit: boolean;
@@ -61,6 +63,7 @@ export default function EmailEditor({
   parameters: Parameter[];
   script: ReportScriptInfo | null;
   database: RoomDatabase | null;
+  snapshot: ReportSnapshot | null;
 }) {
   const [saved, setSaved] = useState<ReportEmail>(initial);
   const [draft, setDraft] = useState<ReportEmail>(initial);
@@ -225,6 +228,7 @@ export default function EmailEditor({
         parameters={parameters}
         script={script}
         database={database}
+        snapshot={snapshot}
       />
     </div>
   );

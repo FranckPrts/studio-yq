@@ -8,8 +8,9 @@ import { applyConditionals, parseBlocks, PLACEHOLDER } from "./markup";
  * The body is light markdown — paragraphs, **bold**, *italic*, links
  * ([text](https://…), [text](mailto:…) or a bare https:// address), "- " lists
  * and "> " quotes — with {placeholders} for the participant's own
- * details, and three image blocks, each on a paragraph of its own: {portrait},
- * {map} and {histogram}. Anything else is text: never HTML, from the tenant or
+ * details, and four image blocks, each on a paragraph of its own: {portrait},
+ * {map}, {histogram} — drawn for each person — and {snapshot}, the map
+ * snapshot chosen for reports, the same for everyone. Anything else is text: never HTML, from the tenant or
  * from a participant's name, so nothing either types can change the markup.
  *
  * Kept deliberately plain, as the CCN recap was: the email should read like
@@ -37,7 +38,7 @@ export const REPORT_EMAIL_LIMITS = {
   body: 10_000,
 } as const;
 
-export const IMAGE_BLOCKS = ["portrait", "map", "histogram"] as const;
+export const IMAGE_BLOCKS = ["portrait", "map", "histogram", "snapshot"] as const;
 export type ImageBlock = (typeof IMAGE_BLOCKS)[number];
 
 export const DEFAULT_REPORT_EMAIL: ReportEmail = {
@@ -88,6 +89,7 @@ export const IMAGE_DESCRIPTIONS: Record<ImageBlock, string> = {
   portrait: "Their mini-avatar — all of them, side by side",
   map: "The map, with theirs circled",
   histogram: "Every run's score, marking their best",
+  snapshot: "The map snapshot chosen for reports — the same for everyone",
 };
 
 export const CONDITIONALS: { open: string; close: string; description: string }[] = [

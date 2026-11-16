@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { allRuns, type MyRuns } from "@/lib/spoke/results";
 import type { ProjectLexicon, ProjectTheme } from "@/lib/theme/project-theme";
 import type { ProjectCopy } from "@/lib/theme/project-copy";
-import type { ConclusionPage } from "@/lib/report/conclusion-template";
+import type { ConclusionPage, ConclusionSnapshot } from "@/lib/report/conclusion-template";
 import { useReturning } from "../use-returning";
 import ConclusionView from "./conclusion-view";
 
@@ -23,6 +23,7 @@ export default function Conclusion({
   conclusion,
   supabaseUrl,
   publishableKey,
+  snapshot,
 }: {
   slug: string;
   projectName: string;
@@ -32,6 +33,7 @@ export default function Conclusion({
   conclusion: ConclusionPage;
   supabaseUrl: string;
   publishableKey: string;
+  snapshot: ConclusionSnapshot | null;
 }) {
   const who = useReturning(slug, supabaseUrl, publishableKey);
   const [runs, setRuns] = useState<MyRuns | null>(null);
@@ -82,6 +84,7 @@ export default function Conclusion({
       mine={mine}
       hasAvatar={who.status === "ready"}
       status={error ?? undefined}
+      snapshot={snapshot}
     />
   );
 }

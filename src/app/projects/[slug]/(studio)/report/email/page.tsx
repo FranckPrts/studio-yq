@@ -4,6 +4,7 @@ import { requireProjectRole } from "@/lib/auth/dal";
 import type { Parameter } from "@/lib/params/types";
 import { coerceReportEmail } from "@/lib/report/email-template";
 import { reportScript } from "@/lib/report/mini-script";
+import { reportSnapshotInfo } from "@/lib/report/map-snapshots";
 import { coerceLexicon, coerceTheme, FONTS } from "@/lib/theme/project-theme";
 import PageHeader from "../../page-header";
 import EmailEditor from "./email-editor";
@@ -31,6 +32,7 @@ export default async function EmailPage({
         theme: true,
         lexicon: true,
         reportEmail: true,
+        reportSnapshot: { select: { id: true, name: true, width: true, height: true } },
         connection: {
           select: { projectUrl: true, publishableKey: true, provisionedAt: true },
         },
@@ -95,6 +97,7 @@ export default async function EmailPage({
             : null
         }
         database={database}
+        snapshot={reportSnapshotInfo(slug, project.reportSnapshot)}
       />
     </main>
   );

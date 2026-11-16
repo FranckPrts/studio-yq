@@ -71,6 +71,8 @@ export default function Snapshots({
   take: () => Promise<{ blob: Blob; width: number; height: number } | null>;
 }) {
   const [snapshots, setSnapshots] = useState<Snapshot[] | null>(null);
+  /** The one the email's and the conclusion page's {snapshot} block shows. */
+  const [chosenId, setChosenId] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [taking, setTaking] = useState(false);
@@ -81,10 +83,14 @@ export default function Snapshots({
     fetch(apiUrl(slug))
       .then(async (res) => {
         if (!res.ok) throw new Error(await errorOf(res));
-        return (await res.json()) as { snapshots: Snapshot[] };
+        return (await res.json()) as { snapshots: Snapshot[]; chosenId: string | null };
       })
       .then(
-        (body) => !cancelled && setSnapshots(body.snapshots),
+        (body) => {
+          if (cancelled) return;
+          setSnapshots(body.snapshots);
+          setChosenId(body.chosenId);
+        },
         (error: Error) => {
           if (cancelled) return;
           setListError(error.message);
@@ -137,6 +143,12 @@ export default function Snapshots({
           Save the map as it is shown — its colours, type, and anyone ringed —
           with a name and a note. Change the project&rsquo;s colours or
           mini-script, come back, and take another to compare.
+        </p>
+        <p className="max-w-prose text-[11px] leading-relaxed text-dim">
+          The one marked <span className="text-paper">in reports</span> is what
+          a <code className="text-paper/90">{"{snapshot}"}</code> block shows,
+          in the email and on the conclusion page — the same picture for
+          everyone.
         </p>
       </div>
 
@@ -197,12 +209,15 @@ export default function Snapshots({
               canEdit={canEdit}
               ringed={namesOf(s.highlight)}
               current={sameLook(s.look, look)}
+              chosen={s.id === chosenId}
+              onChosen={setChosenId}
               onChange={(next) =>
                 setSnapshots((prev) => prev?.map((p) => (p.id === next.id ? next : p)) ?? null)
               }
-              onDelete={() =>
-                setSnapshots((prev) => prev?.filter((p) => p.id !== s.id) ?? null)
-              }
+              onDelete={() => {
+                setSnapshots((prev) => prev?.filter((p) => p.id !== s.id) ?? null);
+                setChosenId((id) => (id === s.id ? null : id));
+              }}
             />
           ))}
         </ul>
@@ -217,6 +232,8 @@ function SnapshotCard({
   canEdit,
   ringed,
   current,
+  chosen,
+  onChosen,
   onChange,
   onDelete,
 }: {
@@ -226,6 +243,9 @@ function SnapshotCard({
   ringed: string | null;
   /** Drawn in the project's colours and type as they are now. */
   current: boolean;
+  /** The project's report snapshot. */
+  chosen: boolean;
+  onChosen: (chosenId: string | null) => void;
   onChange: (next: Snapshot) => void;
   onDelete: () => void;
 }) {
@@ -234,7 +254,7 @@ function SnapshotCard({
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | string>("idle");
   const [confirming, setConfirming] = useState(false);
 
-  async function save(patch: { name?: string; note?: string }) {
+  async function save(patch: { name?: string; note?: string; inReports?: boolean }) {
     setStatus("saving");
     const res = await fetch(`${apiUrl(slug)}/${snapshot.id}`, {
       method: "PATCH",
@@ -245,8 +265,12 @@ function SnapshotCard({
       setStatus(res ? await errorOf(res) : "Couldn't reach the server.");
       return;
     }
-    const { snapshot: next } = (await res.json()) as { snapshot: Snapshot };
+    const { snapshot: next, chosenId } = (await res.json()) as {
+      snapshot: Snapshot;
+      chosenId: string | null;
+    };
     onChange(next);
+    onChosen(chosenId);
     setName(next.name);
     setNote(next.note);
     setStatus("saved");
@@ -276,7 +300,7 @@ function SnapshotCard({
   });
 
   return (
-    <li className="flex flex-col gap-2">
+    <li className={`flex flex-col gap-2 ${chosen ? "rounded outline outline-1 outline-offset-4 outline-paper/40" : ""}`}>
       <a href={snapshot.url} target="_blank" rel="noreferrer" title="Open full size">
         {/* eslint-disable-next-line @next/next/no-img-element -- our own saved picture, served as is */}
         <img
@@ -339,7 +363,38 @@ function SnapshotCard({
         <span>{taken}</span>
       </div>
 
+      {chosen && snapshot.highlight && (
+        <p className="text-[11px] text-warning/80">
+          Someone is ringed on this one, and it is in reports — everyone will
+          see that ring.
+        </p>
+      )}
+
       <div className="flex flex-wrap items-center gap-4 text-[11px]">
+        {chosen ? (
+          <span className="flex items-center gap-3">
+            <span className="text-paper">in reports</span>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => void save({ inReports: false })}
+                className="text-dim underline-offset-4 hover:text-paper hover:underline"
+              >
+                stop using
+              </button>
+            )}
+          </span>
+        ) : (
+          canEdit && (
+            <button
+              type="button"
+              onClick={() => void save({ inReports: true })}
+              className="text-dim underline-offset-4 hover:text-paper hover:underline"
+            >
+              use in reports
+            </button>
+          )
+        )}
         <a
           href={`${snapshot.url}?download=1`}
           className="text-dim underline-offset-4 hover:text-paper hover:underline"

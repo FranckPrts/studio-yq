@@ -13,6 +13,7 @@ import {
   CONCLUSION_BLOCKS,
   conclusionValues,
   type ConclusionBlock,
+  type ConclusionSnapshot,
   type ConclusionPage,
 } from "@/lib/report/conclusion-template";
 import {
@@ -56,6 +57,7 @@ export default function ConclusionView({
   mine,
   hasAvatar,
   status,
+  snapshot,
 }: {
   projectName: string;
   theme: ProjectTheme;
@@ -71,6 +73,8 @@ export default function ConclusionView({
   /** False when this browser has made nothing here: no marks, and no results. */
   hasAvatar: boolean;
   status?: string;
+  /** The map snapshot chosen for reports, for {snapshot}; null leaves it out. */
+  snapshot: ConclusionSnapshot | null;
 }) {
   const vars = {
     noun: lexicon.noun,
@@ -115,9 +119,24 @@ export default function ConclusionView({
       : `dotted ${stats.mine.length === 1 ? "line" : "lines"}: your ${stats.mine.length} ${stats.mine.length === 1 ? "run" : "runs"}`;
 
   const waiting = stats === null || stats.runs === 0;
-  const firstFigure = blocks.findIndex((b) => b.kind === "block");
+  // The snapshot is a picture, not a figure of the runs, so it never stands in
+  // for them and never waits on them.
+  const firstFigure = blocks.findIndex((b) => b.kind === "block" && b.name !== "snapshot");
 
   function figure(name: ConclusionBlock, index: number): ReactNode {
+    if (name === "snapshot") {
+      if (!snapshot) return null;
+      return (
+        // eslint-disable-next-line @next/next/no-img-element -- a saved picture, served as is
+        <img
+          src={snapshot.url}
+          width={snapshot.width}
+          height={snapshot.height}
+          alt={`A map of everyone who took part in ${projectName}`}
+          className="h-auto w-full rounded"
+        />
+      );
+    }
     if (waiting) {
       if (index !== firstFigure) return null;
       return (

@@ -90,3 +90,19 @@ export function toSummary(
     url: `/api/projects/${encodeURIComponent(slug)}/report/snapshots/${row.id}`,
   };
 }
+
+/** The project's chosen report snapshot, as the studio pages hand it down. */
+export type ReportSnapshotInfo = { url: string; name: string; width: number; height: number };
+
+export function reportSnapshotInfo(
+  slug: string,
+  row: { id: string; name: string; width: number; height: number } | null,
+): ReportSnapshotInfo | null {
+  if (!row) return null;
+  return {
+    url: `/api/projects/${encodeURIComponent(slug)}/report/snapshots/${row.id}`,
+    name: row.name,
+    width: row.width,
+    height: row.height,
+  };
+}

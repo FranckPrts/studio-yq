@@ -253,7 +253,11 @@ model Project {
   gmail             GmailConnection?
   reportRuns        ReportRun[]
   reportNoticeAckBy User?               @relation("ReportNoticeAck", fields: [reportNoticeAckById], references: [id], onDelete: SetNull)
-  mapSnapshots      MapSnapshot[]
+  mapSnapshots      MapSnapshot[]       @relation("ProjectSnapshots")
+  /// The snapshot the report email's and the conclusion page's {snapshot}
+  /// block shows — the same picture for everyone. Null leaves the block out.
+  reportSnapshotId  String?             @unique
+  reportSnapshot    MapSnapshot?        @relation("ReportSnapshot", fields: [reportSnapshotId], references: [id], onDelete: SetNull)
 
   @@index([ownerId])
   @@map("projects")
@@ -457,7 +461,9 @@ model MapSnapshot {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project  @relation("ProjectSnapshots", fields: [projectId], references: [id], onDelete: Cascade)
+  /// Set when this is the project's chosen report snapshot.
+  chosenFor Project? @relation("ReportSnapshot")
 
   @@index([projectId])
   @@map("map_snapshots")

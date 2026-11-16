@@ -17,6 +17,7 @@ import {
   useReportRoom,
   type ReportScriptInfo,
 } from "../use-report-room";
+import { useSnapshotImage, type ReportSnapshot } from "../use-report-snapshot";
 import { finishRunAction, loadAudience, startRun, stopRunAction } from "./actions";
 import { buttonClass } from "@/design";
 
@@ -50,6 +51,7 @@ export default function SendConsole({
   script,
   database,
   testedAt,
+  snapshot,
 }: {
   slug: string;
   team: TeamMember[];
@@ -63,7 +65,10 @@ export default function SendConsole({
   script: ReportScriptInfo;
   database: RoomDatabase;
   testedAt: string | null;
+  /** The map snapshot chosen for reports, for {snapshot}; null leaves it out. */
+  snapshot: ReportSnapshot | null;
 }) {
+  const { image: snapshotImage, ready: snapshotReady } = useSnapshotImage(snapshot);
   const { room, loadError, people, queue, sprites, raw, font } = useReportRoom({
     database,
     parameters,
@@ -96,7 +101,7 @@ export default function SendConsole({
       return !r || "error" in r || raw.has(a.id);
     });
   const picturesReady =
-    !!room && !!font && !queue.checking && !queue.current && picturesLoaded;
+    !!room && !!font && !queue.checking && !queue.current && picturesLoaded && snapshotReady;
   // Who a team test shows by default: the first person who played — the
   // fuller email.
   const firstPlayed = useMemo(() => {
@@ -183,6 +188,8 @@ export default function SendConsole({
             ground: theme.void,
             histogram: histogramStyle(look, theme, font),
           });
+          // The chosen snapshot is the same for everyone.
+          if (snapshotImage) images = { ...images, snapshot: snapshotImage };
           imageCache.set(owner, images);
         }
         const values = emailValues(person, stats, { project: projectName, noun, nounPlural, answerKeys });

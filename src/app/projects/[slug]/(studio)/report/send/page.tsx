@@ -10,6 +10,7 @@ import { coerceLexicon, coerceTheme, FONTS } from "@/lib/theme/project-theme";
 import PageHeader from "../../page-header";
 import { acknowledgeNotice, disconnectGmailAction, withdrawNotice } from "./actions";
 import SendConsole from "./send-console";
+import { reportSnapshotInfo } from "@/lib/report/map-snapshots";
 import { buttonClass } from "@/design";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,7 @@ export default async function SendPage({
         name: true,
         theme: true,
         lexicon: true,
+        reportSnapshot: { select: { id: true, name: true, width: true, height: true } },
         connection: { select: { projectUrl: true, publishableKey: true, provisionedAt: true } },
         scripts: { orderBy: { version: "desc" }, take: 1, select: { parameters: true } },
       },
@@ -227,6 +229,7 @@ export default async function SendPage({
         ) : (
           <SendConsole
             slug={slug}
+            snapshot={reportSnapshotInfo(slug, project.reportSnapshot)}
             team={team}
             projectName={project.name}
             theme={{ ...theme, fontStack: FONTS[theme.font].stack }}

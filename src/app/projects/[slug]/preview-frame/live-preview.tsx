@@ -28,6 +28,7 @@ import { coerceCopy, fillCopy, type ProjectCopy } from "@/lib/theme/project-copy
 import {
   coerceConclusionPage,
   type ConclusionPage,
+  type ConclusionSnapshot,
 } from "@/lib/report/conclusion-template";
 import type { FromPreview, PreviewScreen, ToPreview } from "./protocol";
 
@@ -146,6 +147,7 @@ export default function LivePreview({
   copy: savedCopy,
   conclusion: savedConclusion,
   conclusionOpen,
+  snapshot,
   email,
   randomize,
   script,
@@ -162,6 +164,8 @@ export default function LivePreview({
    * it either way, so it can be checked before it is published.
    */
   conclusionOpen: boolean;
+  /** The map snapshot chosen for reports, for the conclusion's {snapshot}. */
+  snapshot: ConclusionSnapshot | null;
   /** As participants are asked it — null when they are not. */
   email: EmailQuestion | null;
   randomize: boolean;
@@ -308,6 +312,7 @@ export default function LivePreview({
             names={SAMPLE_ALL_NAMES}
             mine={played ? SAMPLE_MINE_IDS : NO_AVATARS}
             hasAvatar={played}
+            snapshot={snapshot}
           />
         </div>
       )}

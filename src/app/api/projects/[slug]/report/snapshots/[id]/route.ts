@@ -10,7 +10,8 @@ import {
 
 /**
  * One map snapshot. GET serves its picture (`?download=1` as a file); PATCH
- * renames it or edits its note; DELETE removes it. The picture itself never
+ * renames it, edits its note, or makes it (or stops it being) the project's
+ * report snapshot; DELETE removes it — and with it the report's, if chosen. The picture itself never
  * changes — a new look is a new snapshot, so the old one stays to compare.
  */
 
@@ -52,7 +53,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const { slug, id } = await params;
   const { projectId } = await requireProjectRole(slug, "COLLABORATOR");
 
-  let body: { name?: unknown; note?: unknown };
+  let body: { name?: unknown; note?: unknown; inReports?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -72,10 +73,29 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     data.note = note;
   }
 
+  if (body.inReports !== undefined && typeof body.inReports !== "boolean") {
+    return NextResponse.json({ error: "Bad request." }, { status: 400 });
+  }
+
   const { count } = await db.mapSnapshot.updateMany({ where: { id, projectId }, data });
   if (count === 0) return NextResponse.json({ error: "Not found." }, { status: 404 });
-  const row = await db.mapSnapshot.findUniqueOrThrow({ where: { id }, select: SUMMARY_SELECT });
-  return NextResponse.json({ snapshot: toSummary(slug, row) });
+
+  // Choosing is on the project, so only a snapshot of this project — checked
+  // just above — can be chosen; stopping clears it only if it is this one.
+  if (body.inReports === true) {
+    await db.project.update({ where: { id: projectId }, data: { reportSnapshotId: id } });
+  } else if (body.inReports === false) {
+    await db.project.updateMany({
+      where: { id: projectId, reportSnapshotId: id },
+      data: { reportSnapshotId: null },
+    });
+  }
+
+  const [row, project] = await Promise.all([
+    db.mapSnapshot.findUniqueOrThrow({ where: { id }, select: SUMMARY_SELECT }),
+    db.project.findUniqueOrThrow({ where: { id: projectId }, select: { reportSnapshotId: true } }),
+  ]);
+  return NextResponse.json({ snapshot: toSummary(slug, row), chosenId: project.reportSnapshotId });
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {

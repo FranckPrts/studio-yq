@@ -12,8 +12,9 @@ import {
 } from "@/lib/report/map-snapshots";
 
 /**
- * The project's map snapshots. GET lists them, newest first, for anyone who
- * can see the project; POST takes one, for a collaborator.
+ * The project's map snapshots. GET lists them, newest first, with the one
+ * chosen for reports, for anyone who can see the project; POST takes one, for
+ * a collaborator.
  *
  * POST is a multipart form — the picture as a file, the rest as fields — so
  * the picture is sent as bytes, not a third bigger as base64.
@@ -27,12 +28,19 @@ export async function GET(
 ) {
   const { slug } = await params;
   const { projectId } = await requireProjectRole(slug, "VIEWER");
-  const rows = await db.mapSnapshot.findMany({
-    where: { projectId },
-    orderBy: { createdAt: "desc" },
-    select: SUMMARY_SELECT,
+  const [rows, project] = await Promise.all([
+    db.mapSnapshot.findMany({
+      where: { projectId },
+      orderBy: { createdAt: "desc" },
+      select: SUMMARY_SELECT,
+    }),
+    db.project.findUniqueOrThrow({ where: { id: projectId }, select: { reportSnapshotId: true } }),
+  ]);
+  return NextResponse.json({
+    snapshots: rows.map((r) => toSummary(slug, r)),
+    /** The one the email's and conclusion's {snapshot} block shows. */
+    chosenId: project.reportSnapshotId,
   });
-  return NextResponse.json({ snapshots: rows.map((r) => toSummary(slug, r)) });
 }
 
 const isShort = (v: unknown): v is string =>

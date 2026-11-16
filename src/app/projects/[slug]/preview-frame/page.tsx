@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { requireProjectRole } from "@/lib/auth/dal";
 import { coerceLexicon, coerceTheme } from "@/lib/theme/project-theme";
 import { coerceCopy } from "@/lib/theme/project-copy";
-import { coerceConclusionPage } from "@/lib/report/conclusion-template";
+import { coerceConclusionPage, conclusionSnapshot } from "@/lib/report/conclusion-template";
 import {
   askedEmail,
   coerceParticipantDetails,
@@ -37,6 +37,7 @@ export default async function ParticipantPreviewPage({
       copy: true,
       conclusionPublishedAt: true,
       conclusionPage: true,
+      reportSnapshot: { select: { id: true, width: true, height: true } },
       participantDetails: true,
       connection: { select: { schemaVersion: true } },
       scripts: {
@@ -68,6 +69,7 @@ export default async function ParticipantPreviewPage({
         copy={coerceCopy(project.copy)}
         conclusion={coerceConclusionPage(project.conclusionPage)}
         conclusionOpen={project.conclusionPublishedAt !== null}
+        snapshot={conclusionSnapshot(slug, project.reportSnapshot)}
         email={askedEmail(details, project.connection?.schemaVersion)}
         randomize={details.randomize.enabled}
         script={

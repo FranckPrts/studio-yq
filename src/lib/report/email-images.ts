@@ -6,7 +6,7 @@ import { joinNames, type Person, type PersonStats } from "./people";
 import type { Room } from "./room";
 
 /**
- * The three pictures one participant's email can carry, drawn in the browser
+ * The pictures one participant's email can carry, drawn in the browser
  * and handed over as data URLs. Pixels are twice the size they are shown at,
  * for sharp screens.
  *
@@ -105,4 +105,17 @@ export function buildReportImages(input: ReportImageInput): Partial<Record<Image
   }
 
   return out;
+}
+
+/**
+ * The chosen map snapshot as an email picture: the same for everyone, so made
+ * once and added to each person's. Redrawn at twice the 600px column as JPEG —
+ * the stored picture is the map page's full size, more than an email needs.
+ */
+export function snapshotEmailImage(img: HTMLImageElement, alt: string): EmailImage {
+  const width = Math.min(1200, img.naturalWidth);
+  const height = Math.round((img.naturalHeight / img.naturalWidth) * width);
+  const [c, ctx] = canvas(width, height);
+  ctx.drawImage(img, 0, 0, width, height);
+  return { src: c.toDataURL("image/jpeg", 0.86), width: Math.round(width / 2), alt };
 }
