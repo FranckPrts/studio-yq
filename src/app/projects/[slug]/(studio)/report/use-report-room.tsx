@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import type { Parameter } from "@/lib/params/types";
 import { layoutMap, MAP_ASPECT, type MapLayout } from "@/lib/report/map-layout";
 import { peopleOf, type Person } from "@/lib/report/people";
@@ -56,7 +57,10 @@ export function useReportRoom({
   const layout = useMemo<MapLayout | null>(() => (room ? layoutMap(room) : null), [room]);
   const people = useMemo<Person[]>(() => (room ? peopleOf(room) : []), [room]);
   const subjects = useMemo(() => room?.avatars ?? [], [room]);
-  const queue = useCaptureQueue(subjects, script.key);
+  // Every report page sits under /projects/[slug]; its pictures are saved there.
+  const { slug } = useParams<{ slug: string }>();
+  const persist = useMemo(() => ({ slug }), [slug]);
+  const queue = useCaptureQueue(subjects, script.key, persist);
   const { sprites, raw } = useSprites(subjects, queue.resultOf, script.source);
   const font = useCanvasFont(fontStack, MAP_FONT_PX);
 
@@ -73,6 +77,9 @@ export function CapturingNotice({
   script: ReportScriptInfo;
   ground: string;
 }) {
+  if (queue.checking) {
+    return <p className="text-[11px] text-dim">Looking for saved mini-avatars…</p>;
+  }
   if (!queue.current) return null;
   return (
     <figure className="flex items-center gap-3">

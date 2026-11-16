@@ -87,7 +87,16 @@ export default function SendConsole({
     };
   }, [slug, audienceRun]);
 
-  const picturesReady = !!room && !!font && !queue.current;
+  // Saved pictures arrive as URLs and load over the network, so "nobody left
+  // to photograph" is not yet "every picture drawable".
+  const picturesLoaded =
+    !!room &&
+    room.avatars.every((a) => {
+      const r = queue.resultOf(a);
+      return !r || "error" in r || raw.has(a.id);
+    });
+  const picturesReady =
+    !!room && !!font && !queue.checking && !queue.current && picturesLoaded;
   // Who a team test shows by default: the first person who played — the
   // fuller email.
   const firstPlayed = useMemo(() => {
@@ -224,7 +233,7 @@ export default function SendConsole({
   return (
     <div className="flex flex-col gap-8">
       <CapturingNotice queue={queue} script={script} ground={theme.void} />
-      {!picturesReady && !queue.current && <p className="text-xs text-dim">Reading the room…</p>}
+      {!picturesReady && !queue.current && !queue.checking && <p className="text-xs text-dim">Reading the room…</p>}
       {audienceError && <p role="alert" className="text-xs text-danger">{audienceError}</p>}
 
       {progress && (

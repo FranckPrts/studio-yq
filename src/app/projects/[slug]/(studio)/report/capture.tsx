@@ -8,6 +8,7 @@ import {
   MINI_CAPTURE_PX,
   MINI_CAPTURE_TIMEOUT_MS,
   miniHost,
+  miniSeed,
 } from "@/lib/report/mini";
 
 /**
@@ -32,32 +33,120 @@ const taken = new Map<string, string>();
 const cacheKey = (script: string, s: CaptureSubject) =>
   `${script}|${MINI_CAPTURE_PX}|${s.id}|${JSON.stringify(s.params)}`;
 
-export function useCaptureQueue(subjects: CaptureSubject[], script: string) {
+/** Identifies an avatar's values, so a saved picture of old values is a miss. */
+const paramsHash = (s: CaptureSubject) => {
+  const json = JSON.stringify(s.params);
+  return `${miniSeed(json).toString(36)}.${json.length}`;
+};
+
+type Saved = Map<string, { paramsHash: string; url: string }>;
+
+/**
+ * Saving pictures to the project, so another visit, device or teammate does
+ * not photograph everyone again. `null` keeps them to this tab, as for a
+ * "try a file" trial.
+ */
+export type CapturePersistence = { slug: string } | null;
+
+/** Set once the server says this person may not save — a viewer. */
+let saveRefused = false;
+
+const minisUrl = (slug: string) => `/api/projects/${encodeURIComponent(slug)}/report/minis`;
+
+/**
+ * A capture comes back as PNG; WebP is a fraction of the size for a picture
+ * this soft. Browsers that cannot write WebP (Safari) hand back PNG, kept as is.
+ */
+async function compact(dataUrl: string): Promise<string> {
+  const img = new Image();
+  img.src = dataUrl;
+  await img.decode();
+  const c = document.createElement("canvas");
+  c.width = img.naturalWidth;
+  c.height = img.naturalHeight;
+  c.getContext("2d")!.drawImage(img, 0, 0);
+  const webp = c.toDataURL("image/webp", 0.9);
+  return webp.startsWith("data:image/webp") && webp.length < dataUrl.length ? webp : dataUrl;
+}
+
+async function save(slug: string, script: string, subject: CaptureSubject, image: string) {
+  if (saveRefused) return;
+  try {
+    const res = await fetch(minisUrl(slug), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        script,
+        avatarId: subject.id,
+        paramsHash: paramsHash(subject),
+        image: await compact(image),
+      }),
+    });
+    if (res.status === 403) saveRefused = true;
+  } catch {
+    // Saving is a convenience: the picture is still on the page, and is taken
+    // again next visit.
+  }
+}
+
+export function useCaptureQueue(
+  subjects: CaptureSubject[],
+  script: string,
+  persist: CapturePersistence = null,
+) {
   const [results, setResults] = useState<Map<string, CaptureResult>>(new Map());
   // Bumped to throw everything away and photograph again.
   const [run, setRun] = useState(0);
+  // Pictures saved to the project for this script. Null while being asked
+  // for, so nobody is photographed who turns out to be saved already.
+  const [saved, setSaved] = useState<Saved | null>(persist ? null : new Map());
 
   // A different script starts over. Adjusted during render rather than in an
   // effect, so stale pictures never show.
-  const [forScript, setForScript] = useState(script);
-  if (forScript !== script) {
-    setForScript(script);
+  const persistKey = persist ? `${persist.slug}|${script}` : null;
+  const [forScript, setForScript] = useState({ script, persistKey });
+  if (forScript.script !== script || forScript.persistKey !== persistKey) {
+    setForScript({ script, persistKey });
     setResults(new Map());
+    setSaved(persist ? null : new Map());
     setRun((n) => n + 1);
   }
+
+  const slug = persist?.slug ?? null;
+  useEffect(() => {
+    if (!slug) return;
+    let cancelled = false;
+    fetch(`${minisUrl(slug)}?script=${encodeURIComponent(script)}`)
+      .then((res) => (res.ok ? res.json() : { captures: [] }))
+      .catch(() => ({ captures: [] }))
+      .then((body: { captures: { avatarId: string; paramsHash: string; url: string }[] }) => {
+        if (cancelled) return;
+        setSaved(new Map(body.captures.map((c) => [c.avatarId, c])));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, script]);
 
   const resultOf = (s: CaptureSubject): CaptureResult | undefined => {
     const own = results.get(s.id);
     if (own) return own;
     const cached = taken.get(cacheKey(script, s));
-    return cached ? { image: cached } : undefined;
+    if (cached) return { image: cached };
+    const kept = saved?.get(s.id);
+    return kept && kept.paramsHash === paramsHash(s) ? { image: kept.url } : undefined;
   };
 
-  const current = subjects.find((s) => !resultOf(s)) ?? null;
+  const current = saved ? (subjects.find((s) => !resultOf(s)) ?? null) : null;
   const index = current ? subjects.indexOf(current) : subjects.length;
+  /** Still asking the server what is saved. */
+  const checking = saved === null && subjects.length > 0;
 
   function record(subject: CaptureSubject, result: CaptureResult) {
-    if ("image" in result) taken.set(cacheKey(script, subject), result.image);
+    if ("image" in result) {
+      taken.set(cacheKey(script, subject), result.image);
+      if (slug) void save(slug, script, subject, result.image);
+    }
     setResults((prev) =>
       prev.has(subject.id) ? prev : new Map(prev).set(subject.id, result),
     );
@@ -65,6 +154,21 @@ export function useCaptureQueue(subjects: CaptureSubject[], script: string) {
 
   function restart() {
     for (const s of subjects) taken.delete(cacheKey(script, s));
+    if (slug) {
+      // Forget the saved ones here at once; delete them on the server too, if
+      // allowed — a viewer's fresh pictures simply are not kept.
+      setSaved((prev) => {
+        if (!prev) return prev;
+        const next = new Map(prev);
+        for (const s of subjects) next.delete(s.id);
+        return next;
+      });
+      if (!saveRefused) {
+        const q = new URLSearchParams({ script });
+        for (const s of subjects) q.append("avatar", s.id);
+        void fetch(`${minisUrl(slug)}?${q}`, { method: "DELETE" }).catch(() => {});
+      }
+    }
     setResults(new Map());
     setRun((n) => n + 1);
   }
@@ -72,6 +176,7 @@ export function useCaptureQueue(subjects: CaptureSubject[], script: string) {
   return {
     resultOf,
     current,
+    checking,
     index,
     total: subjects.length,
     record,

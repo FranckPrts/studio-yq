@@ -128,7 +128,7 @@ function LivePreview({
   // never per keystroke. While photographs are still arriving, at most every
   // second or so.
   const [images, setImages] = useState<Partial<Record<ImageBlock, EmailImage>>>({});
-  const capturing = !!queue.current;
+  const capturing = !!queue.current || queue.checking;
   useEffect(() => {
     if (!room || !layout || !person || !stats || !font) return;
     const timer = window.setTimeout(

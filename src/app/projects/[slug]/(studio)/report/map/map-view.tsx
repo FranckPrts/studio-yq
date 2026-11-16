@@ -15,6 +15,9 @@ import {
   useReportRoom,
   type ReportScriptInfo,
 } from "../use-report-room";
+import type { ProjectTheme } from "@/lib/theme/project-theme";
+import Snapshots from "./snapshots";
+import type { CaptureResult, CaptureSubject } from "../capture";
 
 /**
  * The report map, as everyone's email will show it — with a search to see it
@@ -26,6 +29,7 @@ import {
  */
 export default function MapView({
   slug,
+  canEdit,
   script,
   parameters,
   theme,
@@ -34,14 +38,16 @@ export default function MapView({
   database,
 }: {
   slug: string;
+  /** May take, rename and delete snapshots. */
+  canEdit: boolean;
   script: ReportScriptInfo;
   parameters: Parameter[];
-  theme: { void: string; paper: string; dim: string; fontStack: string };
+  theme: { void: string; paper: string; dim: string; font: ProjectTheme["font"]; fontStack: string };
   noun: string;
   nounPlural: string;
   database: RoomDatabase;
 }) {
-  const { room, loadError, layout, people, queue, sprites, font } = useReportRoom({
+  const { room, loadError, layout, people, queue, sprites, raw, font } = useReportRoom({
     database,
     parameters,
     script,
@@ -95,6 +101,33 @@ export default function MapView({
     const best = edges.reduce((m, e) => Math.max(m, e.score), -Infinity);
     return { pairs: edges.length, best: Number.isFinite(best) ? best : null };
   }, [layout, highlight]);
+
+  // Every picture in and drawn — what a snapshot should wait for.
+  const ready =
+    !!layout &&
+    !!style &&
+    !queue.checking &&
+    !queue.current &&
+    subjectsDrawn(room?.avatars ?? [], queue.resultOf, raw);
+
+  const look = useMemo<ProjectTheme>(
+    () => ({ void: theme.void, paper: theme.paper, dim: theme.dim, font: theme.font }),
+    [theme.void, theme.paper, theme.dim, theme.font],
+  );
+
+  /**
+   * The canvas as it is, as WebP — or JPEG where the browser cannot write
+   * WebP (Safari). Both a fraction of a PNG, and the map has no transparency.
+   */
+  async function take() {
+    const canvas = canvasRef.current;
+    if (!canvas || !ready) return null;
+    const as = (type: string) =>
+      new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.92));
+    let blob = await as("image/webp");
+    if (!blob || blob.type !== "image/webp") blob = await as("image/jpeg");
+    return blob ? { blob, width: canvas.width, height: canvas.height } : null;
+  }
 
   function download() {
     canvasRef.current?.toBlob((blob) => {
@@ -176,6 +209,29 @@ export default function MapView({
       />
 
       <CapturingNotice queue={queue} script={script} ground={theme.void} />
+
+      <Snapshots
+        slug={slug}
+        canEdit={canEdit}
+        look={look}
+        scriptKey={script.key}
+        people={people}
+        highlight={highlight}
+        ready={ready}
+        take={take}
+      />
     </div>
   );
+}
+
+/** Every subject with a picture has it loaded; failures count as done. */
+function subjectsDrawn(
+  subjects: CaptureSubject[],
+  resultOf: (s: CaptureSubject) => CaptureResult | undefined,
+  raw: Map<string, unknown>,
+) {
+  return subjects.every((s) => {
+    const r = resultOf(s);
+    return !r || "error" in r || raw.has(s.id);
+  });
 }

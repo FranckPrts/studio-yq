@@ -104,6 +104,7 @@ export default async function MapPage({
       ) : (
         <MapView
           slug={slug}
+          canEdit={canEdit}
           script={{
             code: script.code,
             extensions: script.extensions,
@@ -115,6 +116,7 @@ export default async function MapPage({
             void: theme.void,
             paper: theme.paper,
             dim: theme.dim,
+            font: theme.font,
             fontStack: FONTS[theme.font].stack,
           }}
           noun={lexicon.noun}

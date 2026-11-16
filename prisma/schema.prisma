@@ -243,15 +243,17 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  owner       User                @relation("ProjectOwner", fields: [ownerId], references: [id])
-  members     Membership[]
-  connection  SupabaseConnection?
-  scripts     AvatarScript[]
-  miniScripts MiniScript[]
-  invitations Invitation[]
-  gmail       GmailConnection?
-  reportRuns  ReportRun[]
-  reportNoticeAckBy User? @relation("ReportNoticeAck", fields: [reportNoticeAckById], references: [id], onDelete: SetNull)
+  owner             User                @relation("ProjectOwner", fields: [ownerId], references: [id])
+  members           Membership[]
+  connection        SupabaseConnection?
+  scripts           AvatarScript[]
+  miniScripts       MiniScript[]
+  miniCaptures      MiniCapture[]
+  invitations       Invitation[]
+  gmail             GmailConnection?
+  reportRuns        ReportRun[]
+  reportNoticeAckBy User?               @relation("ReportNoticeAck", fields: [reportNoticeAckById], references: [id], onDelete: SetNull)
+  mapSnapshots      MapSnapshot[]
 
   @@index([ownerId])
   @@map("projects")
@@ -394,6 +396,71 @@ model MiniScript {
   @@unique([projectId, version])
   @@index([projectId])
   @@map("mini_scripts")
+}
+
+/// A saved picture of one avatar's mini, so report pages need not photograph
+/// everyone again on every visit, device or teammate. Derived data: always
+/// safe to delete, it is only taken again.
+///
+/// One row per avatar per script. A picture is good only while `scriptKey`
+/// is the project's current report script and `paramsHash` matches the
+/// avatar's values now; a stale row is replaced, not kept beside the new one.
+model MiniCapture {
+  id         String @id @default(cuid())
+  projectId  String
+  /// `mini:<version>` or `main:<version>` — the script that drew it.
+  scriptKey  String
+  /// The avatar's id in the tenant's database ("defaults" for the sample).
+  avatarId   String
+  /// Hash of the values it was drawn with, worked out in the browser.
+  paramsHash String
+  /// Picture size in pixels, so a change to MINI_CAPTURE_PX is a miss.
+  px         Int
+  mime       String
+  image      Bytes
+
+  takenById String?
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, scriptKey, avatarId])
+  @@index([projectId])
+  @@map("mini_captures")
+}
+
+/// A saved picture of the report map, taken from the map page — so the map can
+/// be kept, named and annotated, then compared after the project's colours or
+/// the mini-script change. Unlike MiniCapture this is the tenant's own record:
+/// never pruned, only deleted on purpose.
+model MapSnapshot {
+  id        String @id @default(cuid())
+  projectId String
+
+  name String
+  note String @default("")
+
+  image  Bytes
+  mime   String
+  width  Int
+  height Int
+
+  /// The colours and font it was drawn in: `{ void, paper, dim, font }`.
+  look      Json
+  /// The script that drew its mini-avatars, as `mini:<v>` or `main:<v>`.
+  scriptKey String
+  /// The participant ringed on it (owner uuid in the tenant's database), if
+  /// any. Their name is looked up when shown, never stored here.
+  highlight String?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("map_snapshots")
 }
 
 // ─── Participant report sending ─────────────────────────────────────────────

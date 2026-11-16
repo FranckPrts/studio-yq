@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import { defaults, renderValues } from "@/lib/params/coerce";
 import { miniSeed } from "@/lib/report/mini";
 import type { Parameter } from "@/lib/params/types";
@@ -83,10 +84,10 @@ export default function MiniPreview({
     () => [sample, ...(avatars ?? []).slice(0, limit)],
     [sample, avatars, limit],
   );
-  const queue = useCaptureQueue(
-    subjects,
-    trial?.key ?? scriptKey,
-  );
+  // Pictures of the active script are saved to the project; a trial's never.
+  const { slug } = useParams<{ slug: string }>();
+  const persist = useMemo(() => (trial ? null : { slug }), [trial, slug]);
+  const queue = useCaptureQueue(subjects, trial?.key ?? scriptKey, persist);
 
   async function onTrialFile(file: File | undefined) {
     if (!file) return;
@@ -167,9 +168,11 @@ export default function MiniPreview({
             displayPx={240}
           />
           <figcaption className="text-[11px] text-dim">
-            {queue.current
-              ? `rendering ${queue.index + 1} of ${queue.total}: ${queue.current.name}`
-              : `${queue.total} rendered`}
+            {queue.checking
+              ? "looking for saved pictures…"
+              : queue.current
+                ? `rendering ${queue.index + 1} of ${queue.total}: ${queue.current.name}`
+                : `${queue.total} rendered`}
           </figcaption>
         </figure>
 
@@ -185,7 +188,7 @@ export default function MiniPreview({
                   {!r ? (
                     <span className="text-[10px] text-dim">waiting</span>
                   ) : "image" in r ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- a data URL, nothing to optimise
+                    // eslint-disable-next-line @next/next/no-img-element -- a data URL or a saved picture, nothing to optimise
                     <img src={r.image} alt={s.name} className="h-full w-full object-contain" />
                   ) : (
                     <span className="p-2 text-center text-[10px] leading-snug text-danger">
